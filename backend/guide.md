@@ -28,9 +28,8 @@ backend/
 ├── alembic.ini          → Alembic configuration (do not edit this)
 ├── alembic/
 │   ├── env.py           → Wires Alembic to our database settings (do not edit this)
-│   └── versions/        → Migration files that create/modify DB tables
-│                           ⚠️ NEVER delete or edit files here manually.
-│                           ⚠️ Always commit new migration files to git.
+│   └── versions/        → Versioned migration files that create/modify DB tables
+│                           ⚠️ Commit reviewed migration files with model changes.
 │
 └── app/
     ├── main.py          → FastAPI app entry point (registers all routes)
@@ -39,9 +38,9 @@ backend/
     │   └── database.py  → Creates the DB connection and session
     ├── models/          → SQLAlchemy models = the actual database tables in Python
     │   ├── core.py      → Tables: farmers, farmlands, crops
-    │   ├── profile.py   → Module 1 tables: farmer_profiles, farm_history
+    │   ├── profile.py      → Module 1 tables: farmer_profiles
     │   ├── season.py    → Module 2 tables: seasons, season_plans, growth_stages
-    │   ├── state.py     → Module 3 tables: farm_states, tasks, problems, checkins
+    │   ├── state.py        → Module 3 tables: tasks, problems, checkins
     │   ├── weather.py   → Module 4 tables: weather_events, weather_alerts
     │   ├── chat.py      → Module 5 tables: conversations, chat_messages
     │   └── disease.py   → Module 6 tables: disease_results
@@ -143,17 +142,15 @@ The backend is now fully running! Open your browser and visit:
 
 ---
 
-### Step 4 — Run Database Migrations (First Time Only)
+### Step 4 — Verify the Database Connection
 
-After the containers are running, open a **new terminal tab** (keep the first one running), navigate to the `backend/` folder, and run:
+The API container runs `alembic upgrade head` before starting FastAPI. On first startup,
+the committed initial migration creates all tables. On later startups, Alembic applies
+new committed migrations and preserves existing data. If migration fails, the API does
+not start.
 
-```bash
-docker-compose exec api alembic upgrade head
-```
-
-> ✅ This runs the Alembic migration command **inside the `api` container** against the real database. It sets up all the required tables.
->
-> ✅ Running this even when there is nothing to migrate is completely safe — it simply does nothing.
+Check `http://localhost:8000/health`. A healthy response includes
+`"database": "connected"`.
 
 ---
 
@@ -193,10 +190,10 @@ docker-compose down
 After pulling new code from a teammate:
 ```bash
 git pull
-docker-compose exec api alembic upgrade head
+docker-compose restart api
 ```
 
-> ✅ Always run `alembic upgrade head` after pulling. It applies any new migration files your teammates may have pushed.
+> ✅ The API runs `alembic upgrade head` at startup. If dependencies or the Dockerfile changed, rebuild with `docker-compose up --build`.
 
 ---
 
@@ -225,7 +222,7 @@ git commit -m "migration: added crop variety field to seasons"
 git push
 ```
 
-> ⚠️ **Important:** Always commit your migration files. Your teammates will run `alembic upgrade head` after pulling your code and their databases will be updated automatically. Never delete or manually edit files inside `alembic/versions/`.
+> ⚠️ **Important:** Commit reviewed migration files with model changes. Teammates' API containers apply them at startup. Never delete a migration that has already been applied to a shared database.
 
 ---
 
