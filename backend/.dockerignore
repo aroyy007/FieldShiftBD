@@ -1,0 +1,21 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment (not needed inside Docker)
+venv/
+.venv/
+
+# Environment variables (never ship secrets into an image)
+.env
+
+# Git files
+.git/
+.gitignore
+
+# Editor and OS files
+.DS_Store
+.vscode/
+*.swp
