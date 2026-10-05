@@ -25,7 +25,6 @@ export default function AddFarmland() {
       growthStage: 'Preparation',
       tasks: [], alerts: [], seasonPlan: [],
       cropHealth: { status: 'Unknown', diseaseRisk: 'Low', recentIssues: [] },
-      chat: [],
     });
     router.back();
   };

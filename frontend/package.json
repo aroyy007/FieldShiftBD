@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "patch-package": "^8.0.1",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -37,8 +38,8 @@
     "android": "expo start --android --port 8082",
     "ios": "expo start --ios --port 8082",
     "web": "expo start --web --port 8082",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "postinstall": "patch-package"
   },
   "private": true
 }
-
