@@ -1,0 +1,48 @@
+# ──────────────────────────────────────────
+# Virtual Environment
+# ──────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ──────────────────────────────────────────
+# Python
+# ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ──────────────────────────────────────────
+# Environment / Secrets
+# ──────────────────────────────────────────
+.env
+*.env.local
+
+# ──────────────────────────────────────────
+# Testing & Coverage
+# ──────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ──────────────────────────────────────────
+# IDE / Editor
+# ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ──────────────────────────────────────────
+# NOTE: alembic/versions/ is intentionally NOT ignored.
+# Migration files must be committed so all developers
+# can run `alembic upgrade head` to sync their local
+# PostgreSQL instance with the current schema.
+# ──────────────────────────────────────────
