@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "description": "Bangladesh agriculture source-grounding notes for FieldShiftBD. These records document what official sources cover and how the app should use them; they are not crop-specific treatment or fertilizer prescriptions.",
+  "default_review_status": "in_review",
+  "records": [
+    {
+      "key": "barc-czis-suitability-context",
+      "category": "crop_suitability",
+      "region_code": "BD",
+      "crop_id": null,
+      "crop_variety_id": null,
+      "source_name": "Bangladesh Agricultural Research Council (BARC)",
+      "source_reference": "https://portal.cropzoning.gov.bd/",
+      "effective_from": null,
+      "effective_to": null,
+      "review_status": "in_review",
+      "content": {
+        "knowledge_type": "source_grounding_note",
+        "farmer_facing": false,
+        "language": "en",
+        "title": "Use crop-suitability results with their location and season",
+        "summary": "BARC's Crop Zoning Information System (CZIS) is a spatial decision-support source. Its suitability analysis combines land and soil, agro-climate, inundation, and economic factors. BARC describes its upazila land and soil database as 1:50,000 scale. The advisory portal's suitability view is selected by district and upazila and displays season, crop, crop situation, and suitability classes.",
+        "source_claims": [
+          {
+            "claim": "CZIS combines edaphic, agro-climate, inundation, and economic factors and describes an upazila land and soil resource database at 1:50,000 scale.",
+            "evidence": [
+              {
+                "title": "About Crop Zoning System (CZIS)",
+                "url": "https://portal.cropzoning.gov.bd/",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          },
+          {
+            "claim": "The crop-suitability view requests district and upazila and presents suitability classes for a crop situation and season.",
+            "evidence": [
+              {
+                "title": "Crop Suitability",
+                "url": "https://portal.cropzoning.gov.bd/cropSuitability",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          }
+        ],
+        "use_rules": [
+          "Before reporting a BARC suitability result, identify the district, upazila, crop, and season used by the source.",
+          "Preserve the source's displayed suitability class and any displayed data year; do not recalculate a class from map colors.",
+          "Describe this as area-level planning information, not a measurement of the farmer's individual plot or a guaranteed yield."
+        ],
+        "review_required": [
+          "Bangladesh agronomist review of the suitability-class interpretation and local terminology.",
+          "Confirm the source data year and spatial unit for each imported result."
+        ]
+      }
+    },
+    {
+      "key": "barc-khamari-service-scope",
+      "category": "production_knowledge",
+      "region_code": "BD",
+      "crop_id": null,
+      "crop_variety_id": null,
+      "source_name": "Bangladesh Agricultural Research Council (BARC)",
+      "source_reference": "https://cropzoning.gov.bd/information-material.php",
+      "effective_from": null,
+      "effective_to": null,
+      "review_status": "in_review",
+      "content": {
+        "knowledge_type": "source_grounding_note",
+        "farmer_facing": false,
+        "language": "en",
+        "title": "Khamari is a Bangladesh-specific source for localized crop guidance",
+        "summary": "BARC describes Khamari as providing season- and land-specific crop suitability, soil-fertility-based fertilizer recommendations, crop varieties, yield and duration information, cropping patterns, and production technology. Use the current official result for a farmer's location and season; this service description is not itself a crop prescription.",
+        "source_claims": [
+          {
+            "claim": "The portal lists season-wise land-specific suitable crops, soil-fertility-based fertilizer recommendations, crop varieties, yield and duration, cropping patterns, and production technology as Khamari capabilities.",
+            "evidence": [
+              {
+                "title": "Khamari Mobile App service description",
+                "url": "https://portal.cropzoning.gov.bd/",
+                "accessed_on": "2026-10-06"
+              },
+              {
+                "title": "Information & Material",
+                "url": "https://cropzoning.gov.bd/information-material.php",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          },
+          {
+            "claim": "A 2025 article about Khamari describes location-specific crop and fertilizer guidance; its rice trial results refer to 2023 and 2023-24 demonstrations and are historical results.",
+            "evidence": [
+              {
+                "title": "Data-Driven Decisions in Agriculture: The Khamari App for Site-Specific Crop and Fertilizer Recommendation",
+                "url": "https://cropzoning.gov.bd/assets/Data%20driven%20decision%20in%20Agri-Khamari%20mobile%20app.pdf",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          }
+        ],
+        "use_rules": [
+          "Prefer a current, location- and season-specific BARC/Khamari result over a generic model-generated crop or fertilizer recommendation.",
+          "Do not present historical trial outcomes as a forecast for a farmer's field.",
+          "Store the BARC result's source URL, location, crop, season, and data year when an authorized export or interface becomes available."
+        ],
+        "review_required": [
+          "Verify current Khamari output and applicable location before adding crop-specific recommendations.",
+          "Check reuse terms for each publication before copying its full text."
+        ]
+      }
+    },
+    {
+      "key": "barc-fertilizer-guide-source-policy",
+      "category": "fertilizer_method",
+      "region_code": "BD",
+      "crop_id": null,
+      "crop_variety_id": null,
+      "source_name": "Bangladesh Agricultural Research Council (BARC)",
+      "source_reference": "https://apps.barc.gov.bd/fertilizer_recommendation/FRG%20English%2030.10.2024.pdf",
+      "effective_from": null,
+      "effective_to": null,
+      "review_status": "in_review",
+      "content": {
+        "knowledge_type": "source_grounding_note",
+        "farmer_facing": false,
+        "language": "en",
+        "title": "Use the current BARC Fertilizer Recommendation Guide with its conditions",
+        "summary": "BARC publishes a 2024 Fertilizer Recommendation Guide. This seed record indexes that edition only; it does not contain fertilizer rates. Any future rate record must preserve the guide edition, crop, location or soil context, units, application timing, and source page/table.",
+        "source_claims": [
+          {
+            "claim": "BARC's official publications list includes a 2024 Fertilizer Recommendation Guide, and the official download is hosted on a BARC domain.",
+            "evidence": [
+              {
+                "title": "Fertilizer Recommendation Guide 2024 (English)",
+                "url": "https://apps.barc.gov.bd/fertilizer_recommendation/FRG%20English%2030.10.2024.pdf",
+                "accessed_on": "2026-10-06"
+              },
+              {
+                "title": "BARC publications listing",
+                "url": "https://barc.gov.bd/site/view/publications",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          }
+        ],
+        "use_rules": [
+          "Do not use this index note to calculate or state a fertilizer dose.",
+          "For a future rate entry, transcribe the full table context, edition, crop, soil or location conditions, nutrient and product units, split timing, and page number.",
+          "Do not substitute an upazila or union map for a current field soil test when the recommendation requires plot-specific soil values."
+        ],
+        "review_required": [
+          "Agronomist must verify every transcribed dose against the cited guide page before approval.",
+          "Confirm the selected guide edition is still the current BARC recommendation before use."
+        ]
+      }
+    },
+    {
+      "key": "bamis-live-advisory-handling",
+      "category": "agromet_advisory",
+      "region_code": "BD",
+      "crop_id": null,
+      "crop_variety_id": null,
+      "source_name": "Bangladesh Agro-Meteorological Information Service (BAMIS), Department of Agricultural Extension",
+      "source_reference": "https://www.bamis.gov.bd/en/page/about-bamis-portal/",
+      "effective_from": null,
+      "effective_to": null,
+      "review_status": "in_review",
+      "content": {
+        "knowledge_type": "source_grounding_note",
+        "farmer_facing": false,
+        "language": "en",
+        "title": "Treat BAMIS weather and flood advisories as expiring information",
+        "summary": "BAMIS publishes national, district, and special agrometeorological bulletins, forecasts, crop/weather information, pest and disease weather calendars, and weather warnings. BAMIS says meteorological data comes from BMD and hydrological data from BWDB. Advisory and warning records must retain their issue time, validity period, geographic coverage, and original source link, and should not be stored as evergreen advice.",
+        "source_claims": [
+          {
+            "claim": "BAMIS describes national, district, special, and seasonal agrometeorological services, crop/weather information, pest and disease weather calendars, and warnings.",
+            "evidence": [
+              {
+                "title": "BAMIS home and service index",
+                "url": "https://www.bamis.gov.bd/en/",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          },
+          {
+            "claim": "BAMIS says it accumulates meteorological data from BMD and hydrological data from BWDB for dissemination through the portal.",
+            "evidence": [
+              {
+                "title": "About BAMIS Portal",
+                "url": "https://www.bamis.gov.bd/en/page/about-bamis-portal/",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          },
+          {
+            "claim": "The BAMIS flood-information section distributes FFWC/BWDB warnings and outlooks.",
+            "evidence": [
+              {
+                "title": "BWDB / FFWC warning section",
+                "url": "https://www.bamis.gov.bd/bwdb/warning/",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          }
+        ],
+        "use_rules": [
+          "For each bulletin or forecast, keep publisher, issue time, valid-from and valid-through times, affected districts or river areas, crop scope if present, and the original document URL.",
+          "Expire a bulletin when its stated validity ends; if validity cannot be verified, do not present it as current.",
+          "Keep forecasts, flood warnings, and archived advisories out of the evergreen crop-knowledge collection."
+        ],
+        "review_required": [
+          "Validate the bulletin date, validity, area, and issuing agency before showing it to a farmer.",
+          "Use an authorized stable feed or a carefully validated official document fetch; do not treat a page scrape as a documented API."
+        ]
+      }
+    },
+    {
+      "key": "srdi-soil-map-resolution-and-limits",
+      "category": "soil_reference",
+      "region_code": "BD",
+      "crop_id": null,
+      "crop_variety_id": null,
+      "source_name": "Soil Resource Development Institute (SRDI), Ministry of Agriculture",
+      "source_reference": "https://soil.srdi.gov.bd/",
+      "effective_from": null,
+      "effective_to": null,
+      "review_status": "in_review",
+      "content": {
+        "knowledge_type": "source_grounding_note",
+        "farmer_facing": false,
+        "language": "en",
+        "title": "Keep SRDI soil-map values tied to their area, vintage, and scale",
+        "summary": "SRDI provides soil and nutrient maps and a dynamic union-level nutrient viewer. The viewer offers pH, nitrogen, phosphorus, potassium, sulfur, zinc, organic matter, and boron layers, and displays a disclaimer that the information is for research and awareness and that final decisions should be made with expert advice. A map value must retain its source year and spatial unit and must not be described as a current laboratory result for one farm plot.",
+        "source_claims": [
+          {
+            "claim": "The SRDI union-level viewer offers pH, N, P, K, S, Zn, organic matter, and B nutrient layers and includes an expert-advice disclaimer.",
+            "evidence": [
+              {
+                "title": "Union-level soil nutrient information",
+                "url": "https://soil.srdi.gov.bd/",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          },
+          {
+            "claim": "SRDI's map catalogue includes soil and nutrient map products with different publication vintages.",
+            "evidence": [
+              {
+                "title": "SRDI map catalogue",
+                "url": "https://srdi.gov.bd/pages/static-pages/6922dfb3933eb65569e23904",
+                "accessed_on": "2026-10-06"
+              }
+            ]
+          }
+        ],
+        "use_rules": [
+          "Store each map's survey or publication year, geographic unit, scale, nutrient, units, source URL, and license with imported values.",
+          "Label union/upazila map values as area-level reference data, never as an individual plot's measured soil result.",
+          "For plot-specific fertilizer decisions, request a soil test or a current official recommendation that explicitly supports the available data resolution."
+        ],
+        "review_required": [
+          "Check the exact map's survey year, scale, units, and reuse terms before importing it.",
+          "Confirm SRDI's interpretation and local nutrient terminology before farmer-facing use."
+        ]
+      }
+    }
+  ]
+}

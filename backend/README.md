@@ -175,3 +175,29 @@ https://huggingface.co/Saon110/bd-crop-vegetable-plant-disease-model
 No database migration is required: disease_results already exists in the
 shared schema. DiseaseResult stores an M3 problem ID in model_details after a
 successful problem write; no new Problem foreign key is added.
+
+## Agricultural knowledge starter set
+
+`app/data/agricultural_knowledge_seed.json` contains five source-grounding
+records based on public BARC, BAMIS, and SRDI information. They are deliberately
+`in_review`, do not contain crop-specific fertilizer rates or treatments, and
+are excluded from farmer-facing use until an authorized reviewer approves them.
+This adds the data and import path; it does not add a chat retrieval endpoint or
+automatically import records during application startup. Module 5 can retrieve
+approved, in-scope records when its knowledge-grounding flow is implemented.
+The source audit at `docs/knowledgebase-source-review.md` covers all ten
+reviewed sites and explains why the dynamic map/advisory pages are not bulk
+scraped into permanent advice.
+
+After applying the database migrations, validate and import the seed from the
+`backend` directory:
+
+```bash
+python -m scripts.import_agricultural_knowledge --check-only
+python -m scripts.import_agricultural_knowledge
+```
+
+The importer uses deterministic IDs, preserves an unchanged review decision,
+returns edited seed records to `in_review`, and never deletes records omitted
+from the file. It writes to the existing `agricultural_knowledge` table, so no
+schema migration is needed.
