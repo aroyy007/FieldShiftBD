@@ -10,3 +10,8 @@ psycopg2-binary==2.9.9
 # Configuration & Env Vars
 pydantic-settings==2.5.2
 python-dotenv==1.0.1
+
+# Module 6 image upload, decoding, and Module 3 API adapter
+httpx==0.27.2
+Pillow>=11,<14
+python-multipart>=0.0.20,<1
