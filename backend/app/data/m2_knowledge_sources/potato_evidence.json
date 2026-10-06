@@ -1,0 +1,202 @@
+{
+  "package_version": 1,
+  "research_date": "2026-10-06",
+  "crop": "Potato",
+  "purpose": "Source-verified evidence candidates for M2 review; not production knowledge and not an agronomic recommendation.",
+  "production_knowledge_records": 0,
+  "verified_evidence": [
+    {
+      "fact_id": "POTATO-001",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "season_context",
+      "claim": "BARC's handbook states that potato is grown in Bangladesh in the Rabi season; it defines Rabi as mid-October to mid-March.",
+      "context": "General Bangladesh season context stated in the handbook introduction.",
+      "geographic_scope": "Bangladesh-wide general context; not a Comilla recommendation.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Introduction, printed pp. 1-2; PDF pp. 15-16 (0-based page index).",
+      "limitations": [
+        "The handbook is dated 2013; continued validity has not been independently verified.",
+        "Rabi season context is not a crop-specific sowing date or a locality-specific recommendation."
+      ],
+      "recommended_m2_use": "After review, use only as broad season context. Do not derive planting or harvest dates from this fact."
+    },
+    {
+      "fact_id": "POTATO-002",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "soil_and_land_context",
+      "claim": "The handbook states that medium-high to high land with loamy to sandy-loam soil is best suitable for potato cultivation.",
+      "context": "General production-technology statement; the source does not identify a district or variety for this passage.",
+      "geographic_scope": "Bangladesh handbook context; locality-specific applicability is not established.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Section II, Tuber Crops, Potato, 1.2 Production Technology, Land and soil; printed p. 38; PDF p. 52 (0-based page index).",
+      "limitations": [
+        "The statement requires both land-type and soil-texture context; the Golden Farm example supplies only demo soil text and no verified land type.",
+        "The handbook is dated 2013, and currentness/locality have not been independently verified."
+      ],
+      "recommended_m2_use": "Candidate context only after review; do not infer that the Golden Farm field is suitable from the demo value 'loamy'."
+    },
+    {
+      "fact_id": "POTATO-003",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "environmental_context",
+      "claim": "The handbook describes winter-season cultivation in most parts of Bangladesh, says sunny weather with sufficient soil moisture is appropriate, and reports an optimum growth and development temperature range of 15-21 degrees C.",
+      "context": "General statements in the potato introduction; not a farm-level climate assessment.",
+      "geographic_scope": "Bangladesh-wide broad context, qualified by the source as 'most parts'; no districts or upazilas are specified.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Section II, Tuber Crops, Potato, opening paragraph; printed p. 35; PDF p. 49 (0-based page index).",
+      "limitations": [
+        "The source does not establish Comilla-specific climate suitability or define the temperature measurement period.",
+        "The handbook is dated 2013; currentness has not been independently verified."
+      ],
+      "recommended_m2_use": "After review, treat as general source context only; do not compare it to NASA/weather observations or infer farm suitability in this phase."
+    },
+    {
+      "fact_id": "POTATO-004",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "sowing_window",
+      "claim": "The handbook states that 15-30 November is the optimum sowing time and that sowing may be done from October to December.",
+      "context": "General potato production-technology passage; no named variety or district is attached to the statement.",
+      "geographic_scope": "Bangladesh handbook context; locality-specific applicability is not established.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Section II, Tuber Crops, Potato, 1.2 Production Technology, Time of sowing; printed p. 38; PDF p. 52 (0-based page index).",
+      "limitations": [
+        "The handbook does not give a Comilla-specific window or a variety-specific window at this location.",
+        "The handbook is dated 2013; currentness has not been independently verified."
+      ],
+      "recommended_m2_use": "Candidate only; require current locality and variety review before using for a season plan."
+    },
+    {
+      "fact_id": "POTATO-005",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "irrigation_context",
+      "claim": "The handbook states that irrigation need depends on soil type, pre-sowing irrigation may sometimes be required, and irrigation could normally be applied at 8-10, 40-45, and 60-65 days after sowing, with water maintained to two-thirds of furrow depth.",
+      "context": "General production-technology passage; stated as conditional on soil type and without a named variety or district.",
+      "geographic_scope": "Bangladesh handbook context; locality-specific applicability is not established.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Section II, Tuber Crops, Potato, 1.2 Production Technology, Irrigation; printed p. 39; PDF p. 53 (0-based page index).",
+      "limitations": [
+        "The passage is conditional and does not provide a water volume.",
+        "It does not establish a schedule for Comilla or for an identified variety.",
+        "The handbook is dated 2013; currentness has not been independently verified."
+      ],
+      "recommended_m2_use": "Candidate only; never turn this into an automatic schedule without reviewing soil, variety, locality, and current source validity."
+    },
+    {
+      "fact_id": "POTATO-006",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "harvest_interval",
+      "claim": "The handbook states that harvesting should be done 80-90 days after sowing, depending on variety.",
+      "context": "General harvesting and seed-preservation section; interval explicitly varies by variety.",
+      "geographic_scope": "Bangladesh handbook context; locality-specific applicability is not established.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Section II, Tuber Crops, Potato, 1.4 Harvesting and Seed preservation; printed p. 45; PDF p. 59 (0-based page index).",
+      "limitations": [
+        "No variety is specified in the statement, and the source explicitly says the interval depends on variety.",
+        "No observable maturity indicator is provided by this sentence.",
+        "The handbook is dated 2013; currentness has not been independently verified."
+      ],
+      "recommended_m2_use": "Candidate interval only after variety-specific review; do not issue as a fixed harvest date or maturity indicator."
+    },
+    {
+      "fact_id": "POTATO-007",
+      "crop": "Potato",
+      "variety": null,
+      "factor": "suitability_map_interpretation",
+      "claim": "BARC defines its crop-suitability classes by percentages of maximum attainable yield: very suitable above 80%, suitable 60-80%, moderately suitable 40-60%, marginally suitable 20-40%, and not suitable below 20%. Its crop-zoning maps summarize the percentage of an upazila's cultivable area falling in each crop-suitability class.",
+      "context": "Interpretation rules for BARC's crop-suitability and crop-zoning maps, including its potato map.",
+      "geographic_scope": "Bangladesh; map aggregation uses upazila cultivable-area coverage.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Land Suitability Assessment and Crop Zoning of Bangladesh — Introduction and methodology",
+      "source_url": "https://apps.barc.gov.bd/cropzoning/homes/intro",
+      "publication_or_update_date": null,
+      "evidence_location": "Crop Suitability and Crop Zoning sections; the page attributes the underlying book to S. G. Hussain, M. K. A. Chowdhury, and M. A. H. Chowdhury but shows no publication date.",
+      "limitations": [
+        "These class definitions do not identify Comilla's potato class; that result was not verified.",
+        "The map's upazila coverage must not be interpreted as suitability of every field or a particular 2-acre farm.",
+        "The online page does not provide a date/version for the displayed map data."
+      ],
+      "recommended_m2_use": "Use only to interpret a verified locality-level map result; never infer a field-level suitability class from an upazila aggregate."
+    }
+  ],
+  "rejected_or_insufficient_evidence": [
+    {
+      "fact_id": "POTATO-REJECT-001",
+      "claim_investigated": "A BARC potato suitability class for Comilla district or a Comilla upazila.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Land Suitability Assessment and Crop Zoning of Bangladesh; Suitability Map of Potato; Crop Zone Maps and Data",
+      "source_urls": [
+        "https://apps.barc.gov.bd/cropzoning/homes/intro",
+        "https://apps.barc.gov.bd/cropzoning/homes/bdMap/12",
+        "https://apps.barc.gov.bd/cropzoning/homes/downloads/2",
+        "https://czis.cropzoning.gov.bd/"
+      ],
+      "publication_or_update_date": null,
+      "evidence_location": "BARC methodology page states that crop-zoning maps use the share of an upazila's cultivable area under each crop-suitability class; the public potato map shown is Bangladesh-wide. The current CZIS page requires an upazila code or location selection, but a Comilla result was not retrievable/verified in this research.",
+      "limitations": "No Comilla district/upazila class was verified. National area totals and general methodology cannot be converted into a Comilla class or an individual 2-acre field recommendation.",
+      "recommended_m2_use": "Do not use for Comilla recommendations until BARC's matching local result and dataset version are verified."
+    },
+    {
+      "fact_id": "POTATO-REJECT-002",
+      "claim_investigated": "The Golden Farm's two-acre loamy field is suitable for potato.",
+      "source_organization": "Project demo scenario, not an agricultural source",
+      "source_title": "plan.md Golden Farm example",
+      "source_url": null,
+      "publication_or_update_date": null,
+      "evidence_location": "Golden Farm sample values are explicitly examples in plan.md.",
+      "limitations": "Demo values are not agricultural evidence. The BARC handbook soil statement also requires medium-high to high land, which is not specified by the demo.",
+      "recommended_m2_use": "Reject as an agronomic claim; never use demo values as verified suitability evidence."
+    },
+    {
+      "fact_id": "POTATO-REJECT-003",
+      "claim_investigated": "A complete Potato growth-stage sequence with local stage durations.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Potato production-technology and intercultural-operation sections, printed pp. 38-39.",
+      "limitations": "The reviewed passages include operation timings after sowing, not a complete biological growth-stage definition set suitable for the M2 growth-stage contract.",
+      "recommended_m2_use": "Do not convert operation timings into growth-stage definitions. Seek a specific reviewed source for stages."
+    },
+    {
+      "fact_id": "POTATO-REJECT-004",
+      "claim_investigated": "A disease-based early harvest window as general harvest guidance.",
+      "source_organization": "Bangladesh Agricultural Research Council (BARC)",
+      "source_title": "Hand Book of Agricultural Technology",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2024/12/053a0722429448d4903412ce683a7d06.pdf",
+      "publication_or_update_date": "2013-05",
+      "evidence_location": "Late-blight control subsection, printed p. 40; PDF p. 54 (0-based page index).",
+      "limitations": "The early planting/harvest date appears within disease-control guidance. Disease belongs to M6, and this context does not support general M2 harvest guidance.",
+      "recommended_m2_use": "Exclude from M2 evidence; do not extract disease-management advice into harvest guidance."
+    }
+  ],
+  "comilla_coverage": {
+    "verified_comilla_potato_suitability_result": false,
+    "enough_evidence_for_comilla_specific_recommendation": false,
+    "explanation": "The BARC methodology supports upazila-scale zoning in principle, but the Comilla district/upazila potato class and versioned underlying data were not verified. The 2013 handbook provides general Bangladesh-context candidates, not a Comilla-specific suitability result."
+  },
+  "not_production_ready": "Every item above is a research candidate. No record is approved, ingested, or eligible for a real recommendation without currentness and context review."
+}

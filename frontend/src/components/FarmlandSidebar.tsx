@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { ChatThread, Farmland } from '../data/demo';
 import { BORDER_RADIUS, COLORS, SPACING, TYPOGRAPHY } from '../theme/theme';
 
-type Section = 'overview' | 'chat' | 'alerts' | 'tasks' | 'check-ins' | 'problems' | 'season-plan' | 'crop-health';
+type Section = 'overview' | 'chat' | 'alerts' | 'tasks' | 'check-ins' | 'problems' | 'season-plan' | 'crop-health' | 'crop-advisor';
 
 type FarmlandSidebarProps = {
   farm: Farmland;
@@ -23,6 +23,7 @@ const SECTIONS: { id: Exclude<Section, 'chat'>; title: string }[] = [
   { id: 'alerts', title: 'Alerts' },
   { id: 'season-plan', title: 'Season Plan' },
   { id: 'crop-health', title: 'Crop Health' },
+  { id: 'crop-advisor', title: 'ফসলের পরামর্শ' },
 ];
 
 export function FarmlandSidebar({

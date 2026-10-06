@@ -36,11 +36,13 @@ export default function FarmlandDetailLayout() {
             ? 'season-plan'
             : pathname.endsWith('/crop-health')
               ? 'crop-health'
-              : farmId && pathname === `/farmlands/${farmId}`
-                ? 'overview'
-                : 'chat';
+              : pathname.endsWith('/crop-advisor')
+                ? 'crop-advisor'
+                : farmId && pathname === `/farmlands/${farmId}`
+                  ? 'overview'
+                  : 'chat';
 
-  const openSection = (section: 'overview' | 'chat' | 'alerts' | 'tasks' | 'check-ins' | 'problems' | 'season-plan' | 'crop-health') => {
+  const openSection = (section: 'overview' | 'chat' | 'alerts' | 'tasks' | 'check-ins' | 'problems' | 'season-plan' | 'crop-health' | 'crop-advisor') => {
     if (!farmId) return;
     setDrawerOpen(false);
     const path = section === 'overview' ? `/farmlands/${farmId}` : `/farmlands/${farmId}/${section}`;
