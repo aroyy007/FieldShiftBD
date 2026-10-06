@@ -347,7 +347,6 @@ export default function CropAdvisorScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.eyebrow}>FIELDSHIFT · MODULE 2</Text>
         <Text style={styles.title}>Crop Advisor</Text>
         <Text style={styles.subtitle}>Recommendations use approved agricultural evidence that matches your farm.</Text>
 
@@ -392,7 +391,7 @@ export default function CropAdvisorScreen() {
 
           <Text style={styles.label}>Water source</Text>
           <TextInput accessibilityLabel="Water source" onChangeText={setWaterSource} placeholder="e.g. pond, canal, tubewell" style={styles.input} value={waterSource} />
-          <Button disabled={!canUseBackend || busy !== null} title={busy === 'recommend' ? 'Checking evidence…' : 'Get recommendations'} onPress={() => void requestRecommendations()} />
+          <Button disabled={busy !== null} title={busy === 'recommend' ? 'Checking evidence…' : 'Get recommendations'} onPress={() => void requestRecommendations()} />
         </Card>
 
         <Card>
