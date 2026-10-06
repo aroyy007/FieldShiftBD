@@ -1,9 +1,10 @@
 """Business logic for crop recommendations and the season lifecycle (M2)."""
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -42,6 +43,14 @@ class M2NotFoundError(Exception):
 
 class M2ConflictError(Exception):
     """A requested lifecycle transition conflicts with existing state."""
+
+
+FARM_TIMEZONE = ZoneInfo("Asia/Dhaka")
+
+
+def _farm_today() -> date:
+    """Use Bangladesh's calendar date for effective agricultural evidence."""
+    return datetime.now(FARM_TIMEZONE).date()
 
 
 def _knowledge_ref(row: AgriculturalEvidence) -> KnowledgeReference:
@@ -108,6 +117,44 @@ def _profile_regions(profile: FarmProfileInput) -> set[str]:
         values.update((profile.location.country_code, profile.location.division,
                        profile.location.district, profile.location.upazila))
     return {value for value in values if value}
+
+
+def _season_profile(farmland: Farmland, season: Season) -> FarmProfileInput:
+    return FarmProfileInput(
+        farmland_id=farmland.id,
+        farmer_id=farmland.farmer_id,
+        location={
+            "country_code": farmland.country_code,
+            "division": farmland.division,
+            "district": farmland.district,
+            "upazila": farmland.upazila,
+            "village_or_locality": farmland.village_or_locality,
+            "latitude": farmland.latitude,
+            "longitude": farmland.longitude,
+        },
+        land_area_sqm=farmland.land_area_sqm,
+        soil_type=farmland.soil_type,
+        irrigation_available=farmland.irrigation_available,
+        water_source=farmland.water_source,
+        farming_method=farmland.farming_method,
+        budget_amount=getattr(season, "budget_amount", None),
+    )
+
+
+def _select_season_plan_knowledge(
+    rows: list[AgriculturalEvidence], crop_variety_id: UUID | None
+) -> AgriculturalEvidence | None:
+    plan_rows = [
+        row for row in rows if row.category in {"season_plan", "crop_calendar"}
+    ]
+    if crop_variety_id is not None:
+        variety_specific = next(
+            (row for row in plan_rows if row.crop_variety_id == crop_variety_id),
+            None,
+        )
+        if variety_specific is not None:
+            return variety_specific
+    return next((row for row in plan_rows if row.crop_variety_id is None), None)
 
 
 def _as_factor(value: Any, fallback: str, references: list[KnowledgeReference]) -> SuitabilityFactor | None:
@@ -223,7 +270,7 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
     crops = list(db.scalars(select(Crop).order_by(Crop.name)))
     crops.sort(key=lambda crop: (crop.id not in preference_ids, crop.name.casefold()))
     results: list[CropRecommendation] = []
-    today = date.today()
+    today = _farm_today()
     has_approved_knowledge = False
     for crop in crops:
         rows = _approved_knowledge(
@@ -373,33 +420,20 @@ def create_season_plan(db: Session, season_id: UUID, data: SeasonPlanCreate) -> 
         raise M2ConflictError("Completed or cancelled seasons cannot receive a new plan")
     if data.status.value not in {"draft", "active"}:
         raise ValueError("A generated plan must be draft or active")
-    if season.status == "active" and data.status.value == "active":
+    if season.status == "active":
         raise M2ConflictError(
-            "An active season's plan cannot be replaced without coordinating current-stage state with Module 3"
+            "Cannot create or replace an active season plan without coordinating current-stage state with Module 3"
         )
     farmland = db.get(Farmland, season.farmland_id)
     if farmland is None:
         raise M2NotFoundError("Farmland not found")
-    profile = FarmProfileInput(
-        farmland_id=farmland.id, farmer_id=farmland.farmer_id,
-        location={"country_code": farmland.country_code, "division": farmland.division,
-                  "district": farmland.district, "upazila": farmland.upazila,
-                  "village_or_locality": farmland.village_or_locality,
-                  "latitude": farmland.latitude, "longitude": farmland.longitude},
-        land_area_sqm=farmland.land_area_sqm, soil_type=farmland.soil_type,
-        irrigation_available=farmland.irrigation_available, water_source=farmland.water_source,
-        farming_method=farmland.farming_method, budget=season.budget_amount,
-    )
+    profile = _season_profile(farmland, season)
     knowledge = _approved_knowledge(
-        db, season.crop_id, date.today(), season.crop_variety_id,
+        db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
         {"season_plan", "crop_calendar"},
     )
-    plan_rows = [row for row in knowledge if row.category in {"season_plan", "crop_calendar"}]
-    plan_row = next(
-        (row for row in plan_rows if season.crop_variety_id and row.crop_variety_id == season.crop_variety_id),
-        next((row for row in plan_rows if row.crop_variety_id is None), None),
-    )
+    plan_row = _select_season_plan_knowledge(knowledge, season.crop_variety_id)
     if plan_row is None:
         raise M2ConflictError("No approved season-plan knowledge exists for this crop")
     content = plan_row.content if isinstance(plan_row.content, dict) else {}
@@ -458,7 +492,7 @@ def get_season_plan(db: Session, season_id: UUID) -> SeasonPlanResponse:
         raise M2NotFoundError("Season not found")
     plan = db.scalar(select(SeasonPlan).where(
         SeasonPlan.season_id == season_id,
-        SeasonPlan.status.in_(("active", "draft")),
+        SeasonPlan.status.in_(("active", "draft", "completed")),
     ).order_by(SeasonPlan.created_at.desc()).limit(1))
     if plan is None:
         raise M2NotFoundError("Season plan not found")
@@ -468,17 +502,13 @@ def get_season_plan(db: Session, season_id: UUID) -> SeasonPlanResponse:
     farmland = db.get(Farmland, season.farmland_id)
     if farmland is None:
         raise M2NotFoundError("Farmland not found")
-    profile = FarmProfileInput(
-        farmland_id=farmland.id,
-        location={"country_code": farmland.country_code, "division": farmland.division,
-                  "district": farmland.district, "upazila": farmland.upazila},
-    )
+    profile = _season_profile(farmland, season)
     knowledge = _approved_knowledge(
-        db, season.crop_id, date.today(), season.crop_variety_id,
+        db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
         {"season_plan", "crop_calendar"},
     )
-    plan_knowledge = knowledge[0] if knowledge else None
+    plan_knowledge = _select_season_plan_knowledge(knowledge, season.crop_variety_id)
     raw_tasks = plan_knowledge.content.get("initial_tasks", []) if plan_knowledge else []
     by_sequence = {stage.sequence: stage.id for stage in stages}
     tasks = []
@@ -506,18 +536,9 @@ def get_harvest_guidance(db: Session, season_id: UUID) -> HarvestGuidance:
     farmland = db.get(Farmland, season.farmland_id)
     if farmland is None:
         raise M2NotFoundError("Farmland not found")
-    profile = FarmProfileInput(
-        farmland_id=farmland.id, farmer_id=farmland.farmer_id,
-        location={"country_code": farmland.country_code, "division": farmland.division,
-                  "district": farmland.district, "upazila": farmland.upazila,
-                  "village_or_locality": farmland.village_or_locality,
-                  "latitude": farmland.latitude, "longitude": farmland.longitude},
-        land_area_sqm=farmland.land_area_sqm, soil_type=farmland.soil_type,
-        irrigation_available=farmland.irrigation_available, water_source=farmland.water_source,
-        farming_method=farmland.farming_method,
-    )
+    profile = _season_profile(farmland, season)
     rows = _approved_knowledge(
-        db, season.crop_id, date.today(), season.crop_variety_id,
+        db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
         {"harvest_guidance", "harvest"},
     )

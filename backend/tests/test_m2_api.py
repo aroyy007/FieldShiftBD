@@ -24,6 +24,7 @@ os.environ.update(
     }
 )
 
+from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
 from app.main import app
 from app.models import AgriculturalKnowledge, Base, Crop, Farmer, Farmland, Task
@@ -82,12 +83,16 @@ def m2_client():
         name="TEST ONLY Synthetic Farmer",
         phone_e164="+8801700000099",
     )
+    other_farmer = Farmer(
+        name="TEST ONLY Other Farmer",
+        phone_e164="+8801700000098",
+    )
     crop = Crop(
         id=UUID(SCENARIO["crop"]["crop_id"]),
         name=SCENARIO["crop"]["name"],
         scientific_name=SCENARIO["crop"]["scientific_name"],
     )
-    db.add_all([farmer, crop])
+    db.add_all([farmer, other_farmer, crop])
     db.flush()
     farmland = Farmland(
         id=UUID(profile["farmland_id"]),
@@ -105,7 +110,13 @@ def m2_client():
         water_source=profile["water_source"],
         farming_method=profile["farming_method"],
     )
-    db.add(farmland)
+    other_farmland = Farmland(
+        farmer_id=other_farmer.id,
+        name="TEST ONLY Other Field",
+        land_area_sqm=Decimal("1000"),
+        land_area_display_unit="square_metre",
+    )
+    db.add_all([farmland, other_farmland])
     db.commit()
 
     def override_get_db():
@@ -113,8 +124,11 @@ def m2_client():
 
     previous_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_farmer_id] = lambda: farmer.id
     try:
         with TestClient(app) as client:
+            client.app.state.other_farmland_id = other_farmland.id
+            client.app.state.other_farmer_id = other_farmer.id
             yield client, SCENARIO, db
     finally:
         app.dependency_overrides.clear()
@@ -283,6 +297,32 @@ def test_m2_synthetic_scenario_matches_contract_and_completes_positive_api_flow(
     assert activated.json()["status"] == "active"
     assert "current_growth_stage_id" not in activated.json()
 
+    task_payload = {
+        "tasks": [
+            {
+                "reference": f"{plan_body['season_plan_id']}-1",
+                "growth_stage_id": plan_body["initial_tasks"][0]["growth_stage_id"],
+                "title": plan_body["initial_tasks"][0]["title"],
+                "description": plan_body["initial_tasks"][0]["description"],
+                "days_after_planting": plan_body["initial_tasks"][0]["due_day_offset"],
+                "priority": plan_body["initial_tasks"][0]["priority"],
+            }
+        ]
+    }
+    task_url = (
+        f"/farmlands/{scenario['farm_profile']['farmland_id']}"
+        f"/seasons/{season_id}/tasks/from-plan"
+    )
+    imported_tasks = client.post(task_url, json=task_payload)
+    assert imported_tasks.status_code == 200
+    assert imported_tasks.json()["created_count"] == 1
+    assert imported_tasks.json()["existing_count"] == 0
+    retried_import = client.post(task_url, json=task_payload)
+    assert retried_import.status_code == 200
+    assert retried_import.json()["created_count"] == 0
+    assert retried_import.json()["existing_count"] == 1
+    assert db.query(Task).count() == 1
+
     closed = client.post(
         f"/advisor/seasons/{season_id}/close",
         json={
@@ -297,7 +337,11 @@ def test_m2_synthetic_scenario_matches_contract_and_completes_positive_api_flow(
     assert closed.json()["status"] == "completed"
     assert closed.json()["actual_yield"] == 8.5
     assert isinstance(closed.json()["actual_yield"], (int, float))
-    assert db.query(Task).count() == 0
+    assert db.query(Task).count() == 1
+
+    completed_plan = client.get(f"/advisor/seasons/{season_id}/plan")
+    assert completed_plan.status_code == 200
+    assert completed_plan.json()["status"] == "completed"
 
     history = client.get(
         f"/advisor/farmlands/{scenario['farm_profile']['farmland_id']}/seasons"
@@ -306,6 +350,94 @@ def test_m2_synthetic_scenario_matches_contract_and_completes_positive_api_flow(
     assert history.json()[0]["status"] == "completed"
     assert history.json()[0]["actual_yield"] == 8.5
     assert "current_growth_stage_id" not in history.json()[0]
+
+
+def test_m2_api_requires_verified_farmer_identity(m2_client):
+    client, scenario, _ = m2_client
+    identity_override = app.dependency_overrides.pop(get_current_farmer_id)
+    try:
+        response = client.get(
+            f"/advisor/farmlands/{scenario['farm_profile']['farmland_id']}/seasons"
+        )
+    finally:
+        app.dependency_overrides[get_current_farmer_id] = identity_override
+
+    assert response.status_code == 401
+
+
+def test_m2_api_does_not_expose_another_farmers_data(m2_client):
+    client, _, _ = m2_client
+    other_farmland_id = client.app.state.other_farmland_id
+
+    response = client.get(f"/advisor/farmlands/{other_farmland_id}/seasons")
+
+    assert response.status_code == 404
+
+    recommendation_response = client.post(
+        "/advisor/recommendations",
+        json={"farmland_id": str(other_farmland_id)},
+    )
+    assert recommendation_response.status_code == 404
+
+
+def test_m2_resource_routes_hide_owned_records_from_other_farmers(m2_client):
+    client, scenario, db = m2_client
+    profile = scenario["farm_profile"]
+    owner_id = UUID(profile["farmer_id"])
+    db.add_all(synthetic_knowledge_rows(scenario, owner_id))
+    db.commit()
+
+    recommendations = client.post("/advisor/recommendations", json=profile)
+    assert recommendations.status_code == 200
+    recommendation_id = recommendations.json()["recommendations"][0]["recommendation_id"]
+    season = client.post(
+        "/advisor/seasons",
+        json={
+            "farmland_id": profile["farmland_id"],
+            "crop_id": scenario["crop"]["crop_id"],
+            "planting_date": "2026-11-01",
+            "expected_harvest_date": "2027-02-01",
+        },
+    )
+    assert season.status_code == 201
+    season_id = season.json()["season_id"]
+    plan = client.post(
+        f"/advisor/seasons/{season_id}/plan",
+        json={"season_id": season_id, "title": "TEST ONLY scoped plan"},
+    )
+    assert plan.status_code == 201
+
+    identity_override = app.dependency_overrides[get_current_farmer_id]
+    app.dependency_overrides[get_current_farmer_id] = lambda: client.app.state.other_farmer_id
+    try:
+        responses = [
+            client.get(f"/advisor/farmlands/{profile['farmland_id']}/recommendations"),
+            client.post(f"/advisor/recommendations/{recommendation_id}/dismiss"),
+            client.post(
+                "/advisor/seasons",
+                json={
+                    "farmer_id": profile["farmer_id"],
+                    "farmland_id": profile["farmland_id"],
+                    "crop_id": scenario["crop"]["crop_id"],
+                },
+            ),
+            client.get(f"/advisor/farmlands/{profile['farmland_id']}/seasons"),
+            client.post(f"/advisor/seasons/{season_id}/activate"),
+            client.post(
+                f"/advisor/seasons/{season_id}/plan",
+                json={"season_id": season_id, "title": "TEST ONLY foreign plan"},
+            ),
+            client.get(f"/advisor/seasons/{season_id}/plan"),
+            client.get(f"/advisor/seasons/{season_id}/harvest-guidance"),
+            client.post(
+                f"/advisor/seasons/{season_id}/close",
+                json={"season_id": season_id, "actual_yield": 3},
+            ),
+        ]
+    finally:
+        app.dependency_overrides[get_current_farmer_id] = identity_override
+
+    assert [response.status_code for response in responses] == [404] * len(responses)
 
 
 def test_api_refuses_to_infer_suitability_from_risk_only_knowledge(m2_client):

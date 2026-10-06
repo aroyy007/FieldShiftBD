@@ -43,7 +43,7 @@ class MemorySession:
 
     def scalars(self, statement):
         entity = statement.column_descriptions[0].get("entity")
-        if entity is Crop:
+        if entity in {Crop, GrowthStage}:
             return iter(self.scalars_result)
         if entity is Season:
             return iter(self.scalars_result)
@@ -195,7 +195,7 @@ def test_valid_non_recommended_crop_can_be_planned_alongside_current_active_seas
     assert not any(isinstance(row, RecommendationRecord) for row in db.added)
 
 
-def test_season_activation_sets_first_stage_and_rejects_duplicate_active():
+def test_season_activation_preserves_module3_stage_state_and_rejects_duplicate_active():
     season = SimpleNamespace(id=SEASON_ID, farmland_id=FARM_ID, status="planned",
         current_growth_stage_id=None, crop_id=CROP_ID, crop_variety_id=None, variety_name=None,
         planting_date=None, expected_harvest_date=None, budget_amount=None,
@@ -240,6 +240,114 @@ def test_plan_generation_orders_stages_and_emits_m3_task_definitions_only():
     assert [stage.sequence for stage in plan.growth_stages] == [1, 2]
     assert plan.initial_tasks[0].growth_stage_id == plan.growth_stages[0].growth_stage_id
     assert not any(isinstance(row, Task) for row in db.added)
+
+
+def test_active_season_cannot_create_a_draft_that_shadows_its_m3_plan():
+    season = SimpleNamespace(
+        id=SEASON_ID,
+        farmland_id=FARM_ID,
+        crop_id=CROP_ID,
+        crop_variety_id=None,
+        status="active",
+    )
+    farmland = SimpleNamespace(
+        id=FARM_ID,
+        farmer_id=FARMER_ID,
+        country_code="BD",
+        division=None,
+        district=None,
+        upazila=None,
+        village_or_locality=None,
+        latitude=None,
+        longitude=None,
+        land_area_sqm=Decimal("100"),
+        soil_type=None,
+        irrigation_available=None,
+        water_source=None,
+        farming_method=None,
+    )
+    plan_knowledge = synthetic_knowledge(
+        category="season_plan",
+        content={"growth_stages": [{"name": "TEST ONLY stage", "sequence": 1}]},
+    )
+    db = MemorySession(objects={(Season, SEASON_ID): season, (Farmland, FARM_ID): farmland})
+
+    with patch.object(service, "_approved_knowledge", return_value=[plan_knowledge]):
+        with pytest.raises(service.M2ConflictError, match="active season plan"):
+            service.create_season_plan(
+                db,
+                SEASON_ID,
+                SeasonPlanCreate(season_id=SEASON_ID, title="TEST ONLY replacement"),
+            )
+
+
+def test_read_plan_uses_variety_specific_knowledge_for_its_task_definitions():
+    variety_id = uuid4()
+    plan = SimpleNamespace(id=uuid4(), season_id=SEASON_ID, title="TEST ONLY plan",
+                           description=None, status="draft", created_at=None, updated_at=None)
+    season = SimpleNamespace(
+        id=SEASON_ID,
+        farmland_id=FARM_ID,
+        crop_id=CROP_ID,
+        crop_variety_id=variety_id,
+        planting_date=None,
+    )
+    farmland = SimpleNamespace(
+        id=FARM_ID,
+        farmer_id=FARMER_ID,
+        country_code="BD",
+        division=None,
+        district=None,
+        upazila=None,
+        village_or_locality=None,
+        latitude=None,
+        longitude=None,
+        land_area_sqm=Decimal("100"),
+        soil_type="synthetic loam",
+        irrigation_available=True,
+        water_source=None,
+        farming_method=None,
+    )
+    stage = SimpleNamespace(
+        id=uuid4(), season_plan_id=plan.id, name="Synthetic stage", description=None,
+        sequence=1, start_day=0, end_day=10,
+    )
+    general = synthetic_knowledge(
+        category="season_plan",
+        content={"growth_stages": [], "initial_tasks": [{
+            "title": "TEST ONLY generic task", "growth_stage_sequence": 1,
+            "due_day_offset": 1,
+        }]},
+    )
+    variety_specific = synthetic_knowledge(
+        category="season_plan",
+        crop_variety_id=variety_id,
+        content={"growth_stages": [], "initial_tasks": [{
+            "title": "TEST ONLY variety task", "growth_stage_sequence": 1,
+            "due_day_offset": 2,
+        }]},
+    )
+    db = MemorySession(
+        objects={(Season, SEASON_ID): season, (Farmland, FARM_ID): farmland},
+        scalar_results=[plan],
+        scalars_result=[stage],
+    )
+
+    with patch.object(service, "_approved_knowledge", return_value=[general, variety_specific]):
+        response = service.get_season_plan(db, SEASON_ID)
+
+    assert response.initial_tasks[0].title == "TEST ONLY variety task"
+    assert response.knowledge_refs[0].knowledge_id == variety_specific.id
+
+
+def test_farm_today_uses_the_bangladesh_calendar_date():
+    class FixedClock:
+        @staticmethod
+        def now(tz):
+            return datetime(2026, 10, 6, 20, tzinfo=timezone.utc).astimezone(tz)
+
+    with patch.object(service, "datetime", FixedClock):
+        assert service._farm_today() == date(2026, 10, 7)
 
 
 def test_empty_plan_stages_are_rejected_without_fabrication():

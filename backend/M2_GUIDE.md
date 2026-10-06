@@ -107,15 +107,19 @@ All routes are mounted under `/advisor`:
 | `POST /seasons` | Select a crop and create a planned season |
 | `GET /farmlands/{farmland_id}/seasons` | Read season history for advisory context |
 | `POST /seasons/{season_id}/plan` | Generate a plan from approved season-plan knowledge |
-| `GET /seasons/{season_id}/plan` | Read the latest active or draft plan |
+| `GET /seasons/{season_id}/plan` | Read the latest active, draft, or completed plan |
 | `POST /seasons/{season_id}/activate` | Activate the season lifecycle after a plan exists |
 | `GET /seasons/{season_id}/harvest-guidance` | Return reviewed harvest guidance |
 | `POST /seasons/{season_id}/close` | Record harvest outcome and complete the season |
 
-The backend currently has no authentication dependency. Routes scope all reads
-and changes by the supplied farmland or season identifiers; where a farmer ID
-is included, the farmland ownership is checked. Integrate these routes with the
-project's agreed authorization mechanism when that shared capability exists.
+Every route requires the verified farmer identity from
+`request.state.current_farmer_id` and scopes farmland, recommendation, and
+season access to that owner. This uses the shared Module 1 authentication
+dependency already used by Module 3; it does not add a second auth or profile
+store. Until Module 1 installs the verified identity, these routes return
+`401 Authentication required`. The mobile client can obtain a bearer token
+from the shared auth integration through `setM2AccessTokenProvider`; never put
+a farmer session token in an `EXPO_PUBLIC_*` build variable.
 
 ## Agricultural knowledge format
 

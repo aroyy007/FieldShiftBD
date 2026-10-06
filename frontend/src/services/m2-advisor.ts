@@ -1,5 +1,10 @@
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
-const FARMER_TOKEN = process.env.EXPO_PUBLIC_FARMER_TOKEN;
+type AccessTokenProvider = () => Promise<string | null>;
+let accessTokenProvider: AccessTokenProvider = async () => null;
+
+export function setM2AccessTokenProvider(provider: AccessTokenProvider) {
+  accessTokenProvider = provider;
+}
 
 export type KnowledgeReference = {
   source_name: string;
@@ -86,7 +91,13 @@ type ApiError = Error & { status?: number };
 export async function m2Request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
-  if (FARMER_TOKEN) headers.set('Authorization', `Bearer ${FARMER_TOKEN}`);
+  let accessToken: string | null;
+  try {
+    accessToken = await accessTokenProvider();
+  } catch {
+    throw new Error('Could not read your sign-in session. Please sign in again.');
+  }
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
   let response: Response;
   try {
@@ -107,7 +118,7 @@ export async function m2Request<T>(path: string, init: RequestInit = {}): Promis
 }
 
 export function translateApiError(status: number, detail: string): string {
-  if (status === 401) return 'Backend authentication is required before tasks can be sent to Module 3.';
+  if (status === 401) return 'Sign in with a verified farmer account to access this farm. Module 1 authentication is not connected yet.';
   if (status === 404 && detail.toLowerCase().includes('farmland')) {
     return 'This farmland is not saved in the backend. Enter a saved Farmland ID from M1.';
   }
@@ -125,7 +136,7 @@ export function translateApiError(status: number, detail: string): string {
     'Completed or cancelled seasons cannot be activated': 'Completed or cancelled seasons cannot be activated.',
     'Another season is already active on this farmland': 'Another season is already active on this farmland.',
     'Completed or cancelled seasons cannot receive a new plan': 'Completed or cancelled seasons cannot receive a new plan.',
-    'An active season\'s plan cannot be replaced without coordinating current-stage state with Module 3': 'This season is active. Coordinate the current growth stage with Module 3 before replacing its plan.',
+    'Cannot create or replace an active season plan without coordinating current-stage state with Module 3': 'This season is active. Coordinate the current growth stage with Module 3 before creating another plan.',
     'The season plan has no growth stages': 'The season plan has no growth stages.',
     'Only proposed recommendations can be dismissed': 'Only proposed recommendations can be dismissed.',
     'Recommendation is no longer proposed': 'This recommendation is no longer proposed.',
