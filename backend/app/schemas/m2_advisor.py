@@ -165,6 +165,7 @@ class KnowledgeReference(M2Schema):
     review_status: str | None = None
     reviewed_by: UUID | None = None
     reviewed_at: datetime | None = None
+    acceptance_method: str | None = None
 
 
 class SuitabilityFactor(M2Schema):

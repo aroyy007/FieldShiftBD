@@ -66,6 +66,7 @@ def _knowledge_ref(row: AgriculturalEvidence) -> KnowledgeReference:
         review_status=row.review_status,
         reviewed_by=row.reviewed_by,
         reviewed_at=row.reviewed_at,
+        acceptance_method=getattr(row, "acceptance_method", None),
     )
 
 
@@ -77,9 +78,11 @@ def _approved_knowledge(
     region_values: set[str] | None = None,
     context: dict[str, Any] | None = None,
     categories: set[str] | None = None,
+    crop_name: str | None = None,
 ) -> list[AgriculturalEvidence]:
     query = KnowledgeQuery(
         crop_id=crop_id,
+        crop_name=crop_name,
         crop_variety_id=crop_variety_id,
         categories=frozenset(categories or ()),
         region_codes=frozenset(region_values or ()),
@@ -200,13 +203,20 @@ def _matches_profile(condition: Any, profile: FarmProfileInput) -> bool:
 def _recommendation_reasoning(
     profile: FarmProfileInput, rows: list[AgriculturalEvidence]
 ) -> tuple[RecommendationReasoning, list[KnowledgeReference]]:
-    refs = [_knowledge_ref(row) for row in rows]
+    recommendation_rows = [
+        row for row in rows
+        if not (
+            isinstance(row.content, dict)
+            and row.content.get("evidence_role") == "regional_context_only"
+        )
+    ]
+    refs = [_knowledge_ref(row) for row in recommendation_rows]
     values: dict[str, list[SuitabilityFactor]] = {
         "positive_factors": [],
         "limiting_factors": [],
         "risks_or_concerns": [],
     }
-    for row in rows:
+    for reference_index, row in enumerate(recommendation_rows):
         payload = row.content if isinstance(row.content, dict) else {}
         declared = payload.get("factors", {})
         if not isinstance(declared, dict):
@@ -238,7 +248,7 @@ def _recommendation_reasoning(
                         or (entry_condition is not None and _matches_profile(entry_condition, profile))
                     ):
                         continue
-                factor = _as_factor(entry, row.category, [refs[rows.index(row)]])
+                factor = _as_factor(entry, row.category, [refs[reference_index]])
                 if factor and factor not in values[group]:
                     values[group].append(factor)
 
@@ -279,6 +289,7 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
             today,
             region_values=_profile_regions(profile),
             context=_profile_context(profile),
+            crop_name=crop.name,
         )
         if not rows:
             continue

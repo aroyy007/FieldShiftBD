@@ -100,6 +100,14 @@ def test_unapproved_knowledge_is_excluded(review_status):
     assert result.status == EvidenceStatus.MISSING_EVIDENCE
 
 
+def test_approved_row_without_human_reviewer_requires_valid_source_policy():
+    row = synthetic_row(reviewed_by=None, reviewed_at=None)
+    result = get_relevant_evidence(KnowledgeSession([row]), query())
+
+    assert result.items == ()
+    assert result.status == EvidenceStatus.MISSING_EVIDENCE
+
+
 @pytest.mark.parametrize(
     "effective_from,effective_to",
     [(date(2020, 1, 1), date(2026, 10, 5)), (date(2026, 10, 7), date(2027, 1, 1))],

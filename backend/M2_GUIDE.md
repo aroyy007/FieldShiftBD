@@ -151,16 +151,17 @@ not fall back to draft/unreviewed evidence or invent a recommendation.
 Add authoritative knowledge later by entering the source's structured evidence
 in the existing knowledge record, including its crop/variety scope, category,
 region/context, `source_type`, source name/reference, review fields, and valid
-effective dates. A record should be approved only after its agronomic claims,
-local applicability, provenance, and effective period have been reviewed. No
-new model or migration is needed for this M2 layer.
+effective dates. A record can be approved by a human reviewer or by a documented
+source-policy that validates its exact evidence scope and provenance. Automated
+acceptance must not populate human reviewer fields. No new model or migration
+is needed for this M2 layer.
 
-> M2 uses reviewed/effective agricultural evidence for real recommendations. Synthetic fixtures are test-only and are never production knowledge.
+> M2 uses human-reviewed or narrowly source-policy-accepted evidence within its effective dates. Synthetic fixtures are test-only and are never production knowledge.
 
 Test fixtures use clearly labelled synthetic records and verify filtering and
 provenance behavior only; they are never advice or production knowledge. The
-provider does not call external sources, and this implementation adds no
-agricultural facts.
+provider does not call external sources at runtime. The BARC facts shipped in
+the source snapshot are imported explicitly through the source-policy command.
 
 Only rows in `agricultural_knowledge` marked `approved` and currently within
 their effective dates can inform farmer-facing results. A recommendation also
@@ -192,8 +193,9 @@ Optional `initial_tasks` items match `InitialTaskDefinition`; these remain
 recommendations for M3 and are not persisted as M3 task state.
 
 For harvest guidance, approved `harvest_guidance` or `harvest` content must
-match the `HarvestGuidance` schema. Do not mark a record approved until its
-agronomic statements, locality, source, and effective period have been reviewed.
+match the `HarvestGuidance` schema. The current automated source policy does not
+cover harvest guidance; those records still require human review before they
+are marked approved.
 
 ## Ownership and persistence
 
@@ -209,12 +211,13 @@ changed to implement M2.
 Prefer Bangladesh government agricultural bodies and national agricultural
 research institutes (BARC, DAE, BRRI, BARI, and other relevant NARS bodies),
 then recognized universities, FAO and other appropriate international
-organizations, and peer-reviewed research. Organization identity alone does
-not make a claim production-ready: retain the exact source and reference and
-review each claim, crop/variety, context, and effective period. Knowledge stays
-unapproved until an authorized reviewer evaluates it. The shared model records
-`review_status`, `reviewed_by`, and `reviewed_at`, but the repository does not
-yet define an authorization/workflow for assigning reviewers.
+organizations, and peer-reviewed research. Keep the exact source, crop,
+context, and effective period. Human review remains supported. A narrowly
+scoped source-policy may also accept machine-checkable facts from a public
+official source without inventing a reviewer identity; its policy ID and
+validation checks must be stored in `content`, and the API must expose the
+acceptance method. Rows accepted this way use `review_status="approved"` with
+`reviewed_by` and `reviewed_at` left null.
 
 #### Source research and initial coverage
 
@@ -223,19 +226,25 @@ pages reviewed, their traceable URLs, supportable information, and limitations.
 Potato is the initial target because the plan's Golden Farm scenario names
 potato. Wheat and maize appear in frontend demo examples, but those examples do
 not establish Bangladesh agronomic context and are only future candidates.
-There are no repository crop or variety seed records, so source candidates are
-not bound to database IDs. No production knowledge rows have been added or
-approved. At present no planting dates, growth stages, harvest advice, soil or
-water requirements, regional crop recommendation, or similar crop claim has
-been verified for ingestion.
+There are no repository crop or variety seed records, so source snapshots are
+bound to M1's crop catalog at import time rather than duplicating its IDs. The
+first source-policy snapshot covers BARC Potato zoning for Comilla upazila only.
+It reports the area in each suitability class and is accepted only as regional
+context. It does not assess an individual farm and cannot create a crop
+recommendation by itself. The M1 crop catalog must contain Potato before the
+importer can add the record. It is not variety-specific and is attached only to
+the M1 Potato crop row, with no crop-variety ID.
 
-BARC's Land Suitability Assessment and Crop Zoning pages describe national
-methodology and expose maps/classes for crops including potato. The methodology
-uses agro-edaphic and agro-climatic factors; maps can support locality-specific
-suitability only when the appropriate underlying locality data, date/version,
-and crop identity are verified. The accessible sources reviewed here do not
-provide a dated, verified Comilla-local potato dataset ready for M2 ingestion.
-Do not generalize national aggregate map areas into a farm-level recommendation.
+BARC's public Comilla-upazila Potato map and methodology page were captured with
+SHA-256 hashes in `backend/app/data/m2_knowledge_sources/barc_potato_comilla_snapshot.json`.
+The map page reports 1,645 ha very suitable, 11,020 ha suitable, 2,544 ha
+moderately suitable, 0 ha marginally suitable, and 5,364 ha not suitable, out
+of 20,573 ha total. BARC states that zoning summarizes area coverage by
+suitability class. The page does not publish the underlying dataset vintage;
+the response says so, limits the claim to upazila-level context, and never
+describes it as field-level fit. The accepted snapshot expires after 180 days
+unless refreshed. It supplies no planting dates, growth stages, or harvest
+guidance, which remain unavailable until matching evidence is sourced.
 
 #### Provenance, context, and dates
 
@@ -252,13 +261,17 @@ effective dates.
 
 #### Ingestion procedure and limits
 
-For each candidate claim, record its exact source, title, URL, publication date
-if stated, source type, crop and variety scope, fact and M2 category, locality or
-other context, effective period, and limitations. Normalize only the minimum
-facts M2 needs; keep a claim in candidate/draft form until an authorized review
-has confirmed it. M2 does not scrape or download source material at runtime. If
-no approved/effective evidence matches the requested crop and farm context, M2
-returns missing evidence and does not make a recommendation. Current source
-coverage does not yet support production recommendations or season plans; NASA
-or environmental-data evaluation should wait until sourced, reviewed records
-exist.
+For each accepted snapshot, record its exact source, capture hashes, source
+type, crop/map identifiers, locality, publication-version uncertainty, class
+totals, validation policy, refresh deadline, and limitations. The source-policy
+validator checks the official HTTPS host and route, linked BARC methodology,
+the pinned map/methodology capture digests and class values, crop/upazila match,
+nonnegative areas and exact totals, regional-only disclosure, and the 180-day
+refresh window. Regional aggregate evidence is kept out of farm-fit factors and
+recommendation references. Import it after M1 seeds the crop catalog by running
+`python -m scripts.import_m2_barc_evidence` from `backend`. The import is
+idempotent and does not modify M1-owned crop or farmland records. It does not
+scrape external sources at runtime. If no accepted and effective evidence
+matches a farm's crop and upazila, M2 still returns missing evidence. Season
+plans and harvest guidance remain fail-closed until crop-specific sources
+support those outputs.

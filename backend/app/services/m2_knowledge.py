@@ -16,6 +16,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.models.core import AgriculturalKnowledge
+from app.services.m2_source_policy import acceptance_method_for, is_valid_automated_acceptance
 
 
 class EvidenceStatus(StrEnum):
@@ -28,6 +29,7 @@ class KnowledgeQuery:
     """Context for retrieving reviewed knowledge relevant to one crop."""
 
     crop_id: UUID
+    crop_name: str | None = None
     crop_variety_id: UUID | None = None
     factor: str | None = None
     categories: frozenset[str] = field(default_factory=frozenset)
@@ -56,6 +58,7 @@ class AgriculturalEvidence:
     review_status: str
     reviewed_by: UUID | None
     reviewed_at: datetime | None
+    acceptance_method: str | None
     effective_from: date | None
     effective_to: date | None
 
@@ -148,6 +151,11 @@ def _filter_content(content: Mapping[str, Any], context: Mapping[str, Any]) -> d
 def _row_matches_query(row: AgriculturalKnowledge, query: KnowledgeQuery) -> bool:
     if row.review_status != "approved":
         return False
+    content = row.content if isinstance(row.content, dict) else {}
+    if row.reviewed_by is None and not is_valid_automated_acceptance(
+        row, content, crop_name=query.crop_name
+    ):
+        return False
     if row.effective_from is not None and row.effective_from > query.as_of:
         return False
     if row.effective_to is not None and row.effective_to < query.as_of:
@@ -159,7 +167,6 @@ def _row_matches_query(row: AgriculturalKnowledge, query: KnowledgeQuery) -> boo
     if query.categories and row.category not in query.categories:
         return False
     if query.factor is not None:
-        content = row.content if isinstance(row.content, dict) else {}
         declared_factor = content.get("factor")
         if query.factor != row.category and query.factor != declared_factor:
             return False
@@ -174,7 +181,9 @@ def _row_matches_query(row: AgriculturalKnowledge, query: KnowledgeQuery) -> boo
     return True
 
 
-def _to_evidence(row: AgriculturalKnowledge, content: Mapping[str, Any]) -> AgriculturalEvidence:
+def _to_evidence(
+    row: AgriculturalKnowledge, content: Mapping[str, Any], *, crop_name: str | None = None
+) -> AgriculturalEvidence:
     source_type = _source_type(row)
     assert source_type is not None  # Enforced by _row_matches_query.
     declared_factor = content.get("factor")
@@ -197,6 +206,7 @@ def _to_evidence(row: AgriculturalKnowledge, content: Mapping[str, Any]) -> Agri
         review_status=row.review_status,
         reviewed_by=row.reviewed_by,
         reviewed_at=row.reviewed_at,
+        acceptance_method=acceptance_method_for(row, content, crop_name=crop_name),
         effective_from=row.effective_from,
         effective_to=row.effective_to,
     )
@@ -227,7 +237,7 @@ def get_relevant_evidence(db: Session, query: KnowledgeQuery) -> KnowledgeResult
         relevant_content = _filter_content(content, query.context)
         if relevant_content is None:
             continue
-        items.append(_to_evidence(row, relevant_content))
+        items.append(_to_evidence(row, relevant_content, crop_name=query.crop_name))
     items.sort(key=lambda item: (item.category, str(item.crop_variety_id or ""), str(item.id)))
     return KnowledgeResult(
         status=EvidenceStatus.AVAILABLE if items else EvidenceStatus.MISSING_EVIDENCE,

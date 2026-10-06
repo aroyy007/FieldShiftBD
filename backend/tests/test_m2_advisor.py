@@ -2,6 +2,8 @@
 
 from datetime import date, datetime, timezone
 from decimal import Decimal
+import json
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import UUID, uuid4
@@ -108,6 +110,52 @@ def test_recommendations_include_factor_explanations_and_provenance():
     assert result.recommendations[0].reasoning.risks_or_concerns[0].knowledge_refs[0].source_reference == "unit-test-only"
     assert result.recommendations[0].score is None
     assert len([row for row in db.added if isinstance(row, RecommendationRecord)]) == 1
+
+
+def test_upazila_regional_context_alone_does_not_create_a_farm_recommendation():
+    from app.services.m2_source_policy import build_barc_knowledge_record
+
+    snapshot_path = (
+        Path(__file__).resolve().parents[1]
+        / "app"
+        / "data"
+        / "m2_knowledge_sources"
+        / "barc_potato_comilla_snapshot.json"
+    )
+    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    knowledge_record = build_barc_knowledge_record(snapshot, CROP_ID, evaluated_on=date(2026, 10, 7))
+    from app.services.m2_knowledge import _to_evidence
+    knowledge = _to_evidence(knowledge_record, knowledge_record.content)
+    farmland = SimpleNamespace(id=FARM_ID, farmer_id=FARMER_ID)
+    crop = SimpleNamespace(id=CROP_ID, name="Potato", scientific_name=None)
+    db = MemorySession(objects={(Farmland, FARM_ID): farmland}, scalars_result=[crop])
+
+    with patch.object(service, "_approved_knowledge", return_value=[knowledge]):
+        result = service.recommend_crops(
+            db,
+            FarmProfileInput(
+                farmland_id=FARM_ID,
+                location={"country_code": "BD", "district": "Comilla", "upazila": "Comilla"},
+            ),
+        )
+
+    assert result.status == "no_supported_fit"
+    assert result.recommendations == []
+    assert not any(isinstance(row, RecommendationRecord) for row in db.added)
+
+
+def test_regional_context_before_crop_fit_evidence_preserves_correct_reference():
+    regional_context = SimpleNamespace(content={"evidence_role": "regional_context_only"})
+    crop_fit = synthetic_knowledge()
+
+    reasoning, references = service._recommendation_reasoning(
+        FarmProfileInput(farmland_id=FARM_ID, soil_type="synthetic loam"),
+        [regional_context, crop_fit],
+    )
+
+    assert reasoning.positive_factors[0].factor == "soil"
+    assert len(references) == 1
+    assert references[0].source_reference == "unit-test-only"
 
 
 def test_recommendation_reports_missing_approved_knowledge_explicitly():

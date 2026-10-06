@@ -11,6 +11,7 @@ export type KnowledgeReference = {
   source_type?: string | null;
   source_reference?: string | null;
   category?: string | null;
+  acceptance_method?: string | null;
 };
 
 export type SuitabilityFactor = {

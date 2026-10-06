@@ -1,15 +1,17 @@
 {
-  "register_version": 1,
-  "research_date": "2026-10-06",
-  "purpose": "Auditable source research for M2; this file is not a production knowledge seed.",
-  "status": "source_research_only_no_production_knowledge",
+  "register_version": 2,
+  "research_date": "2026-10-07",
+  "purpose": "Auditable source research and policy-accepted snapshots for M2.",
+  "status": "one_region_only_source_policy_snapshot_pending_m1_catalog_import",
   "initial_crop_coverage": {
     "selected": [
       {
         "crop": "Potato",
         "reason": "The plan.md Golden Farm integration scenario names potato.",
         "database_crop_id": null,
-        "production_knowledge_records": 0
+        "production_knowledge_records": 0,
+        "policy_accepted_snapshots": 1,
+        "snapshot_scope": "Potato / Comilla upazila regional area distribution only"
       }
     ],
     "future_candidates": [
@@ -25,8 +27,8 @@
     "coverage_limitation": "The repository contains no crop or crop-variety seed records to bind sources to database identifiers."
   },
   "review_workflow": {
-    "production_approval": "No claims in this register are approved or eligible for production use.",
-    "limitation": "The shared model stores review_status, reviewed_by, and reviewed_at, but the repository defines no reviewer authorization or approval workflow."
+    "production_approval": "The exact BARC Potato/Comilla upazila snapshot is accepted by m2-barc-upazila-zoning-v1 after deterministic source, hash, area-total, crop/locality, and freshness checks. Other claims remain unapproved until covered by this policy or human review.",
+    "limitation": "No human reviewer is assigned. The accepted map has no published data vintage and supports regional area context only; M1's crop catalog is required before importing the snapshot into agricultural_knowledge."
   },
   "sources": [
     {
@@ -63,6 +65,26 @@
       "limitations": [
         "National aggregate area totals do not establish suitability for a specific farm, district, or upazila.",
         "No effective date or verified downloadable data snapshot was recorded."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Suitability Map of Potato — Comilla upazila",
+      "url": "https://apps.barc.gov.bd/cropzoning/homes/upazila/12/195",
+      "publication_or_update_date": null,
+      "date_note": "The map page does not publish an underlying data version. Snapshot captured 2026-10-07; source and methodology response hashes are recorded in barc_potato_comilla_snapshot.json.",
+      "source_type": "government_research_portal",
+      "facts_supported": [
+        "The page reports mapped area by Potato suitability class for Comilla upazila.",
+        "Very suitable 1645 ha; suitable 11020 ha; moderately suitable 2544 ha; marginally suitable 0 ha; not suitable 5364 ha; total 20573 ha."
+      ],
+      "m2_categories": ["regional_suitability_context"],
+      "production_knowledge_eligible_now": true,
+      "acceptance_policy": "m2-barc-upazila-zoning-v1",
+      "limitations": [
+        "The map reports upazila aggregate area, not field-level suitability.",
+        "The map data vintage is not stated; accepted snapshots expire after 180 days.",
+        "This evidence does not provide season stages, tasks, or harvest guidance."
       ]
     },
     {
@@ -152,5 +174,5 @@
     }
   ],
   "candidate_facts": [],
-  "exclusion_reason": "No dated, locality-matched, crop-ID-bound evidence and no defined authorized reviewer workflow were available to support safe production records."
+  "exclusion_reason": "Only the exact Comilla-upazila Potato map snapshot is eligible through the documented automated source policy. It is not imported into the database until M1 provides the Potato crop catalog row, and the record is constrained to regional context."
 }

@@ -544,7 +544,11 @@ function RecommendationCard({ recommendation, busy, onSelect, onDismiss }: { rec
         </View>
       ))}
       {recommendation.knowledge_refs.map((reference, index) => (
-        <Text key={`${reference.source_name}-${index}`} style={styles.helper}>Source: {reference.source_name}{reference.source_reference ? ` · ${reference.source_reference}` : ''}</Text>
+        <Text key={`${reference.source_name}-${index}`} style={styles.helper}>
+          Source: {reference.source_name}
+          {reference.acceptance_method?.startsWith('automated_source_policy:') ? ' · Accepted by automated source checks' : ''}
+          {reference.source_reference ? ` · ${reference.source_reference}` : ''}
+        </Text>
       ))}
       {recommendation.status === 'proposed' ? (
         <>
