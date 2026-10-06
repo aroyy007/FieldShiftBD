@@ -40,6 +40,13 @@ class Task(UUIDPrimaryKey, TimestampMixin, Base):
             name="ck_tasks_source",
         ),
         Index("ix_tasks_season_status_due", "season_id", "status", "due_at"),
+        Index(
+            "uq_tasks_season_source_reference",
+            "season_id",
+            "source_reference",
+            unique=True,
+            postgresql_where=text("source_reference IS NOT NULL"),
+        ),
     )
 
     farmland_id: Mapped[UUID] = mapped_column(nullable=False)
@@ -53,6 +60,7 @@ class Task(UUIDPrimaryKey, TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(24), nullable=False, default="pending")
     priority: Mapped[str] = mapped_column(String(24), nullable=False, default="normal")
     source: Mapped[str] = mapped_column(String(24), nullable=False)
+    source_reference: Mapped[str | None] = mapped_column(String(200))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -124,4 +132,7 @@ class FarmCheckin(UUIDPrimaryKey, Base):
     notes: Mapped[str | None] = mapped_column(Text)
     observations: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
     )
