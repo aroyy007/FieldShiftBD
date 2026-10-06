@@ -25,10 +25,13 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # ── Target metadata for autogenerate ─────────────────────────────────────────
-# Once models are created, import Base and set:
-#   from app.models.base import Base
-#   target_metadata = Base.metadata
-target_metadata = None
+# Import the shared Base so Alembic's --autogenerate sees one unified MetaData.
+# Every module's models import from app.models.base, and importing the models
+# package registers all tables on this Base.metadata.
+from app.models.base import Base
+import app.models  # noqa: F401  (ensures all model modules are imported)
+
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
