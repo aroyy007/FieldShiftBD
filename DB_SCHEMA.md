@@ -415,7 +415,8 @@ Tasks belong to Module 3 because Module 3 owns the operational state of the farm
 
 ```text
 id                  uuid primary key
-season_id           uuid not null references seasons(id)
+farmland_id         uuid not null
+season_id           uuid not null
 growth_stage_id     uuid references growth_stages(id)
 title               text not null
 description         text
@@ -423,9 +424,11 @@ due_at              timestamptz
 status              text not null
 priority            text not null
 source              text not null
+source_reference    text
 completed_at        timestamptz
 created_at          timestamptz not null
 updated_at          timestamptz not null
+foreign key (season_id, farmland_id) references seasons(id, farmland_id)
 ```
 
 Possible statuses:
@@ -452,6 +455,7 @@ system
 ```
 
 The `source` field becomes useful when a task is created or modified because of weather, disease, farmer input, or the season plan.
+`source_reference` is an optional stable identifier supplied by the source module. A partial unique index on `(season_id, source_reference)` makes retried season-plan or weather-task writes idempotent while allowing tasks without an external reference.
 
 ---
 
