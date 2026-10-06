@@ -33,6 +33,14 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FieldShift uses your photos to check for crop problems.",
+          "cameraPermission": "FieldShift uses your camera to check crop photos.",
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {
