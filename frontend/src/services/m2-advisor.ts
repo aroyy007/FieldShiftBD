@@ -92,7 +92,7 @@ export async function m2Request<T>(path: string, init: RequestInit = {}): Promis
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
   } catch {
-    throw new Error('Backend-এর সঙ্গে সংযোগ করা যাচ্ছে না। Backend চালু আছে কি না দেখুন।');
+    throw new Error('Could not connect to the backend. Check that it is running.');
   }
 
   const payload = await response.json().catch(() => null);
@@ -107,32 +107,32 @@ export async function m2Request<T>(path: string, init: RequestInit = {}): Promis
 }
 
 export function translateApiError(status: number, detail: string): string {
-  if (status === 401) return 'M3-এর task list-এ পাঠাতে আগে backend authentication যুক্ত করতে হবে।';
+  if (status === 401) return 'Backend authentication is required before tasks can be sent to Module 3.';
   if (status === 404 && detail.toLowerCase().includes('farmland')) {
-    return 'এই জমির তথ্য backend-এ নেই। M1 থেকে আসা একটি সংরক্ষিত Farmland ID ব্যবহার করুন।';
+    return 'This farmland is not saved in the backend. Enter a saved Farmland ID from M1.';
   }
   if (detail.includes('No approved season-plan knowledge')) {
-    return 'এই ফসলের জন্য যাচাই করা season plan এখনো যোগ হয়নি। তাই কোনো stage বা task বানিয়ে দেখানো হচ্ছে না।';
+    return 'There is no approved season-plan evidence for this crop yet. No stages or tasks were invented.';
   }
   if (detail.includes('No approved harvest guidance')) {
-    return 'এই ফসলের harvest guidance-এর জন্য অনুমোদিত source এখনো নেই।';
+    return 'There is no approved source for harvest guidance for this crop yet.';
   }
   const knownDetails: Record<string, string> = {
-    'Crop not found': 'এই ফসলের তথ্য backend-এ পাওয়া যায়নি।',
-    'Season not found': 'মৌসুমটি আর পাওয়া যাচ্ছে না।',
-    'Season plan not found': 'এই মৌসুমের জন্য কোনো plan সংরক্ষিত নেই।',
-    'Generate a season plan before activation': 'মৌসুম active করার আগে একটি season plan তৈরি করুন।',
-    'Completed or cancelled seasons cannot be activated': 'সম্পন্ন বা বাতিল মৌসুম active করা যাবে না।',
-    'Another season is already active on this farmland': 'এই জমিতে অন্য একটি মৌসুম এখনো চলমান।',
-    'Completed or cancelled seasons cannot receive a new plan': 'সম্পন্ন বা বাতিল মৌসুমের জন্য নতুন plan তৈরি করা যাবে না।',
-    'An active season\'s plan cannot be replaced without coordinating current-stage state with Module 3': 'মৌসুমটি চলমান। Module 3-এর current stage-এর সঙ্গে সমন্বয় না করে plan বদলানো যাবে না।',
-    'The season plan has no growth stages': 'Season plan-এ কোনো growth stage নেই।',
-    'Only proposed recommendations can be dismissed': 'শুধু প্রস্তাবিত পরামর্শই বাদ দেওয়া যায়।',
-    'Recommendation is no longer proposed': 'এই পরামর্শটি আর প্রস্তাবিত অবস্থায় নেই।',
+    'Crop not found': 'Crop not found in the backend.',
+    'Season not found': 'This season is no longer available.',
+    'Season plan not found': 'No plan is saved for this season.',
+    'Generate a season plan before activation': 'Create a season plan before activating the season.',
+    'Completed or cancelled seasons cannot be activated': 'Completed or cancelled seasons cannot be activated.',
+    'Another season is already active on this farmland': 'Another season is already active on this farmland.',
+    'Completed or cancelled seasons cannot receive a new plan': 'Completed or cancelled seasons cannot receive a new plan.',
+    'An active season\'s plan cannot be replaced without coordinating current-stage state with Module 3': 'This season is active. Coordinate the current growth stage with Module 3 before replacing its plan.',
+    'The season plan has no growth stages': 'The season plan has no growth stages.',
+    'Only proposed recommendations can be dismissed': 'Only proposed recommendations can be dismissed.',
+    'Recommendation is no longer proposed': 'This recommendation is no longer proposed.',
   };
   if (knownDetails[detail]) return knownDetails[detail];
-  if (status === 404) return 'চাওয়া তথ্যটি পাওয়া যায়নি।';
-  if (status === 409) return 'এই ধাপটি এখন করা যাচ্ছে না। মৌসুমের অবস্থা ও plan দেখে আবার চেষ্টা করুন।';
-  if (status === 422) return 'দেওয়া তথ্যগুলো আরেকবার মিলিয়ে দেখুন।';
-  return `Backend অনুরোধটি গ্রহণ করেনি (${status})। কিছুক্ষণ পর আবার চেষ্টা করুন।`;
+  if (status === 404) return 'The requested information was not found.';
+  if (status === 409) return 'This action is not available now. Check the season status and plan, then try again.';
+  if (status === 422) return 'Check the information you entered and try again.';
+  return `The backend rejected the request (${status}). Please try again shortly.`;
 }

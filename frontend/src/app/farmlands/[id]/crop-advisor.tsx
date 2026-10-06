@@ -26,7 +26,9 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 type BusyAction = 'recommend' | 'select' | 'plan' | 'activate' | 'harvest' | 'close' | 'import' | 'history' | null;
 
-const formatDate = (value: string | null) => value ? new Date(`${value}T00:00:00`).toLocaleDateString('bn-BD') : 'তারিখ দেওয়া নেই';
+const formatDate = (value: string | null) => value
+  ? new Date(`${value}T00:00:00`).toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric' })
+  : 'No date set';
 
 export default function CropAdvisorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,7 +51,7 @@ export default function CropAdvisorScreen() {
   const [plan, setPlan] = useState<SeasonPlan | null>(null);
   const [harvest, setHarvest] = useState<HarvestGuidance | null>(null);
   const [yieldAmount, setYieldAmount] = useState('');
-  const [yieldUnit, setYieldUnit] = useState('কেজি');
+  const [yieldUnit, setYieldUnit] = useState('kg');
   const [outcomeNotes, setOutcomeNotes] = useState('');
   const [actualHarvestDate, setActualHarvestDate] = useState('');
   const [busy, setBusy] = useState<BusyAction>(null);
@@ -81,7 +83,7 @@ export default function CropAdvisorScreen() {
       setSeasons(history);
       setSavedRecommendations(saved);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'মৌসুমের তালিকা আনা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not load season history.');
     } finally {
       setBusy(null);
     }
@@ -91,12 +93,12 @@ export default function CropAdvisorScreen() {
     setError('');
     setNotice('');
     if (!canUseBackend) {
-      setError('M1 থেকে পাওয়া সংরক্ষিত Farmland ID দিন। Demo farm-এর ID backend-এ নেই।');
+      setError('Enter a saved Farmland ID from M1. The demo farm ID is not stored in the backend.');
       return;
     }
     const parsedArea = Number(landArea);
     if (landArea.trim() && (!Number.isFinite(parsedArea) || parsedArea <= 0)) {
-      setError('জমির পরিমাণ শূন্যের চেয়ে বেশি হতে হবে।');
+      setError('Land area must be greater than zero.');
       return;
     }
 
@@ -122,7 +124,7 @@ export default function CropAdvisorScreen() {
       setSavedRecommendations(result.recommendations);
       await loadHistory();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'পরামর্শ আনা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not load recommendations.');
     } finally {
       setBusy(null);
     }
@@ -146,9 +148,9 @@ export default function CropAdvisorScreen() {
           item.recommendation_id === dismissed.recommendation_id ? dismissed : item,
         ),
       } : current);
-      setNotice('এই পরামর্শটি বাদ দেওয়া হয়েছে।');
+      setNotice('Recommendation dismissed.');
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'পরামর্শটি বাদ দেওয়া যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not dismiss the recommendation.');
     } finally {
       setBusy(null);
     }
@@ -191,10 +193,10 @@ export default function CropAdvisorScreen() {
       setActualHarvestDate('');
       setYieldAmount('');
       setOutcomeNotes('');
-      setNotice(`${recommendation.crop.name ?? 'নির্বাচিত ফসল'} নিয়ে একটি planned season তৈরি হয়েছে।`);
+      setNotice(`A planned season was created for ${recommendation.crop.name ?? 'the selected crop'}.`);
       await loadHistory();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'ফসল নির্বাচন করা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not select this crop.');
     } finally {
       setBusy(null);
     }
@@ -210,14 +212,14 @@ export default function CropAdvisorScreen() {
         method: 'POST',
         body: JSON.stringify({
           season_id: selectedSeason.season_id,
-          title: `${farm?.name ?? 'ফসল'} মৌসুমের পরিকল্পনা`,
+          title: `${farm?.name ?? 'Crop'} season plan`,
           status: 'draft',
         }),
       });
       setPlan(created);
-      setNotice('যাচাই করা তথ্যের ভিত্তিতে season plan তৈরি হয়েছে।');
+      setNotice('Season plan created from verified evidence.');
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Season plan তৈরি করা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not create the season plan.');
     } finally {
       setBusy(null);
     }
@@ -231,10 +233,10 @@ export default function CropAdvisorScreen() {
     try {
       const result = await m2Request<Season>(`/advisor/seasons/${selectedSeason.season_id}/activate`, { method: 'POST' });
       setSelectedSeason(result);
-      setNotice('মৌসুমটি active হয়েছে। বর্তমান growth stage Module 3-ই পরিচালনা করবে।');
+      setNotice('Season activated. Module 3 continues to manage the current growth stage.');
       await loadHistory();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'মৌসুম active করা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not activate the season.');
     } finally {
       setBusy(null);
     }
@@ -248,7 +250,7 @@ export default function CropAdvisorScreen() {
       const result = await m2Request<HarvestGuidance>(`/advisor/seasons/${selectedSeason.season_id}/harvest-guidance`);
       setHarvest(result);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Harvest guidance আনা যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not load harvest guidance.');
     } finally {
       setBusy(null);
     }
@@ -267,7 +269,7 @@ export default function CropAdvisorScreen() {
         priority: task.priority,
       }));
     if (!tasks.length) {
-      setError('M3-তে পাঠানোর মতো stage ও due day-সহ কোনো task definition নেই।');
+      setError('There are no task definitions with a growth stage and due day to send to Module 3.');
       return;
     }
     setBusy('import');
@@ -278,9 +280,10 @@ export default function CropAdvisorScreen() {
         `/farmlands/${farmlandId.trim()}/seasons/${selectedSeason.season_id}/tasks/from-plan`,
         { method: 'POST', body: JSON.stringify({ tasks }) },
       );
-      setNotice(`Module 3-এ ${result.created_count}টি task যোগ হয়েছে${result.existing_count ? `; ${result.existing_count}টি আগে থেকেই ছিল` : ''}।`);
+      const createdTaskLabel = result.created_count === 1 ? 'task' : 'tasks';
+      setNotice(`${result.created_count} ${createdTaskLabel} added to Module 3${result.existing_count ? `; ${result.existing_count} already existed` : ''}.`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Task definition Module 3-এ পাঠানো যায়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not send task definitions to Module 3.');
     } finally {
       setBusy(null);
     }
@@ -290,7 +293,7 @@ export default function CropAdvisorScreen() {
     if (!selectedSeason) return;
     const parsedYield = yieldAmount.trim() ? Number(yieldAmount) : null;
     if (parsedYield !== null && (!Number.isFinite(parsedYield) || parsedYield < 0)) {
-      setError('ফলনের পরিমাণ শূন্য বা তার বেশি হতে হবে।');
+      setError('Yield must be zero or greater.');
       return;
     }
     setBusy('close');
@@ -302,17 +305,17 @@ export default function CropAdvisorScreen() {
         body: JSON.stringify({
           season_id: selectedSeason.season_id,
           actual_yield: parsedYield,
-          yield_unit: parsedYield === null ? null : yieldUnit.trim() || 'কেজি',
+          yield_unit: parsedYield === null ? null : yieldUnit.trim() || 'kg',
           actual_harvest_date: actualHarvestDate || null,
           outcome_notes: outcomeNotes.trim() || null,
           status: 'completed',
         }),
       });
       setSelectedSeason(result);
-      setNotice('মৌসুমের ফলাফল সংরক্ষণ হয়েছে।');
+      setNotice('Season outcome saved.');
       await loadHistory();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'মৌসুমের ফলাফল সংরক্ষণ হয়নি।');
+      setError(requestError instanceof Error ? requestError.message : 'Could not save the season outcome.');
     } finally {
       setBusy(null);
     }
@@ -324,7 +327,7 @@ export default function CropAdvisorScreen() {
     setHarvest(null);
     setActualHarvestDate(season.actual_harvest_date ?? '');
     setYieldAmount(season.actual_yield?.toString() ?? '');
-    setYieldUnit(season.yield_unit ?? 'কেজি');
+    setYieldUnit(season.yield_unit ?? 'kg');
     setOutcomeNotes(season.outcome_notes ?? '');
     setError('');
     setNotice('');
@@ -334,7 +337,7 @@ export default function CropAdvisorScreen() {
       setPlan(existingPlan);
     } catch (requestError) {
       if (!(requestError instanceof Error && requestError.message.includes('plan'))) {
-        setError(requestError instanceof Error ? requestError.message : 'Season plan আনা যায়নি।');
+        setError(requestError instanceof Error ? requestError.message : 'Could not load the season plan.');
       }
     } finally {
       setBusy(null);
@@ -345,77 +348,77 @@ export default function CropAdvisorScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.eyebrow}>FIELDSHIFT · MODULE 2</Text>
-        <Text style={styles.title}>ফসলের পরামর্শ</Text>
-        <Text style={styles.subtitle}>আপনার জমির তথ্যের সঙ্গে মেলে—এমন অনুমোদিত কৃষি-তথ্য থাকলেই পরামর্শ দেখানো হবে।</Text>
+        <Text style={styles.title}>Crop Advisor</Text>
+        <Text style={styles.subtitle}>Recommendations use approved agricultural evidence that matches your farm.</Text>
 
         {farm && !UUID_PATTERN.test(routeFarmlandId ?? '') && (
           <Card style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Demo farm এখনও backend-এ যুক্ত নয়</Text>
-            <Text style={styles.body}>M1 integration না থাকায় এই demo farm-এর ID দিয়ে season তৈরি করা যাবে না। Backend-এ আগে থেকে থাকা Farmland ID থাকলে নিচে দিন।</Text>
+            <Text style={styles.infoTitle}>Demo farm is not connected to the backend</Text>
+            <Text style={styles.body}>This demo farm ID cannot be used to create a season. Enter a Farmland ID already saved in the backend below.</Text>
           </Card>
         )}
 
         <Card>
-          <Text style={styles.sectionTitle}>জমির তথ্য</Text>
-          <Text style={styles.label}>সংরক্ষিত Farmland ID</Text>
+          <Text style={styles.sectionTitle}>Farm details</Text>
+          <Text style={styles.label}>Saved Farmland ID</Text>
           <TextInput
-            accessibilityLabel="সংরক্ষিত Farmland ID"
+            accessibilityLabel="Saved Farmland ID"
             autoCapitalize="none"
             autoCorrect={false}
             onChangeText={setFarmlandId}
-            placeholder="M1 থেকে পাওয়া UUID"
+            placeholder="UUID from M1"
             style={styles.input}
             value={farmlandId}
           />
-          <Text style={styles.helper}>উদাহরণ: 123e4567-e89b-12d3-a456-426614174000</Text>
+          <Text style={styles.helper}>Example: 123e4567-e89b-12d3-a456-426614174000</Text>
 
-          <Text style={styles.label}>জেলা</Text>
-          <TextInput accessibilityLabel="জেলা" onChangeText={setDistrict} placeholder="যেমন: কুমিল্লা" style={styles.input} value={district} />
+          <Text style={styles.label}>District</Text>
+          <TextInput accessibilityLabel="District" onChangeText={setDistrict} placeholder="e.g. Cumilla" style={styles.input} value={district} />
 
-          <Text style={styles.label}>মাটির ধরন</Text>
-          <TextInput accessibilityLabel="মাটির ধরন" onChangeText={setSoilType} placeholder="আপনার জানা থাকলে লিখুন" style={styles.input} />
+          <Text style={styles.label}>Soil type</Text>
+          <TextInput accessibilityLabel="Soil type" onChangeText={setSoilType} placeholder="Enter if known" style={styles.input} />
 
-          <Text style={styles.label}>জমির পরিমাণ (একর)</Text>
-          <TextInput accessibilityLabel="জমির পরিমাণ" keyboardType="decimal-pad" onChangeText={setLandArea} placeholder="ঐচ্ছিক" style={styles.input} value={landArea} />
+          <Text style={styles.label}>Land area (acres)</Text>
+          <TextInput accessibilityLabel="Land area" keyboardType="decimal-pad" onChangeText={setLandArea} placeholder="Optional" style={styles.input} value={landArea} />
 
-          <Text style={styles.label}>সেচের ব্যবস্থা</Text>
+          <Text style={styles.label}>Irrigation available</Text>
           <View style={styles.choiceRow}>
-            {([['unknown', 'জানা নেই'], ['yes', 'আছে'], ['no', 'নেই']] as const).map(([value, label]) => (
+            {([['unknown', 'Unknown'], ['yes', 'Yes'], ['no', 'No']] as const).map(([value, label]) => (
               <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: irrigation === value }} onPress={() => setIrrigation(value)} style={[styles.choice, irrigation === value && styles.choiceSelected]}>
                 <Text style={[styles.choiceText, irrigation === value && styles.choiceTextSelected]}>{label}</Text>
               </Pressable>
             ))}
           </View>
 
-          <Text style={styles.label}>পানির উৎস</Text>
-          <TextInput accessibilityLabel="পানির উৎস" onChangeText={setWaterSource} placeholder="যেমন: পুকুর, খাল, নলকূপ" style={styles.input} value={waterSource} />
-          <Button disabled={!canUseBackend || busy !== null} title={busy === 'recommend' ? 'তথ্য যাচাই হচ্ছে…' : 'পরামর্শ দেখুন'} onPress={() => void requestRecommendations()} />
+          <Text style={styles.label}>Water source</Text>
+          <TextInput accessibilityLabel="Water source" onChangeText={setWaterSource} placeholder="e.g. pond, canal, tubewell" style={styles.input} value={waterSource} />
+          <Button disabled={!canUseBackend || busy !== null} title={busy === 'recommend' ? 'Checking evidence…' : 'Get recommendations'} onPress={() => void requestRecommendations()} />
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle}>মৌসুমের তথ্য</Text>
-          <Text style={styles.body}>ফসল বাছার আগে বা পরে তারিখ ও budget দিতে পারেন। ফসলের উপযুক্ত সময় নিজে থেকে অনুমান করা হবে না।</Text>
-          <Text style={styles.label}>রোপণের তারিখ (YYYY-MM-DD)</Text>
-          <TextInput accessibilityLabel="রোপণের তারিখ" autoCapitalize="none" onChangeText={setPlantingDate} placeholder="2026-11-15" style={styles.input} value={plantingDate} />
-          <Text style={styles.label}>সম্ভাব্য harvest date (YYYY-MM-DD)</Text>
-          <TextInput accessibilityLabel="সম্ভাব্য harvest date" autoCapitalize="none" onChangeText={setHarvestDate} placeholder="ঐচ্ছিক" style={styles.input} value={harvestDate} />
+          <Text style={styles.sectionTitle}>Season details</Text>
+          <Text style={styles.body}>You can enter dates and a budget before or after choosing a crop. Crop timing is never inferred without evidence.</Text>
+          <Text style={styles.label}>Planting date (YYYY-MM-DD)</Text>
+          <TextInput accessibilityLabel="Planting date" autoCapitalize="none" onChangeText={setPlantingDate} placeholder="2026-11-15" style={styles.input} value={plantingDate} />
+          <Text style={styles.label}>Expected harvest date (YYYY-MM-DD)</Text>
+          <TextInput accessibilityLabel="Expected harvest date" autoCapitalize="none" onChangeText={setHarvestDate} placeholder="Optional" style={styles.input} value={harvestDate} />
           <Text style={styles.label}>Budget (BDT)</Text>
-          <TextInput accessibilityLabel="Budget" keyboardType="decimal-pad" onChangeText={setBudget} placeholder="ঐচ্ছিক" style={styles.input} value={budget} />
+          <TextInput accessibilityLabel="Budget" keyboardType="decimal-pad" onChangeText={setBudget} placeholder="Optional" style={styles.input} value={budget} />
         </Card>
 
-        {busy === 'history' && <ActivityIndicator accessibilityLabel="মৌসুমের তালিকা আনা হচ্ছে" color={COLORS.primary} style={styles.loader} />}
+        {busy === 'history' && <ActivityIndicator accessibilityLabel="Loading season history" color={COLORS.primary} style={styles.loader} />}
         {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         {notice ? <Text accessibilityLiveRegion="polite" style={styles.success}>{notice}</Text> : null}
 
         {recommendations && (
           <View>
-            <Text style={styles.sectionTitle}>আপনার জমির জন্য ফলাফল</Text>
+            <Text style={styles.sectionTitle}>Results for your farm</Text>
             <Text style={styles.body}>{recommendations.status === 'no_approved_knowledge'
-              ? 'এই জমির তথ্যের সঙ্গে মেলে এমন অনুমোদিত কৃষি-তথ্য এখনো নেই। যাচাই না হওয়া তথ্য ধরে কোনো ফসল সাজেস্ট করছি না।'
+              ? 'There is no approved agricultural evidence matching this farm yet. No crop will be suggested using unverified information.'
               : recommendations.status === 'no_supported_fit'
-                ? 'তথ্য আছে, তবে আপনার জমিতে উপযুক্ত বলে সমর্থন করার মতো মিল পাওয়া যায়নি।'
-                : 'নিচের পরামর্শগুলোতে মিলের কারণ ও source দেখে সিদ্ধান্ত নিন।'}</Text>
-            {approvedReferenceCount > 0 && <Text style={styles.helper}>ব্যবহৃত source: {approvedReferenceCount}টি</Text>}
+                ? 'Evidence is available, but none supports a suitable match for this farm.'
+                : 'Review the matching factors and sources below before deciding.'}</Text>
+            {approvedReferenceCount > 0 && <Text style={styles.helper}>Evidence sources used: {approvedReferenceCount}</Text>}
             {recommendations.recommendations.map(item => (
               <RecommendationCard key={item.recommendation_id ?? item.crop.crop_id} recommendation={item} busy={busy === 'select'} onSelect={() => void selectCrop(item)} onDismiss={() => void dismissRecommendation(item)} />
             ))}
@@ -424,7 +427,7 @@ export default function CropAdvisorScreen() {
 
         {!recommendations && savedRecommendations.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>সংরক্ষিত পরামর্শ</Text>
+            <Text style={styles.sectionTitle}>Saved recommendations</Text>
             {savedRecommendations.map(item => (
               <RecommendationCard key={item.recommendation_id ?? item.crop.crop_id} recommendation={item} busy={busy === 'select'} onSelect={() => void selectCrop(item)} onDismiss={() => void dismissRecommendation(item)} />
             ))}
@@ -434,80 +437,80 @@ export default function CropAdvisorScreen() {
         {selectedSeason && (
           <View>
             <Card>
-              <Text style={styles.sectionTitle}>নির্বাচিত মৌসুম</Text>
-              <Text style={styles.body}>অবস্থা: {seasonStatus(selectedSeason.status)} · রোপণ: {formatDate(selectedSeason.planting_date)}</Text>
-              {!plan && <Button disabled={busy !== null} title={busy === 'plan' ? 'তৈরি হচ্ছে…' : 'Season plan তৈরি করুন'} onPress={() => void createPlan()} />}
+              <Text style={styles.sectionTitle}>Selected season</Text>
+              <Text style={styles.body}>Status: {seasonStatus(selectedSeason.status)} · Planted: {formatDate(selectedSeason.planting_date)}</Text>
+              {!plan && <Button disabled={busy !== null} title={busy === 'plan' ? 'Creating plan…' : 'Create season plan'} onPress={() => void createPlan()} />}
               {plan && (
                 <>
                   <Text style={styles.planTitle}>{plan.title}</Text>
-                  <Text style={styles.helper}>Source: {plan.knowledge_refs.map(ref => ref.source_name).join(', ') || 'তথ্য উল্লেখ নেই'}</Text>
+                  <Text style={styles.helper}>Sources: {plan.knowledge_refs.map(ref => ref.source_name).join(', ') || 'No sources listed'}</Text>
                   {plan.growth_stages.map(stage => (
                     <View key={stage.growth_stage_id ?? stage.sequence} style={styles.stageRow}>
                       <Text style={styles.stageNumber}>{stage.sequence}</Text>
                       <View style={styles.stageCopy}>
                         <Text style={styles.stageName}>{stage.name}</Text>
-                        <Text style={styles.helper}>{stage.start_day ?? '—'}–{stage.end_day ?? '—'} দিন</Text>
+                        <Text style={styles.helper}>{stage.start_day ?? '—'}–{stage.end_day ?? '—'} days</Text>
                       </View>
                     </View>
                   ))}
                   {plan.initial_tasks.length > 0 && (
                     <View style={styles.taskDefinitions}>
-                      <Text style={styles.label}>Module 3-এর জন্য task definition</Text>
-                      {plan.initial_tasks.map((task, index) => <Text key={`${task.title}-${index}`} style={styles.body}>• {task.title}{task.due_day_offset === null ? '' : ` · রোপণের ${task.due_day_offset} দিন পর`}</Text>)}
-                      <Text style={styles.helper}>এগুলো এখনো operational task নয়। Import করলে Module 3-এর বর্তমান API-তেই পাঠানো হবে।</Text>
-                      <Button disabled={!canImportTasks || busy !== null} title={busy === 'import' ? 'পাঠানো হচ্ছে…' : 'Module 3 task list-এ যোগ করুন'} variant="outline" onPress={() => void importTasksToModule3()} />
+                      <Text style={styles.label}>Task definitions for Module 3</Text>
+                      {plan.initial_tasks.map((task, index) => <Text key={`${task.title}-${index}`} style={styles.body}>• {task.title}{task.due_day_offset === null ? '' : ` · ${task.due_day_offset} days after planting`}</Text>)}
+                      <Text style={styles.helper}>These are not operational tasks yet. Import them through the existing Module 3 API.</Text>
+                      <Button disabled={!canImportTasks || busy !== null} title={busy === 'import' ? 'Sending…' : 'Add to Module 3 task list'} variant="outline" onPress={() => void importTasksToModule3()} />
                     </View>
                   )}
-                  {selectedSeason.status === 'planned' && <Button disabled={busy !== null} title={busy === 'activate' ? 'চালু হচ্ছে…' : 'মৌসুম active করুন'} onPress={() => void activateSeason()} />}
+                  {selectedSeason.status === 'planned' && <Button disabled={busy !== null} title={busy === 'activate' ? 'Activating…' : 'Activate season'} onPress={() => void activateSeason()} />}
                 </>
               )}
             </Card>
 
             <Card>
-              <Text style={styles.sectionTitle}>Harvest ও ফলাফল</Text>
-              <Button disabled={busy !== null} title={busy === 'harvest' ? 'তথ্য আনা হচ্ছে…' : 'Harvest guidance দেখুন'} variant="outline" onPress={() => void loadHarvestGuidance()} />
+              <Text style={styles.sectionTitle}>Harvest and outcome</Text>
+              <Button disabled={busy !== null} title={busy === 'harvest' ? 'Loading guidance…' : 'View harvest guidance'} variant="outline" onPress={() => void loadHarvestGuidance()} />
               {harvest && (
                 <View style={styles.guidance}>
                   {harvest.guidance.map((item, index) => <Text key={`g-${index}`} style={styles.body}>• {item}</Text>)}
-                  {harvest.maturity_indicators.map((item, index) => <Text key={`m-${index}`} style={styles.body}>• লক্ষণ: {item}</Text>)}
-                  {harvest.uncertainty_notes.map((item, index) => <Text key={`u-${index}`} style={styles.helper}>মনে রাখুন: {item}</Text>)}
-                  <Text style={styles.helper}>Source: {harvest.knowledge_refs.map(ref => ref.source_name).join(', ')}</Text>
+                  {harvest.maturity_indicators.map((item, index) => <Text key={`m-${index}`} style={styles.body}>• Indicator: {item}</Text>)}
+                  {harvest.uncertainty_notes.map((item, index) => <Text key={`u-${index}`} style={styles.helper}>Note: {item}</Text>)}
+                  <Text style={styles.helper}>Sources: {harvest.knowledge_refs.map(ref => ref.source_name).join(', ')}</Text>
                 </View>
               )}
-              <Text style={styles.label}>বাস্তবে harvest-এর তারিখ</Text>
-              <TextInput accessibilityLabel="বাস্তবে harvest-এর তারিখ" onChangeText={setActualHarvestDate} placeholder="YYYY-MM-DD" style={styles.input} value={actualHarvestDate} />
+              <Text style={styles.label}>Actual harvest date</Text>
+              <TextInput accessibilityLabel="Actual harvest date" onChangeText={setActualHarvestDate} placeholder="YYYY-MM-DD" style={styles.input} value={actualHarvestDate} />
               <View style={styles.inlineFields}>
                 <View style={styles.yieldInput}>
-                  <Text style={styles.label}>ফলন</Text>
-                  <TextInput accessibilityLabel="ফলন" keyboardType="decimal-pad" onChangeText={setYieldAmount} placeholder="ঐচ্ছিক" style={styles.input} value={yieldAmount} />
+                  <Text style={styles.label}>Yield</Text>
+                  <TextInput accessibilityLabel="Yield" keyboardType="decimal-pad" onChangeText={setYieldAmount} placeholder="Optional" style={styles.input} value={yieldAmount} />
                 </View>
                 <View style={styles.unitInput}>
-                  <Text style={styles.label}>একক</Text>
-                  <TextInput accessibilityLabel="ফলনের একক" onChangeText={setYieldUnit} style={styles.input} value={yieldUnit} />
+                  <Text style={styles.label}>Unit</Text>
+                  <TextInput accessibilityLabel="Yield unit" onChangeText={setYieldUnit} style={styles.input} value={yieldUnit} />
                 </View>
               </View>
-              <Text style={styles.label}>মৌসুমের নোট</Text>
-              <TextInput accessibilityLabel="মৌসুমের নোট" multiline onChangeText={setOutcomeNotes} placeholder="কেমন ফলন হয়েছে, লিখুন" style={[styles.input, styles.multiline]} value={outcomeNotes} />
-              <Button disabled={busy !== null || selectedSeason.status === 'completed' || selectedSeason.status === 'cancelled'} title={busy === 'close' ? 'সংরক্ষণ হচ্ছে…' : 'মৌসুমের ফলাফল সংরক্ষণ করুন'} variant="outline" onPress={() => void closeSeason()} />
+              <Text style={styles.label}>Season notes</Text>
+              <TextInput accessibilityLabel="Season notes" multiline onChangeText={setOutcomeNotes} placeholder="Describe the outcome" style={[styles.input, styles.multiline]} value={outcomeNotes} />
+              <Button disabled={busy !== null || selectedSeason.status === 'completed' || selectedSeason.status === 'cancelled'} title={busy === 'close' ? 'Saving…' : 'Save season outcome'} variant="outline" onPress={() => void closeSeason()} />
             </Card>
           </View>
         )}
 
         <View style={styles.historySection}>
           <View style={styles.historyHeading}>
-            <Text style={styles.sectionTitle}>আগের মৌসুম</Text>
+            <Text style={styles.sectionTitle}>Previous seasons</Text>
             <Pressable accessibilityRole="button" disabled={!canUseBackend || busy !== null} onPress={() => void loadHistory()}>
               <Text style={[styles.link, !canUseBackend && styles.disabledText]}>Refresh</Text>
             </Pressable>
           </View>
           {seasons.length === 0
-            ? <Text style={styles.helper}>{canUseBackend ? 'এখনো কোনো মৌসুম সংরক্ষণ হয়নি।' : 'সংরক্ষিত Farmland ID দিলে মৌসুমের history দেখা যাবে।'}</Text>
+            ? <Text style={styles.helper}>{canUseBackend ? 'No seasons have been saved yet.' : 'Enter a saved Farmland ID to view season history.'}</Text>
             : seasons.map(season => (
               <Pressable key={season.season_id} accessibilityRole="button" onPress={() => void openSeason(season)}>
                 <Card style={styles.historyCard}>
                   <Text style={styles.historyTitle}>{cropName(season.crop_id, savedRecommendations, recommendations?.recommendations ?? [])}</Text>
                   <Text style={styles.helper}>{seasonStatus(season.status)} · {formatDate(season.planting_date)} – {formatDate(season.actual_harvest_date ?? season.expected_harvest_date)}</Text>
-                  {season.actual_yield !== null && <Text style={styles.body}>ফলন: {season.actual_yield} {season.yield_unit ?? ''}</Text>}
+                  {season.actual_yield !== null && <Text style={styles.body}>Yield: {season.actual_yield} {season.yield_unit ?? ''}</Text>}
                 </Card>
               </Pressable>
             ))}
@@ -519,13 +522,13 @@ export default function CropAdvisorScreen() {
 
 function RecommendationCard({ recommendation, busy, onSelect, onDismiss }: { recommendation: CropRecommendation; busy: boolean; onSelect: () => void; onDismiss: () => void }) {
   const groups = [
-    ['মিলের কারণ', recommendation.reasoning.positive_factors],
-    ['সীমাবদ্ধতা', recommendation.reasoning.limiting_factors],
-    ['ঝুঁকি ও সতর্কতা', recommendation.reasoning.risks_or_concerns],
+    ['Why it fits', recommendation.reasoning.positive_factors],
+    ['Limitations', recommendation.reasoning.limiting_factors],
+    ['Risks and cautions', recommendation.reasoning.risks_or_concerns],
   ] as const;
   return (
     <Card>
-      <Text style={styles.cropName}>{recommendation.crop.name ?? 'ফসলের নাম পাওয়া যায়নি'}</Text>
+      <Text style={styles.cropName}>{recommendation.crop.name ?? 'Crop name unavailable'}</Text>
       {recommendation.crop.scientific_name && <Text style={styles.helper}>{recommendation.crop.scientific_name}</Text>}
       {groups.map(([heading, factors]) => factors.length > 0 && (
         <View key={heading} style={styles.factorGroup}>
@@ -543,32 +546,32 @@ function RecommendationCard({ recommendation, busy, onSelect, onDismiss }: { rec
       ))}
       {recommendation.status === 'proposed' ? (
         <>
-          <Button disabled={busy} title={busy ? 'সংরক্ষণ হচ্ছে…' : 'এই ফসলটি বেছে নিন'} onPress={onSelect} />
-          <Button disabled={busy} title="এখন নয়" variant="outline" onPress={onDismiss} />
+          <Button disabled={busy} title={busy ? 'Saving…' : 'Select this crop'} onPress={onSelect} />
+          <Button disabled={busy} title="Not now" variant="outline" onPress={onDismiss} />
         </>
-      ) : <Text style={styles.helper}>এই পরামর্শের অবস্থা: {recommendation.status === 'dismissed' ? 'বাদ দেওয়া হয়েছে' : 'নির্বাচিত'}</Text>}
+      ) : <Text style={styles.helper}>Recommendation status: {recommendation.status === 'dismissed' ? 'Dismissed' : 'Selected'}</Text>}
     </Card>
   );
 }
 
 function seasonStatus(status: Season['status']) {
   const labels: Record<Season['status'], string> = {
-    planned: 'পরিকল্পিত', active: 'চলমান', completed: 'সম্পন্ন', cancelled: 'বাতিল',
+    planned: 'Planned', active: 'Active', completed: 'Completed', cancelled: 'Cancelled',
   };
   return labels[status];
 }
 
 function factorLabel(factor: string) {
   const labels: Record<string, string> = {
-    soil: 'মাটি', soil_factor: 'মাটির ধরন', irrigation: 'সেচ', irrigation_factor: 'সেচের সুবিধা',
-    planting_timing: 'রোপণের সময়', climate: 'আবহাওয়া', land_area: 'জমির পরিমাণ', budget: 'বাজেট',
+    soil: 'Soil', soil_factor: 'Soil type', irrigation: 'Irrigation', irrigation_factor: 'Irrigation access',
+    planting_timing: 'Planting time', climate: 'Climate', land_area: 'Land area', budget: 'Budget',
   };
   return labels[factor] ?? factor;
 }
 
 function cropName(cropId: string, saved: CropRecommendation[], current: CropRecommendation[]) {
   const recommendation = [...current, ...saved].find(item => item.crop.crop_id === cropId);
-  return recommendation?.crop.name ?? `ফসল · ${cropId.slice(0, 8)}`;
+  return recommendation?.crop.name ?? `Crop · ${cropId.slice(0, 8)}`;
 }
 
 const styles = StyleSheet.create({

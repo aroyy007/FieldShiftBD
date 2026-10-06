@@ -23,7 +23,7 @@ const SECTIONS: { id: Exclude<Section, 'chat'>; title: string }[] = [
   { id: 'alerts', title: 'Alerts' },
   { id: 'season-plan', title: 'Season Plan' },
   { id: 'crop-health', title: 'Crop Health' },
-  { id: 'crop-advisor', title: 'ফসলের পরামর্শ' },
+  { id: 'crop-advisor', title: 'Crop Advisor' },
 ];
 
 export function FarmlandSidebar({
