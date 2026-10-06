@@ -347,8 +347,11 @@ export default function CropAdvisorScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Crop Advisor</Text>
-        <Text style={styles.subtitle}>Recommendations use approved agricultural evidence that matches your farm.</Text>
+        <View style={styles.hero}>
+          <Text style={styles.eyebrow}>FIELDSHIFT</Text>
+          <Text style={styles.title}>Crop Advisor</Text>
+          <Text style={styles.subtitle}>Make your next season plan with recommendations grounded in approved agricultural evidence.</Text>
+        </View>
 
         {farm && !UUID_PATTERN.test(routeFarmlandId ?? '') && (
           <Card style={styles.infoCard}>
@@ -575,14 +578,15 @@ function cropName(cropId: string, saved: CropRecommendation[], current: CropReco
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  container: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: SPACING.md, paddingBottom: SPACING.xxl },
-  eyebrow: { ...TYPOGRAPHY.caption, color: COLORS.primary, fontWeight: '700', letterSpacing: 1, marginBottom: SPACING.xs },
-  title: { ...TYPOGRAPHY.h1, fontSize: 28, marginBottom: SPACING.xs },
-  subtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, marginBottom: SPACING.md, lineHeight: 24 },
+  container: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: SPACING.md, paddingBottom: SPACING.xxl, gap: SPACING.xs },
+  hero: { backgroundColor: '#edf5ed', borderColor: '#dce9dd', borderWidth: 1, borderRadius: 18, padding: SPACING.lg, marginBottom: SPACING.sm },
+  eyebrow: { ...TYPOGRAPHY.caption, color: COLORS.primaryDark, fontWeight: '700', letterSpacing: 1.3, marginBottom: SPACING.sm },
+  title: { ...TYPOGRAPHY.h1, fontSize: 30, lineHeight: 36, marginBottom: SPACING.xs },
+  subtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, lineHeight: 24, maxWidth: 560 },
   sectionTitle: { ...TYPOGRAPHY.h3, marginBottom: SPACING.sm },
   body: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, lineHeight: 23 },
   label: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.text, marginTop: SPACING.sm, marginBottom: SPACING.xs },
-  input: { minHeight: 46, width: '100%', borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: COLORS.surface, paddingHorizontal: 12, paddingVertical: 10, color: COLORS.text, fontSize: 16, marginBottom: SPACING.xs },
+  input: { minHeight: 48, width: '100%', borderWidth: 1, borderColor: COLORS.border, borderRadius: 12, backgroundColor: COLORS.surface, paddingHorizontal: 14, paddingVertical: 11, color: COLORS.text, fontSize: 16, marginBottom: SPACING.xs },
   helper: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, lineHeight: 19, marginBottom: SPACING.sm },
   choiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.sm },
   choice: { minHeight: 42, minWidth: 84, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: COLORS.border, borderRadius: 22, backgroundColor: COLORS.surface },
