@@ -7,14 +7,26 @@ models; persisted farm, crop, and season records remain in ``app.models``.
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Self
+from typing import Any, Self
 from uuid import UUID
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    model_validator,
+)
 
 
 class M2Schema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("*", check_fields=False, when_used="json")
+    def serialize_decimal_values(self, value: Any) -> Any:
+        """Emit JSON numbers for Decimal fields, matching the mobile API types."""
+        return float(value) if isinstance(value, Decimal) else value
 
 
 class LandAreaUnit(StrEnum):
