@@ -37,8 +37,7 @@ from typing import Any
 from app.services.mock_farm_state import FarmStateSlice, TaskRef
 from app.services.weather_thresholds import Threshold, get_thresholds
 
-# Severity ordering helper for sorting/comparison.
-_SEVERITY_RANK = {"low": 1, "medium": 2, "high": 3}
+_SEVERITY_RANK = {"low": 1, "moderate": 2, "high": 3, "critical": 4}
 
 
 @dataclass
@@ -101,7 +100,6 @@ class SuppressionResult:
         return [d for d in self.decisions if not d.emitted]
 
 
-# ── Event detection ────────────────────────────────────────────────────────────
 def detect_events(
     weather: dict[str, Any],
     thresholds: dict[str, Threshold],
@@ -119,7 +117,6 @@ def detect_events(
 
     events: list[DetectedEvent] = []
 
-    # Heavy rain: any day whose precipitation crosses the heavy-rain threshold.
     heavy_rain = thresholds["heavy_rain_mm"]
     rain_days = [
         d for d in days
@@ -132,7 +129,7 @@ def detect_events(
         events.append(
             DetectedEvent(
                 event_type="heavy_rain",
-                severity="high" if peak_mm >= heavy_rain.value * 1.5 else "medium",
+                severity="high" if peak_mm >= heavy_rain.value * 1.5 else "moderate",
                 description=(
                     f"Heavy rain forecast: up to {peak_mm:.0f} mm on {peak['date']} "
                     f"(threshold {heavy_rain.value:.0f} {heavy_rain.unit})."
@@ -151,7 +148,6 @@ def detect_events(
             )
         )
 
-    # Heat stress: any day whose max temperature crosses the heat threshold.
     heat = thresholds["heat_stress_max_c"]
     hot_days = [
         d for d in days
@@ -164,7 +160,7 @@ def detect_events(
         events.append(
             DetectedEvent(
                 event_type="heat_stress",
-                severity="high" if peak_c >= heat.value + 3 else "medium",
+                severity="high" if peak_c >= heat.value + 3 else "moderate",
                 description=(
                     f"High temperatures forecast: up to {peak_c:.0f}degC on {peak['date']} "
                     f"(threshold {heat.value:.0f} {heat.unit})."
@@ -176,7 +172,6 @@ def detect_events(
             )
         )
 
-    # High wind: any day whose max wind crosses the wind threshold.
     wind = thresholds["high_wind_kmh"]
     windy_days = [
         d for d in days
@@ -189,7 +184,7 @@ def detect_events(
         events.append(
             DetectedEvent(
                 event_type="high_wind",
-                severity="high" if peak_kmh >= wind.value + 20 else "medium",
+                severity="high" if peak_kmh >= wind.value + 20 else "moderate",
                 description=(
                     f"Strong winds forecast: up to {peak_kmh:.0f} km/h on {peak['date']} "
                     f"(threshold {wind.value:.0f} {wind.unit})."
@@ -204,12 +199,6 @@ def detect_events(
     return events
 
 
-# ── Suppression: does the event change a required action? ──────────────────────
-#
-# Each event type maps to the task categories it would change. An event is only
-# promoted to an alert if the farm has an active task in one of those categories
-# (or, for some events, a crop/stage-level standing action). Otherwise it is
-# suppressed: the weather is real but changes nothing the farmer must do.
 _EVENT_IMPACT = {
     "heavy_rain": {"irrigation", "spraying", "fertilizing"},
     "heat_stress": {"irrigation", "transplanting"},
@@ -290,7 +279,6 @@ def _compose_advice(
             "drift and crop damage.",
         )
 
-    # Fallback (should not hit for known event types).
     return (
         f"Weather alert: {event.event_type}",
         event.description,
@@ -310,7 +298,6 @@ def run_suppression(
     thresholds = get_thresholds(threshold_overrides)
     events = detect_events(weather, thresholds)
     decisions = [_decide(event, farm) for event in events]
-    # Most severe emitted alerts first.
     decisions.sort(
         key=lambda d: (d.emitted, _SEVERITY_RANK.get(d.event.severity, 0)),
         reverse=True,

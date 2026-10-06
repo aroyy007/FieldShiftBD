@@ -62,7 +62,7 @@ class ProviderStatusOut(BaseModel):
     """Availability of one upstream provider (graceful-degradation signal)."""
 
     provider: str
-    state: str  # available | unavailable
+    state: str
     reason: str | None = None
 
 

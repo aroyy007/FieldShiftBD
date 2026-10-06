@@ -23,7 +23,6 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-# Stable demo UUIDs so repeated runs/tests reference the same Golden Farm rows.
 GOLDEN_FARMLAND_ID = uuid.UUID("00000000-0000-4000-8000-000000000001")
 GOLDEN_SEASON_ID = uuid.UUID("00000000-0000-4000-8000-000000000002")
 GOLDEN_GROWTH_STAGE_ID = uuid.UUID("00000000-0000-4000-8000-000000000003")
@@ -42,9 +41,9 @@ class TaskRef:
     id: uuid.UUID
     title: str
     category: str
-    status: str          # pending | due | completed | skipped | overdue
+    status: str
     due_date: date | None
-    source: str          # season_plan | weather | disease | farmer | system
+    source: str
 
 
 @dataclass(frozen=True)
@@ -88,8 +87,6 @@ def _golden_farm(*, with_irrigation_task: bool) -> FarmStateSlice:
         farmland_id=GOLDEN_FARMLAND_ID,
         season_id=GOLDEN_SEASON_ID,
         growth_stage_id=GOLDEN_GROWTH_STAGE_ID,
-        # Comilla, Bangladesh (demo coordinates; app has no auth, so these are
-        # the shared-demo point, not a real farmer's private location).
         latitude=23.46,
         longitude=91.18,
         crop_name="Potato",
@@ -99,7 +96,6 @@ def _golden_farm(*, with_irrigation_task: bool) -> FarmStateSlice:
     )
 
 
-# Two canonical fixtures for the suppression demo/tests.
 _FIXTURES: dict[uuid.UUID, FarmStateSlice] = {
     GOLDEN_FARMLAND_ID: _golden_farm(with_irrigation_task=True),
 }

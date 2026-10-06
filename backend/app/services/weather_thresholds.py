@@ -34,7 +34,6 @@ class Threshold:
         }
 
 
-# Default threshold set. Keyed for lookup; each carries its own provenance.
 DEFAULT_THRESHOLDS: dict[str, Threshold] = {
     "heavy_rain_mm": Threshold(
         key="heavy_rain_mm",
