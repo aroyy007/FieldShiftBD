@@ -1,22 +1,43 @@
-"""ORM model registry.
+from app.models.base import Base
+from app.models.chat import ChatMessage, Conversation
+from app.models.core import (
+    AgriculturalKnowledge,
+    Crop,
+    CropVariety,
+    Farmer,
+    Farmland,
+    FarmlandCropPreference,
+)
+from app.models.disease import DiseaseResult
+from app.models.profile import FarmerProfile
+from app.models.season import (
+    CropRecommendation,
+    GrowthStage,
+    Season,
+    SeasonPlan,
+)
+from app.models.state import FarmCheckin, Problem, Task
+from app.models.weather import WeatherAlert, WeatherEvent
 
-Importing this package imports every module's model file so that all tables
-are registered on the single shared ``Base.metadata`` (see ``base.py``). Alembic
-imports this package from ``alembic/env.py`` so ``--autogenerate`` can see the
-full schema in one place.
-
-Each module owns its own model file (see ``backend/guide.md``). As other
-modules land, add their imports here, e.g.::
-
-    from app.models import core      # noqa: F401  (farmers, farmlands, crops)
-    from app.models import season    # noqa: F401  (M2)
-    from app.models import state     # noqa: F401  (M3)
-    from app.models import chat      # noqa: F401  (M5)
-    from app.models import disease   # noqa: F401  (M6)
-
-The weather models (weather_events / weather_alerts) are owned by Module 3's
-model file and land at merge; M4 defines no tables of its own, so this package
-registers nothing for now.
-"""
-
-__all__: list[str] = []
+__all__ = [
+    "AgriculturalKnowledge",
+    "Base",
+    "ChatMessage",
+    "Conversation",
+    "Crop",
+    "CropRecommendation",
+    "CropVariety",
+    "DiseaseResult",
+    "Farmer",
+    "FarmerProfile",
+    "Farmland",
+    "FarmlandCropPreference",
+    "FarmCheckin",
+    "GrowthStage",
+    "Problem",
+    "Season",
+    "SeasonPlan",
+    "Task",
+    "WeatherAlert",
+    "WeatherEvent",
+]

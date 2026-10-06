@@ -21,7 +21,7 @@ export default function AllFarmlands() {
         <Text style={styles.cardDetail}>Acreage: {item.acreage} acres</Text>
         <Text style={styles.cardDetail}>Stage: {item.growthStage}</Text>
         <View style={styles.cardFooter}>
-          <Text style={styles.footerText}>{item.tasks.filter(t => !t.completed).length} pending tasks</Text>
+        <Text style={styles.footerText}>{item.tasks.filter(t => t.status === 'pending').length} pending tasks</Text>
           <Text style={styles.footerText}>{item.alerts.length} alerts</Text>
         </View>
       </Card>

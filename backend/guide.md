@@ -18,18 +18,15 @@
 
 ```text
 backend/
-├── docker-compose.yml   → Runs our PostgreSQL database inside Docker
-├── .env                 → YOUR local secrets/credentials (you create this, never commit it)
-├── .env.example         → Template for the .env file (safe to commit, already in git)
-├── .python-version      → Tells pyenv to use Python 3.12.3 in this folder
+├── Dockerfile           → Instructions to build the FastAPI backend Docker image
+├── .dockerignore        → Files to exclude from the Docker image (venv, .env, etc.)
 ├── requirements.txt     → List of all Python packages the project needs
 │
 ├── alembic.ini          → Alembic configuration (do not edit this)
 ├── alembic/
 │   ├── env.py           → Wires Alembic to our database settings (do not edit this)
-│   └── versions/        → Migration files that create/modify DB tables
-│                           ⚠️ NEVER delete or edit files here manually.
-│                           ⚠️ Always commit new migration files to git.
+│   └── versions/        → Versioned migration files that create/modify DB tables
+│                           ⚠️ Commit reviewed migration files with model changes.
 │
 └── app/
     ├── main.py          → FastAPI app entry point (registers all routes)
@@ -38,44 +35,46 @@ backend/
     │   └── database.py  → Creates the DB connection and session
     ├── models/          → SQLAlchemy models = the actual database tables in Python
     │   ├── core.py      → Tables: farmers, farmlands, crops
-    │   ├── profile.py   → Module 1 tables: farmer_profiles, farm_history
+    │   ├── profile.py      → Module 1 tables: farmer_profiles
     │   ├── season.py    → Module 2 tables: seasons, season_plans, growth_stages
-    │   ├── state.py     → Module 3 tables: farm_states, tasks, problems, checkins
+    │   ├── state.py        → Module 3 tables: tasks, problems, checkins
     │   ├── weather.py   → Module 4 tables: weather_events, weather_alerts
     │   ├── chat.py      → Module 5 tables: conversations, chat_messages
     │   └── disease.py   → Module 6 tables: disease_results
     ├── schemas/         → Pydantic models = validates API request/response JSON
     ├── services/        → Business logic (calculations, AI calls, etc.)
     └── api/             → HTTP routes (what URLs the API exposes)
-        ├── dependencies.py           → Shared dependencies (DB session, auth)
-        ├── routes_m1_profile.py      → /profile/* endpoints
-        ├── routes_m2_advisor.py      → /advisor/* endpoints
-        ├── routes_m3_farm_brain.py   → /farm-brain/* endpoints
-        ├── routes_m4_weather.py      → /weather/* endpoints
-        ├── routes_m5_chat.py         → /chat/* endpoints
-        └── routes_m6_disease.py      → /disease/* endpoints
+        ├── routes_system.py              → /health endpoint
+        ├── routes_m1_profile.py          → /profile/* endpoints
+        ├── routes_m2_advisor.py          → /advisor/* endpoints
+        ├── routes_m3_farm_brain.py       → /farm-brain/* endpoints
+        ├── routes_m4_weather.py          → /weather/* endpoints
+        ├── routes_m5_chat.py             → /chat/* endpoints
+        └── routes_m6_disease.py          → /disease/* endpoints
 ```
 
 ---
 
 ## ⚠️ Before You Run Any Command
 
-All commands in this guide must be run inside the `backend/` folder.
+Run Docker Compose commands from the repository root, where the shared
+`docker-compose.yml` and `.env` file live. Run Python/Alembic commands inside
+the API container as shown below.
 You can use the **integrated terminal of your IDE** (VS Code, PyCharm, etc.) or any standalone terminal (macOS Terminal, Windows PowerShell, Windows Terminal).
 
-**Open your terminal and navigate to the backend folder first:**
+**Open your terminal and navigate to the repository root first:**
 
 **macOS / Linux:**
 ```bash
-cd path/to/FieldShiftBD/backend
+cd path/to/FieldShiftBD
 ```
 
 **Windows (PowerShell):**
 ```powershell
-cd path\to\FieldShiftBD\backend
+cd path\to\FieldShiftBD
 ```
 
-> ✅ All commands from this point forward assume your terminal is already inside `backend/`.
+> ✅ All commands from this point forward assume your terminal is already at the repository root.
 
 ---
 
@@ -88,11 +87,11 @@ cd path\to\FieldShiftBD\backend
 
 ### Step 1 — Install Docker Desktop
 
-Docker is used to run the PostgreSQL database on your machine without installing Postgres directly.
+Docker is the **only tool you need to install** to run the entire backend (the FastAPI server AND the database). No Python installation, no virtual environments, no pyenv.
 
 - Download and install Docker Desktop from: https://www.docker.com/products/docker-desktop/
-- After installing, **open Docker Desktop** and leave it running in the background.
-- Verify it works by running this in your terminal:
+- After installing, **open Docker Desktop** and leave it running in the background whenever you are coding.
+- Verify it works:
   ```bash
   docker --version
   ```
@@ -100,90 +99,7 @@ Docker is used to run the PostgreSQL database on your machine without installing
 
 ---
 
-### Step 2 — Install Python 3.12.3
-
-We all use **the exact same Python version** to avoid compatibility issues.
-
-**On macOS (using pyenv — recommended):**
-```bash
-# Install pyenv (skip if already installed)
-brew install pyenv
-
-# Add pyenv to your shell (for zsh, the default on macOS)
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc
-echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc
-echo 'eval "$(pyenv init -)"' >> ~/.zshrc
-source ~/.zshrc
-
-# Install the required Python version
-pyenv install 3.12.3
-```
-> ✅ Once done, pyenv will automatically switch to Python 3.12.3 whenever you `cd` into the `backend/` folder, because of the `.python-version` file already there.
-
-**On Windows (using pyenv-win):**
-```powershell
-# Install pyenv-win (run in PowerShell as Administrator)
-Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
-
-# Close and reopen PowerShell, then run:
-pyenv install 3.12.3
-pyenv global 3.12.3
-```
-> ⚠️ If you get an Execution Policy error, first run:
-> `Set-ExecutionPolicy Unrestricted -Scope CurrentUser`
-
----
-
-### Step 3 — Create a Virtual Environment
-
-A virtual environment keeps the project's Python packages isolated from the rest of your machine.
-
-> ⚠️ Make sure you are inside the `backend/` folder before running these commands.
-
-**On macOS / Linux:**
-```bash
-python3 -m venv venv
-```
-
-**On Windows (PowerShell):**
-```powershell
-python -m venv venv
-```
-
----
-
-### Step 4 — Activate the Virtual Environment
-
-You must activate the virtual environment to use it. **You will do this every day**, but you need to create it only once (Step 3 above).
-
-**On macOS / Linux:**
-```bash
-source venv/bin/activate
-```
-
-**On Windows (PowerShell):**
-```powershell
-.\venv\Scripts\Activate
-```
-
-> ✅ When active, you will see `(venv)` at the start of your terminal prompt, like:
-> `(venv) fahim@MacBook backend %`
-
----
-
-### Step 5 — Install Python Packages
-
-With the virtual environment **activated**, install all required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-> ✅ This reads `requirements.txt` and installs the exact package versions the project needs (FastAPI, SQLAlchemy, Alembic, etc.).
-
----
-
-### Step 6 — Create Your `.env` File
+### Step 2 — Create Your `.env` File
 
 The `.env` file holds your local database credentials. It is **never committed to git** to keep secrets safe.
 
@@ -197,7 +113,44 @@ cp .env.example .env
 copy .env.example .env
 ```
 
-> ✅ The default values in `.env.example` already match the Docker database settings, so you do **not** need to change anything in the file unless you customised your Docker setup.
+> ✅ The root `.env.example` supplies matching settings to PostgreSQL and the API. It is for local development only; change credentials in your local `.env` if needed.
+
+---
+
+### Step 3 — Build and Start Everything
+
+This one command builds and starts the FastAPI backend, PostgreSQL database, and Expo web frontend:
+
+```bash
+docker compose up --build
+```
+
+> ✅ The **first time** you run this, it downloads the Python and Postgres Docker images. This may take 1-2 minutes depending on your internet speed. Every time after that it will be instant.
+>
+> ✅ The `--build` flag builds both app images. Use it the first time and after changing `backend/requirements.txt`, either Dockerfile, or frontend dependencies. Otherwise use `docker compose up`.
+
+Wait until you see this line in the output:
+```
+api-1  | INFO:     Application startup complete.
+```
+
+The backend is now fully running! Open your browser and visit:
+- **Frontend (Expo web):** `http://localhost:8082`
+- **API:** `http://localhost:8000`
+- **Swagger Docs:** `http://localhost:8000/docs`
+- **Health Check:** `http://localhost:8000/health`
+
+---
+
+### Step 4 — Verify the Database Connection
+
+The API container runs `alembic upgrade head` before starting FastAPI. On first startup,
+the committed initial migration creates all tables. On later startups, Alembic applies
+new committed migrations and preserves existing data. If migration fails, the API does
+not start.
+
+Check `http://localhost:8000/health`. A healthy response includes
+`"database": "connected"`.
 
 ---
 
@@ -207,68 +160,40 @@ copy .env.example .env
 
 ---
 
-### Step 1 — Start Docker Desktop
+### Step 1 — Open Docker Desktop
 
-Open Docker Desktop from your Applications (macOS) or Start Menu (Windows) and wait for it to fully load.
-
----
-
-### Step 2 — Start the Database Container
-
-This starts the PostgreSQL database in the background:
-
-```bash
-docker-compose up -d
-```
-
-> ✅ The `-d` flag means it runs in the background so your terminal stays free.
-> You will see: `Container fieldshift_pg  Started`
-
-To stop the database when you are done for the day:
-```bash
-docker-compose down
-```
+Make sure Docker Desktop is open and running before proceeding.
 
 ---
 
-### Step 3 — Activate Your Virtual Environment
+### Step 2 — Start All Containers
 
-**On macOS / Linux:**
 ```bash
-source venv/bin/activate
+docker compose up
 ```
 
-**On Windows (PowerShell):**
-```powershell
-.\venv\Scripts\Activate
+> ✅ Notice there is no `--build` this time. Rebuild after changing backend/frontend dependencies or either Dockerfile.
+>
+> ✅ The FastAPI server has **hot-reload** enabled. When you save any `.py` file, the server automatically restarts inside the container. You will see the reload in the terminal output. No need to stop and restart anything.
+
+To stop everything when you are done for the day, press `Ctrl + C` in the terminal.
+
+Or to stop and remove the containers:
+```bash
+docker compose down
 ```
 
 ---
 
-### Step 4 — Pull Latest Code and Run Migrations
+### Step 3 — Pull Latest Code and Apply Migrations
 
-After pulling new code from git, always run:
+After pulling new code from a teammate:
 ```bash
 git pull
-alembic upgrade head
+docker compose restart api
 ```
 
-> ✅ `alembic upgrade head` checks the `alembic/versions/` folder for any new migration files that a teammate may have pushed and applies those changes to your local database. Running it even when there is nothing new is completely safe — it simply does nothing.
-
----
-
-### Step 5 — Start the FastAPI Server
-
-```bash
-uvicorn app.main:app --reload
-```
-
-> ✅ `--reload` means the server automatically restarts whenever you save a Python file. This is your development mode flag.
-
-The server runs at:
-- **API Base URL:** `http://127.0.0.1:8000`
-- **Swagger Docs (interactive API explorer):** `http://127.0.0.1:8000/docs`
-- **ReDoc Docs:** `http://127.0.0.1:8000/redoc`
+> ✅ The API runs `alembic upgrade head` at startup. If dependencies or a Dockerfile changed, rebuild with `docker compose up --build`.
 
 ---
 
@@ -278,16 +203,16 @@ If you add a new table or add/remove a column in any file inside `app/models/`, 
 
 **Step 1 — Generate the migration file automatically:**
 ```bash
-alembic revision --autogenerate -m "describe what you changed here"
+docker compose exec api alembic revision --autogenerate -m "describe what you changed"
 ```
 Example:
 ```bash
-alembic revision --autogenerate -m "added crop variety field to seasons"
+docker compose exec api alembic revision --autogenerate -m "added crop variety field to seasons"
 ```
 
 **Step 2 — Apply the migration to your local database:**
 ```bash
-alembic upgrade head
+docker compose exec api alembic upgrade head
 ```
 
 **Step 3 — Commit the new migration file:**
@@ -297,7 +222,26 @@ git commit -m "migration: added crop variety field to seasons"
 git push
 ```
 
-> ⚠️ **Important:** Always commit your migration files. Your teammates will run `alembic upgrade head` after pulling your code and their databases will be updated automatically. Never delete or manually edit files inside `alembic/versions/`.
+> ⚠️ **Important:** Commit reviewed migration files with model changes. Teammates' API containers apply them at startup. Never delete a migration that has already been applied to a shared database.
+
+---
+
+## 📦 Part 4: When You Install a New Package
+
+If you need to add a new Python package:
+
+1. Add it to `requirements.txt` manually (with a pinned version).
+2. Rebuild the Docker image so the new package is installed inside the container:
+   ```bash
+   docker compose up --build
+   ```
+3. Commit the updated `requirements.txt`:
+   ```bash
+   git add requirements.txt
+   git commit -m "chore: added <package-name> to requirements"
+   ```
+
+> ✅ Do **NOT** run `pip install` directly. Since everything runs inside Docker, the package must be added to `requirements.txt` and the image must be rebuilt so all teammates get it automatically.
 
 ---
 
@@ -305,29 +249,34 @@ git push
 
 | Task | Command |
 |---|---|
-| Activate venv (Mac) | `source venv/bin/activate` |
-| Activate venv (Windows) | `.\venv\Scripts\Activate` |
-| Start DB | `docker-compose up -d` |
-| Stop DB | `docker-compose down` |
-| Apply DB migrations | `alembic upgrade head` |
-| Start dev server | `uvicorn app.main:app --reload` |
-| Install new packages | `pip install <package>` then update `requirements.txt` |
-| Generate migration | `alembic revision --autogenerate -m "message"` |
-| Check current DB version | `alembic current` |
-| See migration history | `alembic history` |
+| Start everything (first time) | `docker compose up --build` |
+| Start everything (daily) | `docker compose up` |
+| Stop everything | `Ctrl + C` or `docker compose down` |
+| Apply DB migrations manually | `docker compose exec api alembic upgrade head` |
+| Generate new migration | `docker compose exec api alembic revision --autogenerate -m "msg"` |
+| Check current DB version | `docker compose exec api alembic current` |
+| See migration history | `docker compose exec api alembic history` |
+| Open a shell inside the API container | `docker compose exec api sh` |
+| List databases in Postgres | `docker compose exec db psql -U fieldshift_user -d fieldshift_db -c "\l"` |
 
 ---
 
 ## 🚨 Common Issues
 
-**`ModuleNotFoundError: No module named 'fastapi'`**
-→ Your virtual environment is not activated. Run `source venv/bin/activate` (Mac) or `.\venv\Scripts\Activate` (Windows).
+**`Cannot connect to the Docker daemon`**
+→ Docker Desktop is not running. Open it and wait for it to fully start, then try again.
+
+**`port is already allocated`**
+→ Something else on your machine is using port `8000`, `8082`, or `5433`. Stop that process or change the corresponding port in the root `docker-compose.yml`.
+
+**`ModuleNotFoundError: No module named 'xxx'`**
+→ You added a package but didn't rebuild. Run `docker compose up --build`.
 
 **`psycopg2.OperationalError: could not connect to server`**
-→ The database container is not running. Run `docker-compose up -d` and try again.
+→ The `db` container is not healthy yet. Wait a few seconds and try again. If it persists, run `docker compose down` then `docker compose up`.
 
 **`alembic.util.exc.CommandError: Target database is not up to date.`**
-→ Run `alembic upgrade head` to apply pending migrations.
+→ The API applies committed migrations at startup. Check `docker compose logs api`; restart with `docker compose restart api`. For a manual retry, run `docker compose exec api alembic upgrade head`.
 
 **`Error: .env file not found`**
 → You have not created your `.env` file yet. Run `cp .env.example .env` (Mac) or `copy .env.example .env` (Windows).

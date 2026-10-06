@@ -28,16 +28,23 @@ export default function FarmlandDetailLayout() {
     ? 'alerts'
     : pathname.endsWith('/tasks')
       ? 'tasks'
-      : pathname.endsWith('/season-plan')
-        ? 'season-plan'
-        : pathname.endsWith('/crop-health')
-          ? 'crop-health'
-          : 'chat';
+      : pathname.endsWith('/check-ins')
+        ? 'check-ins'
+        : pathname.endsWith('/problems')
+          ? 'problems'
+          : pathname.endsWith('/season-plan')
+            ? 'season-plan'
+            : pathname.endsWith('/crop-health')
+              ? 'crop-health'
+              : farmId && pathname === `/farmlands/${farmId}`
+                ? 'overview'
+                : 'chat';
 
-  const openSection = (section: 'chat' | 'alerts' | 'tasks' | 'season-plan' | 'crop-health') => {
+  const openSection = (section: 'overview' | 'chat' | 'alerts' | 'tasks' | 'check-ins' | 'problems' | 'season-plan' | 'crop-health') => {
     if (!farmId) return;
     setDrawerOpen(false);
-    router.replace(`/farmlands/${farmId}/${section}` as Href);
+    const path = section === 'overview' ? `/farmlands/${farmId}` : `/farmlands/${farmId}/${section}`;
+    router.replace(path as Href);
   };
 
   const openNewChat = () => {

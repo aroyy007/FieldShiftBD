@@ -12,23 +12,22 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # ── Pull the DATABASE_URL from our app settings (reads .env) ──────────────────
 from app.core.config import settings
+from app.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Override sqlalchemy.url with the value from our .env file
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option(
+    "sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%")
+)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# ── Target metadata for autogenerate ─────────────────────────────────────────
-# Once models are created, import Base and set:
-#   from app.models.base import Base
-#   target_metadata = Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

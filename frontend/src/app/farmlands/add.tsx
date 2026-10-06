@@ -23,7 +23,8 @@ export default function AddFarmland() {
       name, crop,
       acreage: parseFloat(acreage) || 0,
       growthStage: 'Preparation',
-      tasks: [], alerts: [], seasonPlan: [],
+      currentGrowthStageId: null,
+      tasks: [], alerts: [], seasonPlan: [], problems: [], checkIns: [],
       cropHealth: { status: 'Unknown', diseaseRisk: 'Low', recentIssues: [] },
     });
     router.back();

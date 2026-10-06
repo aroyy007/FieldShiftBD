@@ -1,15 +1,32 @@
-"""Shared SQLAlchemy declarative base.
+from datetime import datetime
+from uuid import UUID, uuid4
 
-All ORM models across every module inherit from this single ``Base`` so that
-Alembic's ``--autogenerate`` sees one unified ``MetaData``. Keeping it in its
-own module (rather than inside any one module's model file) avoids import
-cycles and matches the folder layout described in ``backend/guide.md``.
-"""
-
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import DateTime, MetaData, Uuid, func, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
-    """Project-wide declarative base for all ORM models."""
+    metadata = MetaData()
 
-    pass
+
+class UUIDPrimaryKey:
+    id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+        server_default=text("gen_random_uuid()"),
+    )
+
+
+class TimestampMixin:
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
