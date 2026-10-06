@@ -14,9 +14,9 @@ modules land, add their imports here, e.g.::
     from app.models import chat      # noqa: F401  (M5)
     from app.models import disease   # noqa: F401  (M6)
 
-Only the Module 4 (weather) models exist on this branch for now.
+The weather models (weather_events / weather_alerts) are owned by Module 3's
+model file and land at merge; M4 defines no tables of its own, so this package
+registers nothing for now.
 """
 
-from app.models import weather  # noqa: F401  (M4: weather_events, weather_alerts)
-
-__all__ = ["weather"]
+__all__: list[str] = []
