@@ -1,18 +1,16 @@
-# Use the exact Python version the team agreed on
+# Use the exact Python version the team agreed on.
 FROM python:3.12.3-slim
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Install dependencies first (Docker caches this layer separately for faster rebuilds)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements-ml.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-ml.txt
 
-# Copy the rest of the application code
+# The model checkpoint is a local, ignored artifact. Provide it in backend/model
+# (or mount it and set DISEASE_MODEL_WEIGHTS_PATH) before building/running.
 COPY . .
 
-# Expose the port Uvicorn will run on
 EXPOSE 8000
 
-# Start the FastAPI server with hot-reload enabled
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
