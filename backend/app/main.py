@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import routes_disease, routes_farm_state, routes_m4_weather, routes_system
+from app.api import (
+    routes_disease,
+    routes_farm_state,
+    routes_m2_advisor,
+    routes_m4_weather,
+    routes_system,
+)
 from app.core.config import settings
 
 app = FastAPI(title="FieldShift API")
@@ -16,8 +22,8 @@ if cors_origins:
         allow_headers=["*"],
     )
 
-# Include all module routers here.
 app.include_router(routes_system.router)
 app.include_router(routes_m4_weather.router)
 app.include_router(routes_farm_state.router)
+app.include_router(routes_m2_advisor.router)
 app.include_router(routes_disease.router)

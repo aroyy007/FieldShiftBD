@@ -1,0 +1,178 @@
+{
+  "register_version": 2,
+  "research_date": "2026-10-07",
+  "purpose": "Auditable source research and policy-accepted snapshots for M2.",
+  "status": "one_region_only_source_policy_snapshot_pending_m1_catalog_import",
+  "initial_crop_coverage": {
+    "selected": [
+      {
+        "crop": "Potato",
+        "reason": "The plan.md Golden Farm integration scenario names potato.",
+        "database_crop_id": null,
+        "production_knowledge_records": 0,
+        "policy_accepted_snapshots": 1,
+        "snapshot_scope": "Potato / Comilla upazila regional area distribution only"
+      }
+    ],
+    "future_candidates": [
+      {
+        "crop": "Wheat",
+        "reason": "Appears in frontend demo data, which does not establish Bangladesh agronomic context."
+      },
+      {
+        "crop": "Maize",
+        "reason": "Appears as Corn in frontend demo data, which does not establish Bangladesh agronomic context."
+      }
+    ],
+    "coverage_limitation": "The repository contains no crop or crop-variety seed records to bind sources to database identifiers."
+  },
+  "review_workflow": {
+    "production_approval": "The exact BARC Potato/Comilla upazila snapshot is accepted by m2-barc-upazila-zoning-v1 after deterministic source, hash, area-total, crop/locality, and freshness checks. Other claims remain unapproved until covered by this policy or human review.",
+    "limitation": "No human reviewer is assigned. The accepted map has no published data vintage and supports regional area context only; M1's crop catalog is required before importing the snapshot into agricultural_knowledge."
+  },
+  "sources": [
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Land Suitability Assessment and Crop Zoning of Bangladesh — Introduction and methodology",
+      "url": "https://apps.barc.gov.bd/cropzoning/homes/intro",
+      "publication_or_update_date": null,
+      "date_note": "No publication or dataset version date was visible on the reviewed page.",
+      "source_type": "government_research_portal",
+      "facts_supported": [
+        "The page describes suitability assessment using agro-edaphic and agro-climatic inputs.",
+        "The page describes suitability classes and states that crop zoning is generated at upazila level."
+      ],
+      "m2_categories": ["crop_suitability_methodology", "regional_suitability_context"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "Methodology is not itself a potato recommendation for an individual farm.",
+        "The page does not provide an effective period for the displayed datasets.",
+        "Local recommendation requires the matching verified crop and locality data; no Comilla-local data version was verified for ingestion."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Suitability Map of Potato — Bangladesh map",
+      "url": "https://apps.barc.gov.bd/cropzoning/homes/bdMap/12",
+      "publication_or_update_date": null,
+      "date_note": "No publication or dataset version date was visible on the reviewed page.",
+      "source_type": "government_research_map",
+      "facts_supported": [
+        "The page displays Bangladesh-wide potato land-area totals by suitability class."
+      ],
+      "m2_categories": ["regional_suitability_context"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "National aggregate area totals do not establish suitability for a specific farm, district, or upazila.",
+        "No effective date or verified downloadable data snapshot was recorded."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Suitability Map of Potato — Comilla upazila",
+      "url": "https://apps.barc.gov.bd/cropzoning/homes/upazila/12/195",
+      "publication_or_update_date": null,
+      "date_note": "The map page does not publish an underlying data version. Snapshot captured 2026-10-07; source and methodology response hashes are recorded in barc_potato_comilla_snapshot.json.",
+      "source_type": "government_research_portal",
+      "facts_supported": [
+        "The page reports mapped area by Potato suitability class for Comilla upazila.",
+        "Very suitable 1645 ha; suitable 11020 ha; moderately suitable 2544 ha; marginally suitable 0 ha; not suitable 5364 ha; total 20573 ha."
+      ],
+      "m2_categories": ["regional_suitability_context"],
+      "production_knowledge_eligible_now": true,
+      "acceptance_policy": "m2-barc-upazila-zoning-v1",
+      "limitations": [
+        "The map reports upazila aggregate area, not field-level suitability.",
+        "The map data vintage is not stated; accepted snapshots expire after 180 days.",
+        "This evidence does not provide season stages, tasks, or harvest guidance."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Crop Suitability Maps and Data / Crop Zone Maps and Data",
+      "url": "https://apps.barc.gov.bd/cropzoning/homes/downloads/2",
+      "publication_or_update_date": null,
+      "date_note": "No publication or dataset version date was visible on the reviewed page.",
+      "source_type": "government_research_data_catalogue",
+      "facts_supported": [
+        "The catalogue lists potato, wheat, maize, and other crops as having map/data entries."
+      ],
+      "m2_categories": ["source_discovery_only"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "A catalogue listing does not establish any crop-specific fact.",
+        "Download/view flow requests login; no underlying data file was added or ingested."
+      ]
+    },
+    {
+      "organization": "Department of Agricultural Extension (DAE)",
+      "document_or_page_title": "Vegetable and Tuber Crop Production Technology",
+      "url": "https://dae.gov.bd/site/page/3d0f176f-2d1b-4b0a-b3f6-052b94d9fa38/",
+      "publication_or_update_date": "2014-05-26",
+      "date_note": "The DAE page lists this last-updated date.",
+      "source_type": "government_extension_index",
+      "facts_supported": [
+        "The index lists potato among the tuber-crop production-technology topics."
+      ],
+      "m2_categories": ["source_discovery_only"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "The index listing alone does not support planting, suitability, lifecycle, or harvest facts.",
+        "The linked detailed potato content was not verified as a dated candidate record."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Institute (BARI)",
+      "document_or_page_title": "Agricultural Technology Handbook",
+      "url": "https://bari.gov.bd/site/page/841c811d-14ad-4796-97a4-41cd602d3cfa/agro-technology-hand-book",
+      "publication_or_update_date": "2025-08-28",
+      "date_note": "The BARI page lists this last-updated date for the handbook index; the handbook edition itself must be verified before extracting claims.",
+      "source_type": "national_research_institute_publication_index",
+      "facts_supported": [
+        "BARI lists agricultural technology handbook editions as available resources."
+      ],
+      "m2_categories": ["source_discovery_only"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "The index page alone does not establish crop-specific claims or the handbook's publication/effective date.",
+        "No handbook content was extracted into M2 knowledge."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Institute (BARI)",
+      "document_or_page_title": "New Technologies",
+      "url": "https://bari.gov.bd/pages/static-pages/6922dd2b933eb65569e13c4e",
+      "publication_or_update_date": "2024-10-07",
+      "date_note": "The BARI page lists this last-updated date.",
+      "source_type": "national_research_institute_publication_index",
+      "facts_supported": [
+        "The page lists crop technology titles, including potato-related resources."
+      ],
+      "m2_categories": ["source_discovery_only"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "An index title does not support a specific agronomic claim.",
+        "Linked publication details and dates were not independently verified for an M2 candidate record."
+      ]
+    },
+    {
+      "organization": "Bangladesh Rice Research Institute (BRRI)",
+      "document_or_page_title": "ধান চাষ (Rice Cultivation) — BRRI Rice Profile",
+      "url": "https://riceprofile.brri.gov.bd/cultivation/paddy",
+      "publication_or_update_date": null,
+      "date_note": "No publication date was visible on the reviewed index page.",
+      "source_type": "national_research_institute_extension_resource",
+      "facts_supported": [
+        "The page is an index of BRRI-recommended rice cultivation methods and field guides."
+      ],
+      "m2_categories": ["source_discovery_only"],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "Rice is not named in the Golden Farm scenario or frontend crop examples selected for initial coverage.",
+        "The page is an index; no individual guide was extracted into M2 knowledge."
+      ]
+    }
+  ],
+  "candidate_facts": [],
+  "exclusion_reason": "Only the exact Comilla-upazila Potato map snapshot is eligible through the documented automated source policy. It is not imported into the database until M1 provides the Potato crop catalog row, and the record is constrained to regional context."
+}
