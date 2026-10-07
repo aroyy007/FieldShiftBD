@@ -366,8 +366,9 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
     stage_name = ctx.growth_stage.name if ctx.growth_stage else "current growth phase"
 
     if intent == "disease_inquiry":
+        crop_context = ctx.active_crop.name if ctx.active_crop else "your field"
         return (
-            f"For issues with {crop_name}, please upload a photo in the Crop Health & Disease tab. "
+            f"For issues with {crop_context}, please upload a photo in the Crop Health & Disease tab. "
             "Our AI will analyze the visible symptoms and record the diagnosis directly in your farm problems list."
         )
     elif intent == "weather_inquiry":
@@ -378,7 +379,28 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
     elif intent == "task_inquiry":
         if ctx.pending_tasks:
             tasks_list = ", ".join(t.title for t in ctx.pending_tasks[:3])
-            return f"For the {stage_name} stage of {crop_name}, upcoming tasks include: {tasks_list}. You can mark them completed in the Tasks tab."
+            if ctx.active_crop and ctx.growth_stage:
+                task_context = f"For the {stage_name} stage of {crop_name}"
+            elif ctx.active_crop:
+                task_context = f"For {crop_name}"
+            else:
+                task_context = "Your upcoming farm tasks"
+            return f"{task_context} include: {tasks_list}. You can mark them completed in the Tasks tab."
+        if not ctx.active_season:
+            return (
+                "There is no active season for this farm, so no season tasks are scheduled yet. "
+                "Start a season in Crop Advisor to create its task plan."
+            )
+        if not ctx.active_crop:
+            return (
+                "No crop is linked to this active season yet, so I cannot match tasks to a crop. "
+                "Check the season details in Crop Advisor."
+            )
+        if not ctx.growth_stage:
+            return (
+                f"There are no urgent tasks pending for {crop_name}. "
+                "Select the current growth stage in Crop Advisor to get stage-specific guidance."
+            )
         return f"No urgent tasks pending for {crop_name} in the {stage_name} stage. Keep monitoring moisture and weed growth."
     elif intent == "crop_advice":
         return (
@@ -386,8 +408,19 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
             "explore the Crop Advisor tab to view suitable crops and full seasonal plans."
         )
     else:
+        if ctx.active_crop and ctx.growth_stage:
+            farm_context = f"Your active crop is {crop_name} in the {stage_name} stage."
+        elif ctx.active_crop:
+            farm_context = (
+                f"Your active crop is {crop_name}, but its growth stage has not been set yet."
+            )
+        else:
+            farm_context = (
+                f"No crop or growth stage is set for {ctx.farmland.name} yet. "
+                "Start a season in Crop Advisor, and I can tailor advice to that crop."
+            )
         return (
-            f"Hello! I am your assistant for {ctx.farmland.name}. Your active crop is {crop_name} in the {stage_name} stage. "
+            f"Hello! I am your assistant for {ctx.farmland.name}. {farm_context} "
             "Let me know if you need help with irrigation, fertilizer timing, pest management, or upcoming tasks."
         )
 
@@ -399,8 +432,8 @@ def handle_farmer_message(
     conversation_id: UUID,
     message_text: str,
     attachment_key: str | None = None,
+    client_request_id: UUID | None = None,
 ) -> ChatResponse:
-    # 1. Fetch conversation
     conversation = db.scalar(
         select(Conversation).where(
             Conversation.id == conversation_id,
@@ -412,25 +445,80 @@ def handle_farmer_message(
         raise ValueError("Conversation not found or access denied")
 
     try:
-        # 2. Gather full farm context
         ctx = aggregate_farmland_context(db, farmland_id, farmer_id)
-
-        # 3. Classify intent
         intent = classify_intent(message_text)
+        context_summary = FarmContextSummary(
+            farmland_name=ctx.farmland.name,
+            location=ctx.farmland.district,
+            soil_type=ctx.farmland.soil_type,
+            irrigation="Available" if ctx.farmland.irrigation_available else "Not available",
+            active_crop=ctx.active_crop.name if ctx.active_crop else None,
+            growth_stage=ctx.growth_stage.name if ctx.growth_stage else None,
+            pending_tasks_count=len(ctx.pending_tasks),
+            open_problems_count=len(ctx.open_problems),
+            active_weather_alerts_count=len(ctx.recent_weather_alerts),
+            onboarding_complete=len(ctx.missing_onboarding_fields) == 0,
+            next_onboarding_question=f"Please provide your {ctx.missing_onboarding_fields[0]}"
+            if ctx.missing_onboarding_fields
+            else None,
+        )
 
-        # 4. Save farmer message
+        # Reuse the saved pair when a browser retries after losing a response.
+        if client_request_id is not None:
+            request_key = str(client_request_id)
+            request_filter = ChatMessage.metadata_json["client_request_id"].as_string() == request_key
+            existing_farmer_message = db.scalar(
+                select(ChatMessage)
+                .where(
+                    ChatMessage.conversation_id == conversation.id,
+                    ChatMessage.sender_type == "farmer",
+                    request_filter,
+                )
+                .limit(1)
+            )
+            existing_assistant_message = db.scalar(
+                select(ChatMessage)
+                .where(
+                    ChatMessage.conversation_id == conversation.id,
+                    ChatMessage.sender_type == "assistant",
+                    request_filter,
+                )
+                .limit(1)
+            )
+            if existing_farmer_message is not None and existing_assistant_message is not None:
+                saved_intent = (existing_farmer_message.metadata_json or {}).get("intent")
+                if saved_intent in {
+                    "task_inquiry",
+                    "weather_inquiry",
+                    "disease_inquiry",
+                    "crop_advice",
+                    "onboarding_help",
+                    "general_qa",
+                }:
+                    intent = saved_intent
+                return ChatResponse(
+                    conversation_id=conversation.id,
+                    farmer_message=ChatMessageRead.model_validate(existing_farmer_message),
+                    assistant_message=ChatMessageRead.model_validate(existing_assistant_message),
+                    intent=intent,
+                    context_summary=context_summary,
+                    suggested_actions=_suggested_actions(intent),
+                )
+
+        farmer_metadata = {"intent": intent}
+        if client_request_id is not None:
+            farmer_metadata["client_request_id"] = str(client_request_id)
         farmer_msg = ChatMessage(
             conversation_id=conversation.id,
             sender_type="farmer",
             message=message_text,
             message_type="image" if attachment_key else "text",
             attachment_key=attachment_key,
-            metadata_json={"intent": intent},
+            metadata_json=farmer_metadata,
         )
         db.add(farmer_msg)
         db.flush()
 
-        # 5. Fetch past messages for context
         history = list(
             db.scalars(
                 select(ChatMessage)
@@ -438,24 +526,23 @@ def handle_farmer_message(
                 .order_by(ChatMessage.created_at.asc())
             ).all()
         )
-
-        # 6. Generate reply
         system_prompt = build_system_prompt(ctx)
         reply_text = generate_gemini_reply(system_prompt, history, message_text)
         if not reply_text:
             reply_text = generate_fallback_reply(intent, ctx, message_text)
 
-        # 7. Save assistant message
+        assistant_metadata = {"intent": intent, "model": settings.GEMINI_MODEL}
+        if client_request_id is not None:
+            assistant_metadata["client_request_id"] = str(client_request_id)
         assistant_msg = ChatMessage(
             conversation_id=conversation.id,
             sender_type="assistant",
             message=reply_text,
             message_type="text",
-            metadata_json={"intent": intent, "model": settings.GEMINI_MODEL},
+            metadata_json=assistant_metadata,
         )
         db.add(assistant_msg)
 
-        # Update conversation title if first message — trigger only on default placeholder titles.
         default_titles = {"New conversation", "Chat", "New chat"}
         if not conversation.title or conversation.title in default_titles:
             short_title = message_text.strip().replace("\n", " ")
@@ -467,35 +554,8 @@ def handle_farmer_message(
         db.refresh(farmer_msg)
         db.refresh(assistant_msg)
     except Exception:
-        # Roll back the half-written transaction so the next request starts clean.
-        # Without this, a mid-flight error leaves the session in an aborted state
-        # and every subsequent chat call returns 500.
         db.rollback()
         raise
-
-    suggested_actions = []
-    if intent == "disease_inquiry":
-        suggested_actions.append("Upload photo in Crop Health")
-    elif intent == "task_inquiry":
-        suggested_actions.append("View Season Tasks")
-    elif intent == "weather_inquiry":
-        suggested_actions.append("Check Weather Alerts")
-
-    context_summary = FarmContextSummary(
-        farmland_name=ctx.farmland.name,
-        location=ctx.farmland.district,
-        soil_type=ctx.farmland.soil_type,
-        irrigation="Available" if ctx.farmland.irrigation_available else "Not available",
-        active_crop=ctx.active_crop.name if ctx.active_crop else None,
-        growth_stage=ctx.growth_stage.name if ctx.growth_stage else None,
-        pending_tasks_count=len(ctx.pending_tasks),
-        open_problems_count=len(ctx.open_problems),
-        active_weather_alerts_count=len(ctx.recent_weather_alerts),
-        onboarding_complete=len(ctx.missing_onboarding_fields) == 0,
-        next_onboarding_question=f"Please provide your {ctx.missing_onboarding_fields[0]}"
-        if ctx.missing_onboarding_fields
-        else None,
-    )
 
     return ChatResponse(
         conversation_id=conversation.id,
@@ -503,5 +563,14 @@ def handle_farmer_message(
         assistant_message=ChatMessageRead.model_validate(assistant_msg),
         intent=intent,
         context_summary=context_summary,
-        suggested_actions=suggested_actions,
+        suggested_actions=_suggested_actions(intent),
     )
+
+def _suggested_actions(intent: ChatIntent) -> list[str]:
+    if intent == "disease_inquiry":
+        return ["Upload photo in Crop Health"]
+    if intent == "task_inquiry":
+        return ["View Season Tasks"]
+    if intent == "weather_inquiry":
+        return ["Check Weather Alerts"]
+    return []

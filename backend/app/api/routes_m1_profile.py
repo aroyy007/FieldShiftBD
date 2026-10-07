@@ -424,6 +424,13 @@ def update_farmland(
     # exclude_unset=True means only fields explicitly sent in the request are updated.
     # Fields omitted from the request body are left unchanged in the DB.
     update_data = payload.model_dump(exclude_unset=True)
+    latitude = update_data.get("latitude", farmland.latitude)
+    longitude = update_data.get("longitude", farmland.longitude)
+    if (latitude is None) != (longitude is None):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Latitude and longitude must be provided together.",
+        )
     for field, value in update_data.items():
         setattr(farmland, field, value)
 

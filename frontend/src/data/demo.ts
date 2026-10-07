@@ -57,6 +57,20 @@ export type Farmland = {
   problems: FarmProblem[];
   checkIns: FarmCheckIn[];
   cropHealth: CropHealth;
+  location?: string;
+  district?: string | null;
+  landAreaUnit?: string;
+  soilType?: string | null;
+  irrigationAvailable?: boolean | null;
+  waterSource?: string | null;
+  budgetAmount?: number | null;
+  budgetCurrency?: string | null;
+  activeSeasonId?: string | null;
+  plantingDate?: string | null;
+  expectedHarvestDate?: string | null;
+  seasonProgressPercent?: number | null;
+  daysSincePlanting?: number | null;
+  dataWarning?: string;
 };
 
 export const DEMO_CREDENTIALS = {

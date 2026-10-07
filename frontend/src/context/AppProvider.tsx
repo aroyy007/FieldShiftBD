@@ -1,228 +1,393 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { apiRequest, clearAccessToken, getStoredAccessToken, saveAccessToken, setUnauthorizedHandler } from '../services/api-client';
 import {
-  ChatMessage,
-  ChatThread,
-  DEMO_CREDENTIALS,
-  DEMO_FARMLANDS,
-  FarmCheckIn,
-  Farmland,
-  FarmProblem,
-  ProblemStatus,
-  TaskStatus,
-} from '../data/demo';
+  CheckinDto,
+  FarmStateDto,
+  FarmlandCreateInput,
+  FarmlandProfileDto,
+  ProblemDto,
+  TaskDto,
+  mapFarmlandData,
+} from '../services/farm-data';
+import type { ChatMessage, ChatThread, Farmland, FarmCheckIn, ProblemStatus, TaskStatus } from '../data/demo';
+import {
+  ChatMessageItem,
+  createConversation as createRemoteConversation,
+  getConversation,
+  listConversations,
+  sendMessage as sendRemoteMessage,
+} from '../services/m5-chat';
 
+type Farmer = { id: string; name: string; phone: string };
+type FarmerProfile = {
+  farming_experience_years: number | string | null;
+  equipment: string[];
+  livestock: string[];
+  preferred_language: 'bn' | 'en';
+  onboarding_completed_at: string | null;
+};
+type ProfileResponse = {
+  farmer: { id: string; name: string; phone_e164: string };
+  profile: FarmerProfile | null;
+  farmlands: FarmlandProfileDto[];
+};
+type TokenResponse = { access_token: string; farmer_id: string };
 type AppContextType = {
-  user: { name: string; phone: string } | null;
-  login: (phone: string, pass: string) => boolean;
-  logout: () => void;
+  user: Farmer | null;
+  profile: FarmerProfile | null;
+  authLoading: boolean;
+  dataLoading: boolean;
+  loadError: string;
   farmlands: Farmland[];
-  addFarmland: (farm: Farmland) => void;
-  addTask: (farmId: string, title: string, dueAt: string | null) => void;
-  updateTaskStatus: (farmId: string, taskId: string, status: TaskStatus) => void;
-  addCheckIn: (farmId: string, notes: string, observations: FarmCheckIn['observations']) => void;
-  addProblem: (farmId: string, description: string) => void;
-  updateProblemStatus: (farmId: string, problemId: string, status: ProblemStatus) => void;
-  updateGrowthStage: (farmId: string, stageId: string) => void;
+  login: (phoneE164: string) => Promise<void>;
+  register: (name: string, phoneE164: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  refreshFarmland: (farmId: string) => Promise<void>;
+  createFarmland: (input: FarmlandCreateInput) => Promise<Farmland>;
+  updateFarmland: (farmId: string, changes: Record<string, unknown>) => Promise<void>;
+  updateFarmerProfile: (changes: Record<string, unknown>) => Promise<void>;
+  addTask: (farmId: string, title: string, dueAt: string | null) => Promise<void>;
+  updateTaskStatus: (farmId: string, taskId: string, status: TaskStatus) => Promise<void>;
+  addCheckIn: (farmId: string, notes: string, observations: FarmCheckIn['observations']) => Promise<void>;
+  addProblem: (farmId: string, description: string) => Promise<void>;
+  updateProblemStatus: (farmId: string, problemId: string, status: ProblemStatus) => Promise<void>;
+  updateGrowthStage: (farmId: string, stageId: string) => Promise<void>;
   conversations: Record<string, ChatThread[]>;
   activeConversationIds: Record<string, string | undefined>;
-  createConversation: (farmId: string) => string;
-  selectConversation: (farmId: string, conversationId: string) => void;
-  addChatMessage: (farmId: string, conversationId: string, text: string) => void;
+  refreshConversations: (farmId: string) => Promise<void>;
+  createConversation: (farmId: string) => Promise<string>;
+  selectConversation: (farmId: string, conversationId: string) => Promise<void>;
+  addChatMessage: (farmId: string, conversationId: string, text: string, clientRequestId: string) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+function readableError(error: unknown): string {
+  return error instanceof Error ? error.message : 'The request could not be completed.';
+}
+
+async function loadFarm(profile: FarmlandProfileDto): Promise<Farmland> {
+  const farmPath = `/farmlands/${encodeURIComponent(profile.id)}`;
+  const [stateResult, tasksResult, problemsResult, checkinsResult] = await Promise.allSettled([
+    apiRequest<FarmStateDto>(`${farmPath}/state`),
+    apiRequest<TaskDto[]>(`${farmPath}/tasks?limit=200`),
+    apiRequest<ProblemDto[]>(`${farmPath}/problems`),
+    apiRequest<CheckinDto[]>(`${farmPath}/check-ins?limit=100`),
+  ]);
+
+  const state = stateResult.status === 'fulfilled' ? stateResult.value : null;
+  const taskList = tasksResult.status === 'fulfilled' ? tasksResult.value : state?.tasks ?? [];
+  const problemList = problemsResult.status === 'fulfilled' ? problemsResult.value : state?.open_problems ?? [];
+  const checkinList = checkinsResult.status === 'fulfilled' ? checkinsResult.value : [];
+  const farm = mapFarmlandData(profile, state, taskList, problemList, checkinList);
+  const partialFailures = [stateResult, tasksResult, problemsResult, checkinsResult]
+    .filter(result => result.status === 'rejected').length;
+  if (partialFailures) {
+    farm.dataWarning = 'Some farm records could not be refreshed. Pull to refresh or try again.';
+  }
+  return farm;
+}
+
+function mapChatMessage(message: ChatMessageItem): ChatMessage {
+  const createdAt = new Date(message.created_at);
+  return {
+    id: message.id,
+    text: message.message ?? '',
+    sender: message.sender_type === 'farmer' ? 'farmer' : 'assistant',
+    timestamp: Number.isNaN(createdAt.getTime())
+      ? ''
+      : createdAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+  };
+}
+
+function mapChatDetail(detail: Awaited<ReturnType<typeof getConversation>>): ChatThread {
+  return {
+    id: detail.id,
+    title: detail.title || 'New chat',
+    messages: detail.messages.map(mapChatMessage),
+    updatedAt: new Date(detail.updated_at).getTime() || Date.now(),
+  };
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ name: string; phone: string } | null>(null);
-  const [farmlands, setFarmlands] = useState<Farmland[]>(DEMO_FARMLANDS);
+  const [user, setUser] = useState<Farmer | null>(null);
+  const [profile, setProfile] = useState<FarmerProfile | null>(null);
+  const [farmlands, setFarmlands] = useState<Farmland[]>([]);
   const [conversations, setConversations] = useState<Record<string, ChatThread[]>>({});
   const [activeConversationIds, setActiveConversationIds] = useState<Record<string, string | undefined>>({});
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  const login = (phone: string, pass: string) => {
-    if (phone === DEMO_CREDENTIALS.phone && pass === DEMO_CREDENTIALS.password) {
-      setUser({ name: 'Demo Farmer', phone });
-      return true;
+  const applyProfile = useCallback(async (response: ProfileResponse) => {
+    const loadedFarms = await Promise.all(response.farmlands.map(loadFarm));
+    setUser({
+      id: response.farmer.id,
+      name: response.farmer.name,
+      phone: response.farmer.phone_e164,
+    });
+    setProfile(response.profile);
+    setFarmlands(loadedFarms);
+    setLoadError('');
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    setDataLoading(true);
+    try {
+      const response = await apiRequest<ProfileResponse>('/profile');
+      await applyProfile(response);
+    } catch (error) {
+      setLoadError(readableError(error));
+      throw error;
+    } finally {
+      setDataLoading(false);
     }
-    // Allow any signup through if they type something else, just for demo purposes
-    if (phone && pass && phone !== DEMO_CREDENTIALS.phone) {
-      setUser({ name: 'New Farmer', phone });
-      return true;
-    }
-    return false;
-  };
+  }, [applyProfile]);
 
-  const logout = () => {
-    setUser(null);
-  };
+  const refreshFarmland = useCallback(async (farmId: string) => {
+    const response = await apiRequest<FarmlandProfileDto>(`/farmlands/${encodeURIComponent(farmId)}`);
+    const farm = await loadFarm(response);
+    setFarmlands(current => current.map(item => item.id === farmId ? farm : item));
+  }, []);
 
-  const addFarmland = (farm: Farmland) => {
-    setFarmlands(current => [...current, farm]);
-  };
+  useEffect(() => {
+    setUnauthorizedHandler(async () => {
+      await clearAccessToken().catch(() => undefined);
+      setUser(null);
+      setProfile(null);
+      setFarmlands([]);
+      setConversations({});
+      setActiveConversationIds({});
+      setLoadError('Your session expired. Please sign in again.');
+    });
 
-  const addTask = (farmId: string, title: string, dueAt: string | null) => {
-    const task = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      title: title.trim(),
-      status: 'pending' as const,
-      dueAt,
-      priority: 'normal' as const,
-      source: 'farmer' as const,
+    let active = true;
+    const restore = async () => {
+      try {
+        const token = await getStoredAccessToken();
+        if (token) {
+          const response = await apiRequest<ProfileResponse>('/profile');
+          if (active) await applyProfile(response);
+        }
+      } catch (error) {
+        if (active) setLoadError(readableError(error));
+      } finally {
+        if (active) setAuthLoading(false);
+      }
     };
-    setFarmlands(current => current.map(farm =>
-      farm.id === farmId ? { ...farm, tasks: [task, ...farm.tasks] } : farm,
-    ));
-  };
+    void restore();
+    return () => {
+      active = false;
+      setUnauthorizedHandler(null);
+    };
+  }, [applyProfile]);
 
-  const updateTaskStatus = (farmId: string, taskId: string, status: TaskStatus) => {
-    setFarmlands(current => current.map(farm => farm.id !== farmId ? farm : {
-      ...farm,
-      tasks: farm.tasks.map(task => task.id === taskId ? { ...task, status } : task),
-    }));
-  };
+  const authenticate = useCallback(async (path: '/auth/login' | '/auth/register', body: Record<string, unknown>) => {
+    const response = await apiRequest<TokenResponse>(path, { method: 'POST', body });
+    await saveAccessToken(response.access_token);
+    await refreshProfile();
+  }, [refreshProfile]);
 
-  const addCheckIn = (
+  const login = useCallback(async (phoneE164: string) => {
+    await authenticate('/auth/login', { phone_e164: phoneE164 });
+  }, [authenticate]);
+
+  const register = useCallback(async (name: string, phoneE164: string) => {
+    await authenticate('/auth/register', { name: name.trim(), phone_e164: phoneE164 });
+  }, [authenticate]);
+
+  const logout = useCallback(async () => {
+    await clearAccessToken();
+    setUser(null);
+    setProfile(null);
+    setFarmlands([]);
+    setConversations({});
+    setActiveConversationIds({});
+    setLoadError('');
+  }, []);
+
+  const createFarmland = useCallback(async (input: FarmlandCreateInput) => {
+    const response = await apiRequest<FarmlandProfileDto>('/farmlands', { method: 'POST', body: input });
+    const farm = await loadFarm(response);
+    setFarmlands(current => [...current, farm]);
+    return farm;
+  }, []);
+
+  const updateFarmland = useCallback(async (farmId: string, changes: Record<string, unknown>) => {
+    await apiRequest<FarmlandProfileDto>(`/farmlands/${encodeURIComponent(farmId)}`, { method: 'PATCH', body: changes });
+    await refreshFarmland(farmId);
+  }, [refreshFarmland]);
+
+  const updateFarmerProfile = useCallback(async (changes: Record<string, unknown>) => {
+    const response = await apiRequest<FarmerProfile>('/profile/farmer-profile', { method: 'PATCH', body: changes });
+    setProfile(response);
+  }, []);
+
+  const addTask = useCallback(async (farmId: string, title: string, dueAt: string | null) => {
+    await apiRequest<TaskDto>(`/farmlands/${encodeURIComponent(farmId)}/tasks`, {
+      method: 'POST',
+      body: { title: title.trim(), due_at: dueAt, source: 'farmer', priority: 'normal' },
+    });
+    await refreshFarmland(farmId);
+  }, [refreshFarmland]);
+
+  const updateTaskStatus = useCallback(async (farmId: string, taskId: string, status: TaskStatus) => {
+    await apiRequest<TaskDto>(`/farmlands/${encodeURIComponent(farmId)}/tasks/${encodeURIComponent(taskId)}`, {
+      method: 'PATCH', body: { status },
+    });
+    await refreshFarmland(farmId);
+  }, [refreshFarmland]);
+
+  const addCheckIn = useCallback(async (
     farmId: string,
     notes: string,
     observations: FarmCheckIn['observations'],
   ) => {
-    const now = new Date();
-    const checkIn: FarmCheckIn = {
-      id: `${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
-      at: now.toISOString(),
-      notes: notes.trim(),
-      stageName: farmlands.find(farm => farm.id === farmId)?.growthStage ?? 'Not set',
-      observations,
-    };
-    setFarmlands(current => current.map(farm => farm.id === farmId
-      ? { ...farm, checkIns: [checkIn, ...farm.checkIns] }
-      : farm,
-    ));
-  };
+    const farm = farmlands.find(item => item.id === farmId);
+    await apiRequest<CheckinDto>(`/farmlands/${encodeURIComponent(farmId)}/check-ins`, {
+      method: 'POST',
+      body: {
+        season_id: farm?.activeSeasonId ?? null,
+        growth_stage_id: farm?.currentGrowthStageId ?? null,
+        notes: notes.trim(),
+        observations: {
+          crop_condition: observations.cropCondition ?? null,
+          water_condition: observations.waterCondition ?? null,
+          pest_observed: observations.pestObserved ?? false,
+          disease_observed: observations.diseaseObserved ?? false,
+        },
+      },
+    });
+    await refreshFarmland(farmId);
+  }, [farmlands, refreshFarmland]);
 
-  const addProblem = (farmId: string, description: string) => {
-    const problem: FarmProblem = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      category: 'Farmer report',
-      description: description.trim(),
-      source: 'farmer',
-      severity: 'moderate',
-      status: 'open',
-      createdAt: new Date().toISOString(),
-    };
-    setFarmlands(current => current.map(farm => farm.id === farmId
-      ? { ...farm, problems: [problem, ...farm.problems] }
-      : farm,
-    ));
-  };
+  const addProblem = useCallback(async (farmId: string, description: string) => {
+    const farm = farmlands.find(item => item.id === farmId);
+    await apiRequest<ProblemDto>(`/farmlands/${encodeURIComponent(farmId)}/problems`, {
+      method: 'POST',
+      body: {
+        season_id: farm?.activeSeasonId ?? null,
+        source: 'farmer',
+        category: 'Farmer report',
+        description: description.trim(),
+        severity: 'moderate',
+      },
+    });
+    await refreshFarmland(farmId);
+  }, [farmlands, refreshFarmland]);
 
-  const updateProblemStatus = (
-    farmId: string,
-    problemId: string,
-    status: ProblemStatus,
-  ) => {
-    setFarmlands(current => current.map(farm => farm.id !== farmId ? farm : {
-      ...farm,
-      problems: farm.problems.map(problem => problem.id === problemId
-        ? {
-          ...problem,
-          status,
-          resolvedAt: status === 'resolved' ? new Date().toISOString() : undefined,
-        }
-        : problem,
-      ),
-    }));
-  };
+  const updateProblemStatus = useCallback(async (farmId: string, problemId: string, status: ProblemStatus) => {
+    await apiRequest<ProblemDto>(`/farmlands/${encodeURIComponent(farmId)}/problems/${encodeURIComponent(problemId)}`, {
+      method: 'PATCH', body: { status },
+    });
+    await refreshFarmland(farmId);
+  }, [refreshFarmland]);
 
-  const updateGrowthStage = (farmId: string, stageId: string) => {
-    setFarmlands(current => current.map(farm => {
-      if (farm.id !== farmId) return farm;
-      const stageIndex = farm.seasonPlan.findIndex(stage => stage.id === stageId);
-      if (stageIndex < 0) return farm;
-      return {
-        ...farm,
-        currentGrowthStageId: stageId,
-        growthStage: farm.seasonPlan[stageIndex].name,
-        seasonPlan: farm.seasonPlan.map((stage, index) => ({
-          ...stage,
-          status: index < stageIndex ? 'completed' : index === stageIndex ? 'current' : 'upcoming',
-        })),
-      };
-    }));
-  };
+  const updateGrowthStage = useCallback(async (farmId: string, stageId: string) => {
+    await apiRequest(`/farmlands/${encodeURIComponent(farmId)}/state/growth-stage`, {
+      method: 'PATCH', body: { growth_stage_id: stageId },
+    });
+    await refreshFarmland(farmId);
+  }, [refreshFarmland]);
 
-  const createConversation = (farmId: string) => {
-    const now = Date.now();
-    const conversation: ChatThread = {
-      id: `${now}-${Math.random().toString(36).slice(2, 8)}`,
-      title: 'New chat',
-      messages: [],
-      updatedAt: now,
-    };
-
+  const refreshConversations = useCallback(async (farmId: string) => {
+    const summaries = await listConversations(farmId);
     setConversations(current => ({
       ...current,
-      [farmId]: [conversation, ...(current[farmId] ?? [])],
+      [farmId]: summaries.map(summary => ({
+        id: summary.id,
+        title: summary.title || 'New chat',
+        messages: current[farmId]?.find(item => item.id === summary.id)?.messages ?? [],
+        updatedAt: new Date(summary.updated_at).getTime() || Date.now(),
+      })),
     }));
-    setActiveConversationIds(current => ({ ...current, [farmId]: conversation.id }));
-    return conversation.id;
-  };
+    const selectedId = summaries[0]?.id;
+    setActiveConversationIds(current => ({ ...current, [farmId]: selectedId }));
+    if (selectedId) {
+      const detail = await getConversation(farmId, selectedId);
+      const thread = mapChatDetail(detail);
+      setConversations(current => ({
+        ...current,
+        [farmId]: (current[farmId] ?? []).map(item => item.id === thread.id ? thread : item),
+      }));
+    }
+  }, []);
 
-  const selectConversation = (farmId: string, conversationId: string) => {
+  const createConversation = useCallback(async (farmId: string) => {
+    const detail = await createRemoteConversation(farmId);
+    const thread = mapChatDetail(detail);
+    setConversations(current => ({ ...current, [farmId]: [thread, ...(current[farmId] ?? [])] }));
+    setActiveConversationIds(current => ({ ...current, [farmId]: thread.id }));
+    return thread.id;
+  }, []);
+
+  const selectConversation = useCallback(async (farmId: string, conversationId: string) => {
     setActiveConversationIds(current => ({ ...current, [farmId]: conversationId }));
-  };
-
-  const addChatMessage = (farmId: string, conversationId: string, text: string) => {
-    const now = Date.now();
-    const message: ChatMessage = {
-      id: `${now}-${Math.random().toString(36).slice(2, 8)}`,
-      text,
-      sender: 'farmer',
-      timestamp: new Date(now).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-    };
-
+    const detail = await getConversation(farmId, conversationId);
+    const thread = mapChatDetail(detail);
     setConversations(current => ({
       ...current,
-      [farmId]: (current[farmId] ?? []).map(conversation => {
-        if (conversation.id !== conversationId) return conversation;
+      [farmId]: (current[farmId] ?? []).map(item => item.id === conversationId ? thread : item),
+    }));
+  }, []);
 
-        const isFirstMessage = conversation.messages.length === 0;
-        const normalizedText = text.trim().replace(/\s+/g, ' ');
-        const title = normalizedText.length > 40
-          ? `${normalizedText.slice(0, 40)}...`
-          : normalizedText;
-
+  const addChatMessage = useCallback(async (farmId: string, conversationId: string, text: string, clientRequestId: string) => {
+    const response = await sendRemoteMessage(farmId, conversationId, text.trim(), clientRequestId);
+    const farmerMessage = mapChatMessage(response.farmer_message);
+    const assistantMessage = mapChatMessage(response.assistant_message);
+    const now = new Date(response.assistant_message.created_at).getTime() || Date.now();
+    setConversations(current => ({
+      ...current,
+      [farmId]: (current[farmId] ?? []).map(thread => {
+        if (thread.id !== conversationId) return thread;
+        const firstMessage = thread.messages.length === 0;
+        const title = text.trim().replace(/\s+/g, ' ');
         return {
-          ...conversation,
-          title: isFirstMessage ? title : conversation.title,
-          messages: [...conversation.messages, message],
+          ...thread,
+          title: firstMessage ? (title.length > 40 ? `${title.slice(0, 40)}…` : title) : thread.title,
+          messages: [...thread.messages, farmerMessage, assistantMessage],
           updatedAt: now,
         };
       }),
     }));
-  };
+  }, []);
 
-  return (
-    <AppContext.Provider value={{
-      user,
-      login,
-      logout,
-      farmlands,
-      addFarmland,
-      addTask,
-      updateTaskStatus,
-      addCheckIn,
-      addProblem,
-      updateProblemStatus,
-      updateGrowthStage,
-      conversations,
-      activeConversationIds,
-      createConversation,
-      selectConversation,
-      addChatMessage,
-    }}>
-      {children}
-    </AppContext.Provider>
-  );
+  const value = useMemo<AppContextType>(() => ({
+    user,
+    profile,
+    authLoading,
+    dataLoading,
+    loadError,
+    farmlands,
+    login,
+    register,
+    logout,
+    refreshProfile,
+    refreshFarmland,
+    createFarmland,
+    updateFarmland,
+    updateFarmerProfile,
+    addTask,
+    updateTaskStatus,
+    addCheckIn,
+    addProblem,
+    updateProblemStatus,
+    updateGrowthStage,
+    conversations,
+    activeConversationIds,
+    refreshConversations,
+    createConversation,
+    selectConversation,
+    addChatMessage,
+  }), [
+    user, profile, authLoading, dataLoading, loadError, farmlands, login, register, logout,
+    refreshProfile, refreshFarmland, createFarmland, updateFarmland, updateFarmerProfile,
+    addTask, updateTaskStatus, addCheckIn, addProblem, updateProblemStatus, updateGrowthStage,
+    conversations, activeConversationIds, refreshConversations, createConversation, selectConversation, addChatMessage,
+  ]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
 export function useAppContext() {

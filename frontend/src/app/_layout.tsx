@@ -1,10 +1,12 @@
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { AppProvider } from "../context/AppProvider";
 
 export default function RootLayout() {
   return (
     <AppProvider>
+      <StatusBar hidden />
       <KeyboardAvoidingView
         style={styles.keyboardArea}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

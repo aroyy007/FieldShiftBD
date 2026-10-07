@@ -4,7 +4,7 @@ All paths live under ``/weather`` (per-module router convention,
 ``backend/guide.md``). The endpoints wire together the M4 service layer:
 
 * provider adapters      (:mod:`app.services.weather_providers`)
-* mock M3 farm state     (:mod:`app.services.mock_farm_state`)
+* authenticated M3 farm-state projection (:mod:`app.services.farm_state_read_slice`)
 * suppression engine     (:mod:`app.services.weather_suppression`)
 
 Core product rule enforced here: an *assessment* returns farmer-facing ALERTS,
@@ -22,7 +22,13 @@ import uuid
 from datetime import date
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from typing import Annotated
+
+from app.core.auth import get_current_farmer_id
+from app.core.database import get_db
+from app.services.farm_state_read_slice import get_owned_farm_state_slice
 
 from app.schemas.weather import (
     ProviderStatusOut,
@@ -35,6 +41,22 @@ from app.services.weather_providers import WeatherProviderError, fetch_weather
 from app.services.weather_suppression import SuppressionResult, run_suppression
 
 router = APIRouter(prefix="/weather", tags=["Weather (M4)"])
+DbSession = Annotated[Session, Depends(get_db)]
+CurrentFarmerId = Annotated[uuid.UUID, Depends(get_current_farmer_id)]
+
+
+def _get_weather_farm(
+    db: Session, farmland_id: uuid.UUID, farmer_id: uuid.UUID
+) -> mock_farm_state.FarmStateSlice:
+    farm = get_owned_farm_state_slice(db, farmland_id, farmer_id)
+    if farm is None:
+        raise HTTPException(status_code=404, detail="Farmland not found")
+    if farm.latitude is None or farm.longitude is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Farmland coordinates are required for a weather assessment.",
+        )
+    return farm
 
 
 def _provider_statuses(weather: dict[str, Any]) -> list[ProviderStatusOut]:
@@ -95,11 +117,13 @@ def _build_assessment(
 
 
 @router.get("/assessment/{farmland_id}", response_model=WeatherAssessmentOut)
-def get_weather_assessment(farmland_id: uuid.UUID) -> WeatherAssessmentOut:
+def get_weather_assessment(
+    farmland_id: uuid.UUID, db: DbSession, farmer_id: CurrentFarmerId
+) -> WeatherAssessmentOut:
     """Assess weather for a farmland and return ALERTS (never a bare report).
 
-    Fetches both providers for the farmland's location, runs the suppression
-    engine against the (mock M3) farm state, and returns only alerts that
+    Fetches both providers for the authenticated farmland's location, runs the
+    suppression engine against live M3 crop/stage/task state, and returns only alerts that
     change what the farmer should do, plus a transparency list of what was
     suppressed.
 
@@ -109,9 +133,7 @@ def get_weather_assessment(farmland_id: uuid.UUID) -> WeatherAssessmentOut:
     a farm-state HTTP API and this endpoint is wired to it. See
     ``docs/m4-contract-proposal.md`` for the planned integration.
     """
-    farm = mock_farm_state.get_farm_state_slice(farmland_id)
-    if farm is None:
-        raise HTTPException(status_code=404, detail="farmland not found in farm state")
+    farm = _get_weather_farm(db, farmland_id, farmer_id)
 
     weather = fetch_weather(farm.latitude, farm.longitude)
     result = run_suppression(weather, farm)
@@ -172,15 +194,15 @@ def get_weather_assessment_demo(
 
 
 @router.get("/raw/{farmland_id}")
-def get_raw_weather(farmland_id: uuid.UUID) -> dict[str, Any]:
+def get_raw_weather(
+    farmland_id: uuid.UUID, db: DbSession, farmer_id: CurrentFarmerId
+) -> dict[str, Any]:
     """Debug-only raw provider payload (NOT a farmer-facing endpoint).
 
     Exposed for development/inspection. The farmer-facing surface is
     ``/assessment`` which only returns actionable alerts.
     """
-    farm = mock_farm_state.get_farm_state_slice(farmland_id)
-    if farm is None:
-        raise HTTPException(status_code=404, detail="farmland not found in farm state")
+    farm = _get_weather_farm(db, farmland_id, farmer_id)
     try:
         return fetch_weather(farm.latitude, farm.longitude)
     except WeatherProviderError as exc:

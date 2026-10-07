@@ -29,6 +29,10 @@ class M2Schema(BaseModel):
         return float(value) if isinstance(value, Decimal) else value
 
 
+MAX_SEASON_BUDGET = Decimal("999999999999.99")
+MAX_SEASON_YIELD = Decimal("99999999999.999")
+
+
 class LandAreaUnit(StrEnum):
     SQUARE_METRE = "square_metre"
     DECIMAL = "decimal"
@@ -214,7 +218,7 @@ class CropSelectionRequest(CropSelectionInput):
 
     planting_date: date | None = None
     expected_harvest_date: date | None = None
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_BUDGET)
     budget_currency: str = Field(default="BDT", min_length=3, max_length=3)
 
     @model_validator(mode="after")
@@ -236,7 +240,7 @@ class SeasonCreate(M2Schema):
     planting_date: date | None = None
     expected_harvest_date: date | None = None
     status: SeasonStatus = SeasonStatus.PLANNED
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_BUDGET)
     budget_currency: str = Field(default="BDT", min_length=3, max_length=3)
 
     @model_validator(mode="after")
@@ -253,7 +257,7 @@ class SeasonCreate(M2Schema):
 class SeasonResponse(SeasonCreate):
     season_id: UUID
     actual_harvest_date: date | None = None
-    actual_yield: Decimal | None = Field(default=None, ge=0)
+    actual_yield: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_YIELD)
     yield_unit: str | None = None
     outcome_notes: str | None = None
     created_at: datetime | None = None
@@ -330,7 +334,7 @@ class HarvestGuidance(M2Schema):
 class SeasonOutcomeInput(M2Schema):
     season_id: UUID
     outcome_notes: str | None = None
-    actual_yield: Decimal | None = Field(default=None, ge=0)
+    actual_yield: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_YIELD)
     yield_unit: str | None = None
     actual_harvest_date: date | None = None
     status: SeasonStatus | None = None

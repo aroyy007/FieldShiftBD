@@ -41,7 +41,8 @@
           "cameraPermission": "FieldShift uses your camera to check crop photos.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -23,6 +23,9 @@ os.environ.update(
         "DB_PORT": "5432",
         "DB_NAME": "fieldshift_test",
         "DATABASE_URL": "sqlite://",
+        # Auth is required by the app settings, but tests must not depend on a
+        # developer's local .env file or production secret.
+        "SECRET_KEY": "fieldshift-test-only-secret-key-never-use-in-production",
     }
 )
 
