@@ -44,6 +44,14 @@ class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
             "('square_metre', 'decimal', 'acre', 'hectare')",
             name="ck_farmlands_area_display_unit",
         ),
+        CheckConstraint(
+            "budget_amount IS NULL OR budget_amount >= 0",
+            name="ck_farmlands_budget_nonnegative",
+        ),
+        CheckConstraint(
+            "previous_yield_amount IS NULL OR previous_yield_amount >= 0",
+            name="ck_farmlands_yield_nonnegative",
+        ),
         Index("ix_farmlands_farmer_id", "farmer_id"),
     )
 
@@ -66,7 +74,13 @@ class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
     irrigation_available: Mapped[bool | None] = mapped_column(Boolean)
     water_source: Mapped[str | None] = mapped_column(String(120))
     farming_method: Mapped[str | None] = mapped_column(String(120))
-
+    budget_amount: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))
+    budget_currency: Mapped[str] = mapped_column(
+        String(3), nullable=False, default="BDT", server_default=text("'BDT'")
+    )
+    previous_crop: Mapped[str | None] = mapped_column(String(160))
+    previous_yield_amount: Mapped[Decimal | None] = mapped_column(Numeric(14, 3))
+    previous_yield_unit: Mapped[str | None] = mapped_column(String(32))
 
 class Crop(UUIDPrimaryKey, TimestampMixin, Base):
     __tablename__ = "crops"
