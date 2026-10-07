@@ -196,7 +196,16 @@ def quick_chat(
     farmer_id: CurrentFarmerId,
     db: DbSession,
 ):
-    """Convenience endpoint: sends message to the latest conversation or creates one."""
+    """Convenience endpoint: sends message to the latest conversation or creates one.
+
+    NOTE — known low-severity race condition: if two parallel requests arrive
+    when no conversation exists yet, both can fall through to the
+    "create new conversation" branch and the second commit may fail on the
+    unique constraint, returning 500. Production hardening should wrap the
+    create-or-find block in a retry loop or use a SELECT … FOR UPDATE on a
+    parent table. Acceptable for the demo because the chat UI is single-threaded
+    per farmer session.
+    """
     _require_farmland(db, farmland_id, farmer_id)
 
     latest_conv = db.scalar(

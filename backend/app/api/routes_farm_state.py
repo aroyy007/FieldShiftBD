@@ -386,6 +386,25 @@ def update_task_status(
     return _task_read(task)
 
 
+@router.get("/{farmland_id}/tasks/{task_id}", response_model=TaskRead)
+def get_task(
+    farmland_id: UUID,
+    task_id: UUID,
+    db: DbSession,
+    farmer_id: CurrentFarmerId,
+) -> TaskRead:
+    """Get a single task by id, scoped to the authenticated farmer's farmland."""
+    _get_farmland(db, farmland_id, farmer_id)
+    task = db.scalar(
+        select(Task).where(
+            Task.id == task_id, Task.farmland_id == farmland_id
+        )
+    )
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found for this farmland")
+    return _task_read(task)
+
+
 @router.get("/{farmland_id}/problems", response_model=list[ProblemRead])
 def list_problems(
     farmland_id: UUID,
@@ -456,6 +475,26 @@ def update_problem_status(
     )
     db.commit()
     db.refresh(problem)
+    return ProblemRead.model_validate(problem)
+
+
+@router.get("/{farmland_id}/problems/{problem_id}", response_model=ProblemRead)
+def get_problem(
+    farmland_id: UUID,
+    problem_id: UUID,
+    db: DbSession,
+    farmer_id: CurrentFarmerId,
+) -> ProblemRead:
+    """Get a single problem by id, scoped to the authenticated farmer's farmland."""
+    _get_farmland(db, farmland_id, farmer_id)
+    problem = db.scalar(
+        select(Problem).where(
+            Problem.id == problem_id,
+            Problem.farmland_id == farmland_id,
+        )
+    )
+    if problem is None:
+        raise HTTPException(status_code=404, detail="Problem not found for this farmland")
     return ProblemRead.model_validate(problem)
 
 

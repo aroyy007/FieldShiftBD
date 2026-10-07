@@ -393,6 +393,23 @@ def select_crop(db: Session, farmland_id: UUID, farmer_id: UUID | None, crop_id:
             raise M2ConflictError("Recommendation is no longer proposed")
         recommendation.status = "selected"
 
+    # Guard against piling up planned or active seasons on the same farmland.
+    # A farmer should explicitly complete or cancel their current planned/active
+    # season before starting a new one. Without this check, repeated select_crop
+    # calls accumulate ghost seasons that pollute Module 3 stage/task generation
+    # and Module 5 chat context.
+    existing_open = db.scalar(
+        select(Season).where(
+            Season.farmland_id == farmland_id,
+            Season.status.in_(["planned", "active"]),
+        )
+    )
+    if existing_open is not None:
+        raise M2ConflictError(
+            "This farmland already has an open season. "
+            "Complete or cancel it before starting a new one."
+        )
+
     season = Season(
         farmland_id=farmland_id, crop_id=crop_id, crop_variety_id=crop_variety_id,
         variety_name=variety_name, planting_date=planting_date,
