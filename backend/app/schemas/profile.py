@@ -3,22 +3,59 @@ from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+import re
+
+# Allow common visual separators when farmers type their number, but always
+# normalize to digits-only after the leading +. Keeps the storage format
+# predictable for lookup while being forgiving about input.
+_PHONE_STRIP_RE = re.compile(r"[\s\-()]")
+
+
+def _normalize_phone(v: str) -> str:
+    """Trim whitespace and remove spaces/dashes/parens, but preserve the leading +."""
+    cleaned = _PHONE_STRIP_RE.sub("", v.strip())
+    return cleaned
+
+
 # ── Auth schemas ──────────────────────────────────────────────────────────────
 class FarmerRegisterRequest(BaseModel):
     """What the app sends when a new farmer signs up."""
     name: str = Field(min_length=1, max_length=200)
-    phone_e164: str = Field(min_length=8, max_length=16)
+    # Allow up to 20 chars so international formats with extensions fit.
+    phone_e164: str = Field(min_length=8, max_length=20)
+
     @field_validator("phone_e164")
     @classmethod
     def phone_must_be_e164(cls, v: str) -> str:
-        if not v.startswith("+") or not v[1:].isdigit():
+        normalized = _normalize_phone(v)
+        if (
+            not normalized.startswith("+")
+            or not normalized[1:].isdigit()
+            or not (7 <= len(normalized) - 1 <= 15)
+        ):
             raise ValueError(
-                "Phone must be in E.164 format, e.g. +8801712345678"
+                "Phone must be in international format, e.g. +8801712345678"
             )
-        return v
+        return normalized
+
+
 class FarmerLoginRequest(BaseModel):
     """What the app sends when an existing farmer logs in."""
-    phone_e164: str = Field(min_length=8, max_length=16)
+    phone_e164: str = Field(min_length=8, max_length=20)
+
+    @field_validator("phone_e164")
+    @classmethod
+    def phone_must_be_e164(cls, v: str) -> str:
+        normalized = _normalize_phone(v)
+        if (
+            not normalized.startswith("+")
+            or not normalized[1:].isdigit()
+            or not (7 <= len(normalized) - 1 <= 15)
+        ):
+            raise ValueError(
+                "Phone must be in international format, e.g. +8801712345678"
+            )
+        return normalized
 class TokenResponse(BaseModel):
     """What the backend returns after a successful register or login."""
     access_token: str

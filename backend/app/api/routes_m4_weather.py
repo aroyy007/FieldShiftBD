@@ -102,6 +102,12 @@ def get_weather_assessment(farmland_id: uuid.UUID) -> WeatherAssessmentOut:
     engine against the (mock M3) farm state, and returns only alerts that
     change what the farmer should do, plus a transparency list of what was
     suppressed.
+
+    NOTE — M3 dependency: this endpoint currently reads farm context from
+    :mod:`app.services.mock_farm_state`, which only knows the hardcoded
+    ``GOLDEN_FARMLAND_ID``. Real farmlands return 404 until Module 3 exposes
+    a farm-state HTTP API and this endpoint is wired to it. See
+    ``docs/m4-contract-proposal.md`` for the planned integration.
     """
     farm = mock_farm_state.get_farm_state_slice(farmland_id)
     if farm is None:

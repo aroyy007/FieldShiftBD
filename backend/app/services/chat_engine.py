@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
@@ -22,6 +23,8 @@ from app.schemas.chat import (
     ChatResponse,
     FarmContextSummary,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -129,8 +132,10 @@ def aggregate_farmland_context(
             .limit(5)
         ).all()
         for r in records:
+            content_dict = r.content if isinstance(r.content, dict) else {}
+            factor = content_dict.get("factor") or r.category
             knowledge_snippets.append(
-                f"[{r.category}/{r.factor}] {json.dumps(r.content)}"
+                f"[{r.category}/{factor}] {json.dumps(content_dict)}"
             )
 
     # Missing onboarding fields
@@ -343,8 +348,16 @@ def generate_gemini_reply(
                     parts = candidates[0].get("content", {}).get("parts", [])
                     if parts and "text" in parts[0]:
                         return parts[0]["text"].strip()
+            else:
+                logger.warning(
+                    "Gemini API returned status %s for model %s",
+                    resp.status_code,
+                    settings.GEMINI_MODEL,
+                )
+    except httpx.HTTPError as exc:
+        logger.warning("Gemini HTTP call failed: %s", exc)
     except Exception:
-        pass
+        logger.exception("Unexpected error calling Gemini API")
     return None
 
 
@@ -398,59 +411,67 @@ def handle_farmer_message(
     if conversation is None:
         raise ValueError("Conversation not found or access denied")
 
-    # 2. Gather full farm context
-    ctx = aggregate_farmland_context(db, farmland_id, farmer_id)
+    try:
+        # 2. Gather full farm context
+        ctx = aggregate_farmland_context(db, farmland_id, farmer_id)
 
-    # 3. Classify intent
-    intent = classify_intent(message_text)
+        # 3. Classify intent
+        intent = classify_intent(message_text)
 
-    # 4. Save farmer message
-    farmer_msg = ChatMessage(
-        conversation_id=conversation.id,
-        sender_type="farmer",
-        message=message_text,
-        message_type="image" if attachment_key else "text",
-        attachment_key=attachment_key,
-        metadata_json={"intent": intent},
-    )
-    db.add(farmer_msg)
-    db.flush()
+        # 4. Save farmer message
+        farmer_msg = ChatMessage(
+            conversation_id=conversation.id,
+            sender_type="farmer",
+            message=message_text,
+            message_type="image" if attachment_key else "text",
+            attachment_key=attachment_key,
+            metadata_json={"intent": intent},
+        )
+        db.add(farmer_msg)
+        db.flush()
 
-    # 5. Fetch past messages for context
-    history = list(
-        db.scalars(
-            select(ChatMessage)
-            .where(ChatMessage.conversation_id == conversation.id)
-            .order_by(ChatMessage.created_at.asc())
-        ).all()
-    )
-
-    # 6. Generate reply
-    system_prompt = build_system_prompt(ctx)
-    reply_text = generate_gemini_reply(system_prompt, history, message_text)
-    if not reply_text:
-        reply_text = generate_fallback_reply(intent, ctx, message_text)
-
-    # 7. Save assistant message
-    assistant_msg = ChatMessage(
-        conversation_id=conversation.id,
-        sender_type="assistant",
-        message=reply_text,
-        message_type="text",
-        metadata_json={"intent": intent, "model": settings.GEMINI_MODEL},
-    )
-    db.add(assistant_msg)
-
-    # Update conversation title if first message
-    if not conversation.title or conversation.title == "New chat":
-        short_title = message_text.strip().replace("\n", " ")
-        conversation.title = (
-            short_title[:40] + "..." if len(short_title) > 40 else short_title
+        # 5. Fetch past messages for context
+        history = list(
+            db.scalars(
+                select(ChatMessage)
+                .where(ChatMessage.conversation_id == conversation.id)
+                .order_by(ChatMessage.created_at.asc())
+            ).all()
         )
 
-    db.commit()
-    db.refresh(farmer_msg)
-    db.refresh(assistant_msg)
+        # 6. Generate reply
+        system_prompt = build_system_prompt(ctx)
+        reply_text = generate_gemini_reply(system_prompt, history, message_text)
+        if not reply_text:
+            reply_text = generate_fallback_reply(intent, ctx, message_text)
+
+        # 7. Save assistant message
+        assistant_msg = ChatMessage(
+            conversation_id=conversation.id,
+            sender_type="assistant",
+            message=reply_text,
+            message_type="text",
+            metadata_json={"intent": intent, "model": settings.GEMINI_MODEL},
+        )
+        db.add(assistant_msg)
+
+        # Update conversation title if first message — trigger only on default placeholder titles.
+        default_titles = {"New conversation", "Chat", "New chat"}
+        if not conversation.title or conversation.title in default_titles:
+            short_title = message_text.strip().replace("\n", " ")
+            conversation.title = (
+                short_title[:40] + "..." if len(short_title) > 40 else short_title
+            )
+
+        db.commit()
+        db.refresh(farmer_msg)
+        db.refresh(assistant_msg)
+    except Exception:
+        # Roll back the half-written transaction so the next request starts clean.
+        # Without this, a mid-flight error leaves the session in an aborted state
+        # and every subsequent chat call returns 500.
+        db.rollback()
+        raise
 
     suggested_actions = []
     if intent == "disease_inquiry":

@@ -25,6 +25,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_farmer_id
@@ -226,12 +227,21 @@ def register_farmer(payload: FarmerRegisterRequest, db: DbSession) -> TokenRespo
 
     farmer = Farmer(name=payload.name, phone_e164=payload.phone_e164)
     db.add(farmer)
-    db.flush()  # assigns farmer.id before we reference it in FarmerProfile
 
-    farmer_profile = FarmerProfile(farmer_id=farmer.id)
-    db.add(farmer_profile)
-
-    db.commit()
+    # flush() assigns farmer.id so the FarmerProfile FK resolves.
+    # Wrap in IntegrityError handling so two parallel registrations with the
+    # same phone (race condition) get a clean 409 instead of an unhandled 500.
+    try:
+        db.flush()
+        farmer_profile = FarmerProfile(farmer_id=farmer.id)
+        db.add(farmer_profile)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A farmer with this phone number is already registered. Use /auth/login.",
+        )
     db.refresh(farmer)
 
     token = create_access_token(farmer.id)
@@ -452,4 +462,15 @@ def get_onboarding_status(
     profile = db.scalar(
         select(FarmerProfile).where(FarmerProfile.farmer_id == farmer_id)
     )
-    return _compute_onboarding_status(farmland, profile)
+    status = _compute_onboarding_status(farmland, profile)
+
+    # Stamp the farmer profile the first time onboarding reaches 100%.
+    # This lets downstream modules skip the onboarding nudge for farmers
+    # who have already completed it.
+    if profile is not None and status.is_complete and profile.onboarding_completed_at is None:
+        from datetime import datetime, timezone
+        profile.onboarding_completed_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(profile)
+
+    return status
