@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card } from '../../../components/ui';
+import CropAdvisorPresentation from '../../../components/CropAdvisorPresentation';
+import type { CropAdvisorIconName } from '../../../components/crop-advisor-icons';
 import { useAppContext } from '../../../context/AppProvider';
 import {
   CropRecommendation,
@@ -34,16 +34,17 @@ export default function CropAdvisorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const routeFarmlandId = Array.isArray(id) ? id[0] : id;
   const { farmlands } = useAppContext();
+  const router = useRouter();
   const farm = farmlands.find(item => item.id === routeFarmlandId);
   const [farmlandId, setFarmlandId] = useState(UUID_PATTERN.test(routeFarmlandId ?? '') ? routeFarmlandId : '');
-  const [district, setDistrict] = useState('');
-  const [soilType, setSoilType] = useState('');
-  const [landArea, setLandArea] = useState('');
-  const [irrigation, setIrrigation] = useState<'unknown' | 'yes' | 'no'>('unknown');
-  const [waterSource, setWaterSource] = useState('');
-  const [plantingDate, setPlantingDate] = useState('');
-  const [harvestDate, setHarvestDate] = useState('');
-  const [budget, setBudget] = useState('');
+  const [districtOverride, setDistrictOverride] = useState<string | null>(null);
+  const [soilTypeOverride, setSoilTypeOverride] = useState<string | null>(null);
+  const [landAreaOverride, setLandAreaOverride] = useState<string | null>(null);
+  const [irrigationOverride, setIrrigationOverride] = useState<'unknown' | 'yes' | 'no' | null>(null);
+  const [waterSourceOverride, setWaterSourceOverride] = useState<string | null>(null);
+  const [plantingDateOverride, setPlantingDateOverride] = useState<string | null>(null);
+  const [harvestDateOverride, setHarvestDateOverride] = useState<string | null>(null);
+  const [budgetOverride, setBudgetOverride] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationSet | null>(null);
   const [savedRecommendations, setSavedRecommendations] = useState<CropRecommendation[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -57,6 +58,18 @@ export default function CropAdvisorScreen() {
   const [busy, setBusy] = useState<BusyAction>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [showFarmTools, setShowFarmTools] = useState(false);
+
+  const district = districtOverride ?? farm?.district ?? '';
+  const soilType = soilTypeOverride ?? farm?.soilType ?? '';
+  const landArea = landAreaOverride ?? (farm ? String(Number(farm.acreage.toFixed(3))) : '');
+  const irrigation = irrigationOverride ?? (
+    farm?.irrigationAvailable == null ? 'unknown' : farm.irrigationAvailable ? 'yes' : 'no'
+  );
+  const waterSource = waterSourceOverride ?? farm?.waterSource ?? '';
+  const plantingDate = plantingDateOverride ?? farm?.plantingDate ?? '';
+  const harvestDate = harvestDateOverride ?? farm?.expectedHarvestDate ?? '';
+  const budget = budgetOverride ?? (farm?.budgetAmount == null ? '' : String(farm.budgetAmount));
 
   const canUseBackend = UUID_PATTERN.test(farmlandId.trim());
   const canImportTasks = Boolean(
@@ -65,6 +78,42 @@ export default function CropAdvisorScreen() {
   const approvedReferenceCount = useMemo(() => new Set(
     (recommendations?.recommendations ?? []).flatMap(item => item.knowledge_refs.map(ref => ref.source_reference || ref.source_name)),
   ).size, [recommendations]);
+  const featuredRecommendation = recommendations?.recommendations.find(item => item.status !== 'dismissed')
+    ?? savedRecommendations.find(item => item.status !== 'dismissed');
+  const activeCropName = farm?.activeSeasonId ? farm.crop : null;
+  const displayCropName = featuredRecommendation?.crop.name || activeCropName || 'No crop recommendation yet';
+  const cropEyebrow = featuredRecommendation
+    ? featuredRecommendation.status === 'selected' ? 'Selected crop' : 'Evidence-backed crop match'
+    : activeCropName ? 'Current active crop' : 'Farm profile';
+  const cropDescription = featuredRecommendation?.reasoning.summary
+    || recommendations?.message
+    || (activeCropName
+      ? 'Current crop and growth stage are loaded from your saved farmland season.'
+      : 'Request recommendations to see crop matches supported by reviewed agricultural evidence.');
+  const recommendationReasons = featuredRecommendation
+    ? featuredRecommendation.reasoning.positive_factors.slice(0, 5).map(factor => ({
+      icon: factorIcon(factor.factor),
+      title: factorLabel(factor.factor),
+      detail: factor.explanation,
+    }))
+    : null;
+  const seasonStages = plan?.growth_stages.length
+    ? plan.growth_stages.map(stage => ({
+      name: stage.name,
+      timing: stage.start_day == null && stage.end_day == null
+        ? `Stage ${stage.sequence}`
+        : `Day ${stage.start_day ?? 0}–${stage.end_day ?? '—'}`,
+    }))
+    : (farm?.seasonPlan ?? []).map(stage => ({ name: stage.name, timing: stage.dateRange }));
+  const recommendationWatchOuts = featuredRecommendation
+    ? [...featuredRecommendation.reasoning.risks_or_concerns, ...featuredRecommendation.reasoning.limiting_factors]
+      .slice(0, 2)
+      .map(factor => ({
+        icon: factor.factor.toLowerCase().includes('disease') || factor.factor.toLowerCase().includes('pest') ? 'bug' as const : 'drop' as const,
+        title: factorLabel(factor.factor),
+        detail: factor.explanation,
+      }))
+    : null;
 
   useEffect(() => {
     if (canUseBackend) void loadHistory();
@@ -345,14 +394,44 @@ export default function CropAdvisorScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>FIELDSHIFT</Text>
-          <Text style={styles.title}>Crop Advisor</Text>
-          <Text style={styles.subtitle}>Make your next season plan with recommendations grounded in approved agricultural evidence.</Text>
-        </View>
-
+    <CropAdvisorPresentation
+      cropName={displayCropName}
+      cropEyebrow={cropEyebrow}
+      cropDescription={cropDescription}
+      location={district.trim() || farm?.location || 'Farm location not set'}
+      landArea={landArea.trim() || 'Area not set'}
+      reasons={recommendationReasons}
+      watchOuts={recommendationWatchOuts}
+      seasonStages={seasonStages}
+      hasRecommendation={Boolean(featuredRecommendation)}
+      toolsOpen={showFarmTools}
+      onBack={() => router.replace((farm ? `/farmlands/${farm.id}` : '/farmlands') as Href)}
+      onStartPlan={() => {
+        setShowFarmTools(true);
+        if (selectedSeason && !plan) {
+          void createPlan();
+        } else {
+            setNotice(selectedSeason
+              ? 'Season tools are open below.'
+              : 'Add or confirm your farm details, then request an evidence-backed crop match before creating a plan.');
+        }
+      }}
+      onOtherCrops={() => {
+        setShowFarmTools(true);
+        setNotice('Review your saved farm details below and request recommendations to compare crop options.');
+      }}
+      onTabPress={tab => {
+        const routes = {
+          Home: '/farmlands',
+          Tasks: farm ? `/farmlands/${farm.id}/tasks` : '/farmlands',
+          Chat: farm ? `/farmlands/${farm.id}/chat` : '/farmlands',
+          Scan: farm ? `/farmlands/${farm.id}/crop-health` : '/farmlands',
+          Profile: '/farmlands/profile-setup',
+        };
+        router.push(routes[tab] as Href);
+      }}
+      toolsContent={
+        <View style={styles.toolsContent}>
         {farm && !UUID_PATTERN.test(routeFarmlandId ?? '') && (
           <Card style={styles.infoCard}>
             <Text style={styles.infoTitle}>Demo farm is not connected to the backend</Text>
@@ -375,37 +454,37 @@ export default function CropAdvisorScreen() {
           <Text style={styles.helper}>Example: 123e4567-e89b-12d3-a456-426614174000</Text>
 
           <Text style={styles.label}>District</Text>
-          <TextInput accessibilityLabel="District" onChangeText={setDistrict} placeholder="e.g. Cumilla" style={styles.input} value={district} />
+          <TextInput accessibilityLabel="District" onChangeText={setDistrictOverride} placeholder="e.g. Cumilla" style={styles.input} value={district} />
 
           <Text style={styles.label}>Soil type</Text>
-          <TextInput accessibilityLabel="Soil type" onChangeText={setSoilType} placeholder="Enter if known" style={styles.input} />
+          <TextInput accessibilityLabel="Soil type" onChangeText={setSoilTypeOverride} placeholder="Enter if known" style={styles.input} value={soilType} />
 
           <Text style={styles.label}>Land area (acres)</Text>
-          <TextInput accessibilityLabel="Land area" keyboardType="decimal-pad" onChangeText={setLandArea} placeholder="Optional" style={styles.input} value={landArea} />
+          <TextInput accessibilityLabel="Land area" keyboardType="decimal-pad" onChangeText={setLandAreaOverride} placeholder="Optional" style={styles.input} value={landArea} />
 
           <Text style={styles.label}>Irrigation available</Text>
           <View style={styles.choiceRow}>
             {([['unknown', 'Unknown'], ['yes', 'Yes'], ['no', 'No']] as const).map(([value, label]) => (
-              <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: irrigation === value }} onPress={() => setIrrigation(value)} style={[styles.choice, irrigation === value && styles.choiceSelected]}>
+              <Pressable key={value} accessibilityRole="radio" accessibilityState={{ selected: irrigation === value }} onPress={() => setIrrigationOverride(value)} style={[styles.choice, irrigation === value && styles.choiceSelected]}>
                 <Text style={[styles.choiceText, irrigation === value && styles.choiceTextSelected]}>{label}</Text>
               </Pressable>
             ))}
           </View>
 
           <Text style={styles.label}>Water source</Text>
-          <TextInput accessibilityLabel="Water source" onChangeText={setWaterSource} placeholder="e.g. pond, canal, tubewell" style={styles.input} value={waterSource} />
-          <Button disabled={busy !== null} title={busy === 'recommend' ? 'Checking evidence…' : 'Get recommendations'} onPress={() => void requestRecommendations()} />
+          <TextInput accessibilityLabel="Water source" onChangeText={setWaterSourceOverride} placeholder="e.g. pond, canal, tubewell" style={styles.input} value={waterSource} />
+          <Button accessibilityRole="button" disabled={busy !== null} title={busy === 'recommend' ? 'Checking evidence…' : 'Get recommendations'} onPress={() => void requestRecommendations()} />
         </Card>
 
         <Card>
           <Text style={styles.sectionTitle}>Season details</Text>
           <Text style={styles.body}>You can enter dates and a budget before or after choosing a crop. Crop timing is never inferred without evidence.</Text>
           <Text style={styles.label}>Planting date (YYYY-MM-DD)</Text>
-          <TextInput accessibilityLabel="Planting date" autoCapitalize="none" onChangeText={setPlantingDate} placeholder="2026-11-15" style={styles.input} value={plantingDate} />
+          <TextInput accessibilityLabel="Planting date" autoCapitalize="none" onChangeText={setPlantingDateOverride} placeholder="2026-11-15" style={styles.input} value={plantingDate} />
           <Text style={styles.label}>Expected harvest date (YYYY-MM-DD)</Text>
-          <TextInput accessibilityLabel="Expected harvest date" autoCapitalize="none" onChangeText={setHarvestDate} placeholder="Optional" style={styles.input} value={harvestDate} />
+          <TextInput accessibilityLabel="Expected harvest date" autoCapitalize="none" onChangeText={setHarvestDateOverride} placeholder="Optional" style={styles.input} value={harvestDate} />
           <Text style={styles.label}>Budget (BDT)</Text>
-          <TextInput accessibilityLabel="Budget" keyboardType="decimal-pad" onChangeText={setBudget} placeholder="Optional" style={styles.input} value={budget} />
+          <TextInput accessibilityLabel="Budget" keyboardType="decimal-pad" onChangeText={setBudgetOverride} placeholder="Optional" style={styles.input} value={budget} />
         </Card>
 
         {busy === 'history' && <ActivityIndicator accessibilityLabel="Loading season history" color={COLORS.primary} style={styles.loader} />}
@@ -441,7 +520,7 @@ export default function CropAdvisorScreen() {
             <Card>
               <Text style={styles.sectionTitle}>Selected season</Text>
               <Text style={styles.body}>Status: {seasonStatus(selectedSeason.status)} · Planted: {formatDate(selectedSeason.planting_date)}</Text>
-              {!plan && <Button disabled={busy !== null} title={busy === 'plan' ? 'Creating plan…' : 'Create season plan'} onPress={() => void createPlan()} />}
+              {!plan && <Button accessibilityRole="button" disabled={busy !== null} title={busy === 'plan' ? 'Creating plan…' : 'Create season plan'} onPress={() => void createPlan()} />}
               {plan && (
                 <>
                   <Text style={styles.planTitle}>{plan.title}</Text>
@@ -460,17 +539,17 @@ export default function CropAdvisorScreen() {
                       <Text style={styles.label}>Task definitions for Module 3</Text>
                       {plan.initial_tasks.map((task, index) => <Text key={`${task.title}-${index}`} style={styles.body}>• {task.title}{task.due_day_offset === null ? '' : ` · ${task.due_day_offset} days after planting`}</Text>)}
                       <Text style={styles.helper}>These are not operational tasks yet. Import them through the existing Module 3 API.</Text>
-                      <Button disabled={!canImportTasks || busy !== null} title={busy === 'import' ? 'Sending…' : 'Add to Module 3 task list'} variant="outline" onPress={() => void importTasksToModule3()} />
+                      <Button accessibilityRole="button" disabled={!canImportTasks || busy !== null} title={busy === 'import' ? 'Sending…' : 'Add to Module 3 task list'} variant="outline" onPress={() => void importTasksToModule3()} />
                     </View>
                   )}
-                  {selectedSeason.status === 'planned' && <Button disabled={busy !== null} title={busy === 'activate' ? 'Activating…' : 'Activate season'} onPress={() => void activateSeason()} />}
+                  {selectedSeason.status === 'planned' && <Button accessibilityRole="button" disabled={busy !== null} title={busy === 'activate' ? 'Activating…' : 'Activate season'} onPress={() => void activateSeason()} />}
                 </>
               )}
             </Card>
 
             <Card>
               <Text style={styles.sectionTitle}>Harvest and outcome</Text>
-              <Button disabled={busy !== null} title={busy === 'harvest' ? 'Loading guidance…' : 'View harvest guidance'} variant="outline" onPress={() => void loadHarvestGuidance()} />
+              <Button accessibilityRole="button" disabled={busy !== null} title={busy === 'harvest' ? 'Loading guidance…' : 'View harvest guidance'} variant="outline" onPress={() => void loadHarvestGuidance()} />
               {harvest && (
                 <View style={styles.guidance}>
                   {harvest.guidance.map((item, index) => <Text key={`g-${index}`} style={styles.body}>• {item}</Text>)}
@@ -493,7 +572,7 @@ export default function CropAdvisorScreen() {
               </View>
               <Text style={styles.label}>Season notes</Text>
               <TextInput accessibilityLabel="Season notes" multiline onChangeText={setOutcomeNotes} placeholder="Describe the outcome" style={[styles.input, styles.multiline]} value={outcomeNotes} />
-              <Button disabled={busy !== null || selectedSeason.status === 'completed' || selectedSeason.status === 'cancelled'} title={busy === 'close' ? 'Saving…' : 'Save season outcome'} variant="outline" onPress={() => void closeSeason()} />
+              <Button accessibilityRole="button" disabled={busy !== null || selectedSeason.status === 'completed' || selectedSeason.status === 'cancelled'} title={busy === 'close' ? 'Saving…' : 'Save season outcome'} variant="outline" onPress={() => void closeSeason()} />
             </Card>
           </View>
         )}
@@ -517,8 +596,9 @@ export default function CropAdvisorScreen() {
               </Pressable>
             ))}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        </View>
+      }
+    />
   );
 }
 
@@ -552,8 +632,8 @@ function RecommendationCard({ recommendation, busy, onSelect, onDismiss }: { rec
       ))}
       {recommendation.status === 'proposed' ? (
         <>
-          <Button disabled={busy} title={busy ? 'Saving…' : 'Select this crop'} onPress={onSelect} />
-          <Button disabled={busy} title="Not now" variant="outline" onPress={onDismiss} />
+          <Button accessibilityRole="button" disabled={busy} title={busy ? 'Saving…' : 'Select this crop'} onPress={onSelect} />
+          <Button accessibilityRole="button" disabled={busy} title="Not now" variant="outline" onPress={onDismiss} />
         </>
       ) : <Text style={styles.helper}>Recommendation status: {recommendation.status === 'dismissed' ? 'Dismissed' : 'Selected'}</Text>}
     </Card>
@@ -575,18 +655,23 @@ function factorLabel(factor: string) {
   return labels[factor] ?? factor;
 }
 
+function factorIcon(factor: string): CropAdvisorIconName {
+  const normalized = factor.toLowerCase();
+  if (normalized.includes('soil')) return 'sprout';
+  if (normalized.includes('irrigation') || normalized.includes('water')) return 'drop';
+  if (normalized.includes('timing') || normalized.includes('plant')) return 'calendar';
+  if (normalized.includes('land') || normalized.includes('area')) return 'field';
+  if (normalized.includes('budget') || normalized.includes('cost')) return 'coins';
+  return 'sprout';
+}
+
 function cropName(cropId: string, saved: CropRecommendation[], current: CropRecommendation[]) {
   const recommendation = [...current, ...saved].find(item => item.crop.crop_id === cropId);
   return recommendation?.crop.name ?? `Crop · ${cropId.slice(0, 8)}`;
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.background },
-  container: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: SPACING.md, paddingBottom: SPACING.xxl, gap: SPACING.xs },
-  hero: { backgroundColor: '#edf5ed', borderColor: '#dce9dd', borderWidth: 1, borderRadius: 18, padding: SPACING.lg, marginBottom: SPACING.sm },
-  eyebrow: { ...TYPOGRAPHY.caption, color: COLORS.primaryDark, fontWeight: '700', letterSpacing: 1.3, marginBottom: SPACING.sm },
-  title: { ...TYPOGRAPHY.h1, fontSize: 30, lineHeight: 36, marginBottom: SPACING.xs },
-  subtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, lineHeight: 24, maxWidth: 560 },
+  toolsContent: { gap: SPACING.md },
   sectionTitle: { ...TYPOGRAPHY.h3, marginBottom: SPACING.sm },
   body: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, lineHeight: 23 },
   label: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.text, marginTop: SPACING.sm, marginBottom: SPACING.xs },

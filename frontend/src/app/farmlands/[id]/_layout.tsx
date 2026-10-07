@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Href, Stack, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FarmlandSidebar } from '../../../components/FarmlandSidebar';
+import { MenuIcon } from '../../../components/icons';
 import { useAppContext } from '../../../context/AppProvider';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../theme/theme';
 
@@ -13,6 +14,16 @@ export default function FarmlandDetailLayout() {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const isWide = width >= 820;
+  const isAssistant = pathname.endsWith('/chat');
+  const isCropAdvisor = pathname.endsWith('/crop-advisor');
+  const isCropHealth = pathname.endsWith('/crop-health');
+  const isTasks = pathname.endsWith('/tasks');
+  const isCheckIns = pathname.endsWith('/check-ins');
+  const isProblems = pathname.endsWith('/problems');
+  const isAlerts = pathname.endsWith('/alerts');
+  const isSeasonPlan = pathname.endsWith('/season-plan');
+  const isOverview = Boolean(farmId && pathname === `/farmlands/${farmId}`);
+  const usesMobileChrome = isTasks || isCheckIns || isProblems || isAlerts || isSeasonPlan || isOverview;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     farmlands,
@@ -20,10 +31,18 @@ export default function FarmlandDetailLayout() {
     activeConversationIds,
     createConversation,
     selectConversation,
+    user,
+    refreshConversations,
   } = useAppContext();
   const farm = farmlands.find(item => item.id === farmId);
   const farmConversations = farmId ? conversations[farmId] ?? [] : [];
   const activeConversationId = farmId ? activeConversationIds[farmId] : undefined;
+
+  useEffect(() => {
+    if (farmId && user?.id) {
+      void refreshConversations(farmId).catch(() => undefined);
+    }
+  }, [farmId, user?.id, refreshConversations]);
   const activeSection = pathname.endsWith('/alerts')
     ? 'alerts'
     : pathname.endsWith('/tasks')
@@ -32,13 +51,13 @@ export default function FarmlandDetailLayout() {
         ? 'check-ins'
         : pathname.endsWith('/problems')
           ? 'problems'
-          : pathname.endsWith('/season-plan')
+          : isSeasonPlan
             ? 'season-plan'
             : pathname.endsWith('/crop-health')
               ? 'crop-health'
               : pathname.endsWith('/crop-advisor')
                 ? 'crop-advisor'
-                : farmId && pathname === `/farmlands/${farmId}`
+                : isOverview
                   ? 'overview'
                   : 'chat';
 
@@ -51,14 +70,16 @@ export default function FarmlandDetailLayout() {
 
   const openNewChat = () => {
     if (!farmId) return;
-    createConversation(farmId);
-    openSection('chat');
+    void createConversation(farmId)
+      .then(() => openSection('chat'))
+      .catch(error => Alert.alert('Could not start chat', error instanceof Error ? error.message : 'Please try again.'));
   };
 
   const openConversation = (conversationId: string) => {
     if (!farmId) return;
-    selectConversation(farmId, conversationId);
-    openSection('chat');
+    void selectConversation(farmId, conversationId)
+      .then(() => openSection('chat'))
+      .catch(error => Alert.alert('Could not open chat', error instanceof Error ? error.message : 'Please try again.'));
   };
 
   const sidebar = farm ? (
@@ -80,9 +101,9 @@ export default function FarmlandDetailLayout() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.row}>
-        {isWide && sidebar}
+        {isWide && !isAssistant && !isCropHealth && !usesMobileChrome && sidebar}
         <View style={styles.main}>
-          <View style={styles.header}>
+          {!isAssistant && !isCropAdvisor && !isCropHealth && !usesMobileChrome && <View style={styles.header}>
             {!isWide && (
               <Pressable
                 accessibilityRole="button"
@@ -90,7 +111,7 @@ export default function FarmlandDetailLayout() {
                 onPress={() => setDrawerOpen(true)}
                 style={styles.menuButton}
               >
-                <Text style={styles.menuText}>☰</Text>
+                <MenuIcon color={COLORS.text} />
               </Pressable>
             )}
             <View style={styles.headerText}>
@@ -101,10 +122,10 @@ export default function FarmlandDetailLayout() {
                 {farm ? `${farm.crop} · ${farm.acreage} acres` : ''}
               </Text>
             </View>
-          </View>
+          </View>}
           <Stack screenOptions={{ headerShown: false }} />
         </View>
-        {!isWide && drawerOpen && sidebar && (
+        {!isAssistant && !isCropAdvisor && !isCropHealth && !usesMobileChrome && !isWide && drawerOpen && sidebar && (
           <View style={styles.drawerLayer}>
             <Pressable
               accessibilityRole="button"
@@ -149,10 +170,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: SPACING.sm,
     borderRadius: 21,
-  },
-  menuText: {
-    color: COLORS.text,
-    fontSize: 20,
   },
   headerText: {
     flex: 1,

@@ -223,12 +223,13 @@ def test_onboarding_status_stamps_completed_at_on_first_full_pass(client_and_far
     assert profile.onboarding_completed_at is None
 
     # Fill every required field
-    client.patch(
+    res = client.patch(
         f"/farmlands/{farmland_id}",
         json={
             "division": "Dhaka",
             "district": "Gazipur",
             "latitude": 24.0,
+            "longitude": 90.4,
             "soil_type": "loam",
             "irrigation_available": True,
             "water_source": "tube well",
@@ -238,7 +239,8 @@ def test_onboarding_status_stamps_completed_at_on_first_full_pass(client_and_far
             "previous_yield_amount": 500,
         },
     )
-    client.patch(
+    assert res.status_code == 200, res.text
+    res = client.patch(
         "/profile/farmer-profile",
         json={
             "farming_experience_years": 5,
@@ -246,6 +248,7 @@ def test_onboarding_status_stamps_completed_at_on_first_full_pass(client_and_far
             "livestock": ["cow"],
         },
     )
+    assert res.status_code == 200, res.text
     res = client.get(f"/farmlands/{farmland_id}/onboarding-status")
     assert res.status_code == 200
     assert res.json()["is_complete"] is True

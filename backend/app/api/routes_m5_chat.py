@@ -181,6 +181,7 @@ def send_message(
             conversation_id=conversation_id,
             message_text=payload.message,
             attachment_key=payload.attachment_key,
+            client_request_id=payload.client_request_id,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -235,4 +236,5 @@ def quick_chat(
         conversation_id=latest_conv.id,
         message_text=payload.message,
         attachment_key=payload.attachment_key,
+        client_request_id=payload.client_request_id,
     )

@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { ApiClientError, apiRequest } from '../services/api-client';
 
 export type DiseaseOutcome = 'healthy' | 'uncertain' | 'possible_disease';
 export type ProblemSyncStatus = 'not_required' | 'created' | 'reused' | 'failed';
@@ -67,43 +68,15 @@ export type DiseaseProblemSync = {
   message: string;
 };
 
-type AccessTokenProvider = () => Promise<string | null>;
-let accessTokenProvider: AccessTokenProvider = async () => null;
-
-export function setApiAccessTokenProvider(provider: AccessTokenProvider) {
-  accessTokenProvider = provider;
-}
-
-const apiBaseUrl = (process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
-
 async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  const token = await accessTokenProvider();
-  if (token) headers.Authorization = 'Bearer ' + token;
-
-  const response = await fetch(apiBaseUrl + path, {
-    ...init,
-    credentials: 'include',
-    headers: { ...headers, ...(init.headers as Record<string, string> | undefined) },
-  });
-  if (!response.ok) {
-    let detail = 'The request could not be completed.';
-    try {
-      const body = await response.json();
-      if (typeof body.detail === 'string') detail = body.detail;
-    } catch {
-      // Keep the user-facing fallback when the server did not return JSON.
+  try {
+    return await apiRequest<T>(path, init);
+  } catch (error) {
+    if (error instanceof ApiClientError && error.status === 401) {
+      throw new Error('Your sign-in session is not valid. Please sign in again.');
     }
-
-    if (response.status === 401) {
-      throw new Error('Sign in with a verified farmer account to use disease detection. Module 1 authentication is not connected yet.');
-    }
-    if (response.status === 404) {
-      throw new Error('This farm is not available to the signed-in farmer.');
-    }
-    throw new Error(detail);
+    throw error;
   }
-  return response.json() as Promise<T>;
 }
 
 export async function analyzeDiseaseImage(

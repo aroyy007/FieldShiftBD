@@ -1,8 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Self
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 import re
 
 # Allow common visual separators when farmers type their number, but always
@@ -15,7 +15,6 @@ def _normalize_phone(v: str) -> str:
     """Trim whitespace and remove spaces/dashes/parens, but preserve the leading +."""
     cleaned = _PHONE_STRIP_RE.sub("", v.strip())
     return cleaned
-
 
 # ── Auth schemas ──────────────────────────────────────────────────────────────
 class FarmerRegisterRequest(BaseModel):
@@ -72,6 +71,13 @@ class FarmerRead(BaseModel):
 # ── Farmland schemas ──────────────────────────────────────────────────────────
 AreaUnit = Literal["square_metre", "decimal", "acre", "hectare"]
 FarmingMethod = Literal["organic", "conventional", "mixed"]
+# PostgreSQL NUMERIC(14, 3) can store values up to 99,999,999,999.999.
+MAX_LAND_AREA_SQM = Decimal("99999999999.999")
+MAX_BUDGET_AMOUNT = Decimal("999999999999.99")
+MAX_YIELD_AMOUNT = Decimal("99999999999.999")
+MAX_FARMING_EXPERIENCE_YEARS = Decimal("999.9")
+
+
 class FarmlandCreate(BaseModel):
     """Fields required and optional when creating a new farmland.
     Only name + land area are required up-front. Everything else can be
@@ -79,7 +85,7 @@ class FarmlandCreate(BaseModel):
     what's still missing.
     """
     name: str = Field(min_length=1, max_length=200)
-    land_area_sqm: Decimal = Field(gt=0)
+    land_area_sqm: Decimal = Field(gt=0, le=MAX_LAND_AREA_SQM)
     land_area_display_unit: AreaUnit = "decimal"
     # Location — filled in during onboarding conversation
     division: str | None = Field(default=None, max_length=120)
@@ -94,12 +100,20 @@ class FarmlandCreate(BaseModel):
     water_source: str | None = Field(default=None, max_length=120)
     farming_method: FarmingMethod | None = None
     # Economics — filled in during onboarding
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_BUDGET_AMOUNT)
     budget_currency: str = "BDT"
     # Previous season history — filled in during onboarding
     previous_crop: str | None = Field(default=None, max_length=160)
-    previous_yield_amount: Decimal | None = Field(default=None, ge=0)
+    previous_yield_amount: Decimal | None = Field(default=None, ge=0, le=MAX_YIELD_AMOUNT)
     previous_yield_unit: str | None = Field(default=None, max_length=32)
+
+    @model_validator(mode="after")
+    def coordinates_must_be_paired(self) -> Self:
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be provided together")
+        return self
+
+
 class FarmlandUpdate(BaseModel):
     """Every field is optional — PATCH updates only what you send.
     This is what the onboarding chat calls after each farmer answer.
@@ -112,16 +126,16 @@ class FarmlandUpdate(BaseModel):
     village_or_locality: str | None = Field(default=None, max_length=200)
     latitude: Decimal | None = Field(default=None, ge=-90, le=90)
     longitude: Decimal | None = Field(default=None, ge=-180, le=180)
-    land_area_sqm: Decimal | None = Field(default=None, gt=0)
+    land_area_sqm: Decimal | None = Field(default=None, gt=0, le=MAX_LAND_AREA_SQM)
     land_area_display_unit: AreaUnit | None = None
     soil_type: str | None = Field(default=None, max_length=120)
     irrigation_available: bool | None = None
     water_source: str | None = Field(default=None, max_length=120)
     farming_method: FarmingMethod | None = None
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_BUDGET_AMOUNT)
     budget_currency: str | None = None
     previous_crop: str | None = Field(default=None, max_length=160)
-    previous_yield_amount: Decimal | None = Field(default=None, ge=0)
+    previous_yield_amount: Decimal | None = Field(default=None, ge=0, le=MAX_YIELD_AMOUNT)
     previous_yield_unit: str | None = Field(default=None, max_length=32)
 class FarmlandRead(BaseModel):
     """Full farmland response — everything the client needs to display the profile."""
@@ -152,7 +166,9 @@ class FarmlandRead(BaseModel):
 # ── Farmer profile schemas ────────────────────────────────────────────────────
 class FarmerProfileUpdate(BaseModel):
     """Update farming experience, equipment, livestock, and language preference."""
-    farming_experience_years: Decimal | None = Field(default=None, ge=0)
+    farming_experience_years: Decimal | None = Field(
+        default=None, ge=0, le=MAX_FARMING_EXPERIENCE_YEARS
+    )
     equipment: list[str] | None = None
     livestock: list[str] | None = None
     preferred_language: Literal["bn", "en"] | None = None

@@ -1,11 +1,4 @@
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
-
-type AccessTokenProvider = () => Promise<string | null>;
-let accessTokenProvider: AccessTokenProvider = async () => null;
-
-export function setM5AccessTokenProvider(provider: AccessTokenProvider) {
-  accessTokenProvider = provider;
-}
+import { apiRequest } from './api-client';
 
 export type ChatMessageItem = {
   id: string;
@@ -53,48 +46,29 @@ export type ChatResponsePayload = {
   suggested_actions: string[];
 };
 
-async function authorizedFetch(path: string, init?: RequestInit): Promise<Response> {
-  const token = await accessTokenProvider();
-  const headers = new Headers(init?.headers);
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-  if (!headers.has('Content-Type') && init?.method && init.method !== 'GET') {
-    headers.set('Content-Type', 'application/json');
-  }
-  return fetch(`${API_BASE_URL}${path}`, { ...init, headers });
-}
-
 export async function listConversations(farmlandId: string): Promise<ConversationSummary[]> {
-  const res = await authorizedFetch(`/farmlands/${farmlandId}/conversations`);
-  if (!res.ok) return [];
-  return res.json();
+  return apiRequest<ConversationSummary[]>(`/farmlands/${encodeURIComponent(farmlandId)}/conversations`);
 }
 
-export async function getConversation(farmlandId: string, conversationId: string): Promise<ConversationDetail | null> {
-  const res = await authorizedFetch(`/farmlands/${farmlandId}/conversations/${conversationId}`);
-  if (!res.ok) return null;
-  return res.json();
+export async function getConversation(farmlandId: string, conversationId: string): Promise<ConversationDetail> {
+  return apiRequest<ConversationDetail>(`/farmlands/${encodeURIComponent(farmlandId)}/conversations/${encodeURIComponent(conversationId)}`);
 }
 
-export async function createConversation(farmlandId: string, title?: string): Promise<ConversationDetail | null> {
-  const res = await authorizedFetch(`/farmlands/${farmlandId}/conversations`, {
+export async function createConversation(farmlandId: string, title?: string): Promise<ConversationDetail> {
+  return apiRequest<ConversationDetail>(`/farmlands/${encodeURIComponent(farmlandId)}/conversations`, {
     method: 'POST',
-    body: JSON.stringify({ title }),
+    body: { title },
   });
-  if (!res.ok) return null;
-  return res.json();
 }
 
 export async function sendMessage(
   farmlandId: string,
   conversationId: string,
   message: string,
-): Promise<ChatResponsePayload | null> {
-  const res = await authorizedFetch(`/farmlands/${farmlandId}/conversations/${conversationId}/messages`, {
+  clientRequestId: string,
+): Promise<ChatResponsePayload> {
+  return apiRequest<ChatResponsePayload>(`/farmlands/${encodeURIComponent(farmlandId)}/conversations/${encodeURIComponent(conversationId)}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ message, message_type: 'text' }),
+    body: { message, message_type: 'text', client_request_id: clientRequestId },
   });
-  if (!res.ok) return null;
-  return res.json();
 }

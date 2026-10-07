@@ -1,10 +1,4 @@
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
-type AccessTokenProvider = () => Promise<string | null>;
-let accessTokenProvider: AccessTokenProvider = async () => null;
-
-export function setM2AccessTokenProvider(provider: AccessTokenProvider) {
-  accessTokenProvider = provider;
-}
+import { ApiClientError, apiRequest } from './api-client';
 
 export type KnowledgeReference = {
   source_name: string;
@@ -92,34 +86,21 @@ type ApiError = Error & { status?: number };
 export async function m2Request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
-  let accessToken: string | null;
   try {
-    accessToken = await accessTokenProvider();
-  } catch {
-    throw new Error('Could not read your sign-in session. Please sign in again.');
-  }
-  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
-  } catch {
-    throw new Error('Could not connect to the backend. Check that it is running.');
-  }
-
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const detail = typeof payload?.detail === 'string' ? payload.detail : '';
-    const message = translateApiError(response.status, detail);
-    const error = new Error(message) as ApiError;
-    error.status = response.status;
+    return await apiRequest<T>(path, { ...init, headers });
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      const detail = typeof error.detail === 'string' ? error.detail : error.message;
+      const translated = new Error(translateApiError(error.status ?? 500, detail)) as ApiError;
+      translated.status = error.status;
+      throw translated;
+    }
     throw error;
   }
-  return payload as T;
 }
 
 export function translateApiError(status: number, detail: string): string {
-  if (status === 401) return 'Sign in with a verified farmer account to access this farm. Module 1 authentication is not connected yet.';
+  if (status === 401) return 'Your sign-in session is not valid. Please sign in again.';
   if (status === 404 && detail.toLowerCase().includes('farmland')) {
     return 'This farmland is not saved in the backend. Enter a saved Farmland ID from M1.';
   }
