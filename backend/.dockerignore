@@ -19,3 +19,5 @@ venv/
 .DS_Store
 .vscode/
 *.swp
+
+model/*.pth

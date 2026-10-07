@@ -9,6 +9,7 @@ from app.api import (
     routes_m1_profile,
     routes_m2_advisor,
     routes_m4_weather,
+    routes_m5_chat,
     routes_system,
 )
 
@@ -67,3 +68,4 @@ app.include_router(routes_m2_advisor.router)   # Module 2 — Crop Advisor
 app.include_router(routes_m4_weather.router)   # Module 4 — Weather Intelligence
 app.include_router(routes_farm_state.router)   # Module 3 — Farm Brain
 app.include_router(routes_disease.router)      # Module 6 — Disease Detection
+app.include_router(routes_m5_chat.router)      # Module 5 — Conversational Layer
