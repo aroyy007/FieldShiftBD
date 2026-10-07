@@ -63,6 +63,12 @@ export default function FarmOverview() {
           <Button title="View season plan" variant="outline" onPress={() => openSection('season-plan')} />
         </Card>
 
+        <Button
+          title="ফসলের পরামর্শ নিন"
+          onPress={() => router.push(`/farmlands/${farmId}/crop-advisor` as Href)}
+          style={styles.advisorButton}
+        />
+
         <View style={styles.metrics}>
           <Card style={styles.metricCard}>
             <Text style={styles.metricValue}>{dueToday}</Text>
@@ -175,5 +181,6 @@ const styles = StyleSheet.create({
   emptyCardText: { ...TYPOGRAPHY.bodySecondary, lineHeight: 23 },
   quickActions: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.md },
   quickButton: { flex: 1, minHeight: 44 },
+  advisorButton: { marginBottom: SPACING.md },
   empty: { ...TYPOGRAPHY.bodySecondary, textAlign: 'center', padding: SPACING.lg },
 });

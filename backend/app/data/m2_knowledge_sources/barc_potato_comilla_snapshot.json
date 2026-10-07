@@ -1,0 +1,39 @@
+{
+  "publisher": "Bangladesh Agricultural Research Council (BARC)",
+  "crop_name": "Potato",
+  "barc_crop_id": 12,
+  "region": {
+    "country_code": "BD",
+    "district": "Comilla",
+    "upazila": "Comilla",
+    "barc_upazila_id": 195
+  },
+  "retrieved_on": "2026-10-07",
+  "dataset_vintage": null,
+  "source_url": "https://apps.barc.gov.bd/cropzoning/homes/upazila/12/195",
+  "methodology_url": "https://apps.barc.gov.bd/cropzoning/homes/intro",
+  "license_url": "https://apps.barc.gov.bd/maps/index.php?t=crop_suitability",
+  "license": "CC BY 4.0",
+  "map_page_sha256": "FC863E8005F83C3DD3DD9CB009B640B8DACF8E9DD2243BCEDAE4B4DA7F0D624F",
+  "methodology_page_sha256": "AF1A35C8256C4867866D9E91C645E67D8B6B31EEB8ED777D4F1DF97603CE4D81",
+  "page_extract": {
+    "title": "Suitability Map of Potato [Comilla :: Comilla]",
+    "area_lines": {
+      "very_suitable": "Very Suitable Area: 1645 Hectre",
+      "suitable": "Suitable Area: 11020 Hectre",
+      "moderately_suitable": "Moderately Suitable Area: 2544 Hectre",
+      "marginally_suitable": "Marginally Suitable Area: 0 Hectre",
+      "not_suitable": "Not Suitable Area: 5364 Hectre",
+      "total": "Total Area: 20573 Hectre"
+    }
+  },
+  "snapshot_sha256": "3E78A6EFEFB607104750EE9A1D8AD834385E8607823AD7757F136358BDD2E2B6",
+  "area_hectares": {
+    "very_suitable": 1645,
+    "suitable": 11020,
+    "moderately_suitable": 2544,
+    "marginally_suitable": 0,
+    "not_suitable": 5364,
+    "total": 20573
+  }
+}

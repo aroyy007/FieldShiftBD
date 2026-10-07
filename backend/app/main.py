@@ -3,7 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-from app.api import routes_disease, routes_farm_state, routes_m1_profile, routes_m4_weather, routes_system
+from app.api import (
+    routes_disease,
+    routes_farm_state,
+    routes_m1_profile,
+    routes_m2_advisor,
+    routes_m4_weather,
+    routes_system,
+)
+
 from app.core.config import settings
 from app.core.security import decode_access_token
 
@@ -55,6 +63,7 @@ if cors_origins:
 # Include all module routers here.
 app.include_router(routes_system.router)
 app.include_router(routes_m1_profile.router)   # Module 1 — Profile & Onboarding
+app.include_router(routes_m2_advisor.router)   # Module 2 — Crop Advisor
 app.include_router(routes_m4_weather.router)   # Module 4 — Weather Intelligence
 app.include_router(routes_farm_state.router)   # Module 3 — Farm Brain
 app.include_router(routes_disease.router)      # Module 6 — Disease Detection
