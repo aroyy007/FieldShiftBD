@@ -5,6 +5,9 @@ export type KnowledgeReference = {
   source_type?: string | null;
   source_reference?: string | null;
   category?: string | null;
+  region_code?: string | null;
+  effective_from?: string | null;
+  effective_to?: string | null;
   acceptance_method?: string | null;
 };
 
@@ -29,11 +32,30 @@ export type CropRecommendation = {
   knowledge_refs: KnowledgeReference[];
 };
 
+export type CropAssessment = {
+  crop: { crop_id: string; name: string | null; scientific_name: string | null };
+  status: 'supported_fit' | 'profile_incomplete' | 'conditions_not_met' | 'regional_context_only' | 'no_evidence';
+  message: string;
+  missing_profile_fields: string[];
+};
+
+export type RegionalContext = {
+  crop: { crop_id: string; name: string | null; scientific_name: string | null };
+  scope: string;
+  explanation: string;
+  entries: { source_crop_name?: string | null; season: string | null; situation: string | null; class_shares_percent: Record<string, number> }[];
+  knowledge_refs: KnowledgeReference[];
+};
+
 export type RecommendationSet = {
   farmland_id: string;
-  status: 'available' | 'no_approved_knowledge' | 'no_supported_fit';
+  status: 'available' | 'no_approved_knowledge' | 'no_supported_fit' | 'profile_incomplete';
   message: string;
   recommendations: CropRecommendation[];
+  profile_source?: string;
+  missing_profile_fields?: string[];
+  crop_assessments?: CropAssessment[];
+  regional_context?: RegionalContext[];
 };
 
 export type Season = {
@@ -102,10 +124,10 @@ export async function m2Request<T>(path: string, init: RequestInit = {}): Promis
 export function translateApiError(status: number, detail: string): string {
   if (status === 401) return 'Your sign-in session is not valid. Please sign in again.';
   if (status === 404 && detail.toLowerCase().includes('farmland')) {
-    return 'This farmland is not saved in the backend. Enter a saved Farmland ID from M1.';
+    return 'This farmland was not found in your saved farms.';
   }
   if (detail.includes('No approved season-plan knowledge')) {
-    return 'There is no approved season-plan evidence for this crop yet. No stages or tasks were invented.';
+    return 'No verified source defines growth stages for this crop yet, so no plan, stages, or tasks were created. The season stays planned.';
   }
   if (detail.includes('No approved harvest guidance')) {
     return 'There is no approved source for harvest guidance for this crop yet.';
@@ -122,6 +144,8 @@ export function translateApiError(status: number, detail: string): string {
     'The season plan has no growth stages': 'The season plan has no growth stages.',
     'Only proposed recommendations can be dismissed': 'Only proposed recommendations can be dismissed.',
     'Recommendation is no longer proposed': 'This recommendation is no longer proposed.',
+    'Crop variety must belong to the selected crop': 'Choose a variety of the selected crop.',
+    'This farmland already has an open season. Complete or cancel it before starting a new one.': 'This farmland already has a planned or active season. Complete it before starting another.',
   };
   if (knownDetails[detail]) return knownDetails[detail];
   if (status === 404) return 'The requested information was not found.';

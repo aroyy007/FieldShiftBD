@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="ellepo">
+
+<head>
+    <!-- Basic Page Needs
+  ================================================== -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>কৃষি পরামর্শক বাতায়ন</title>
+    <meta name="description" content="The agri portal developed by Bangladesh Agricultural Research Council (BARC) is an ICT enabled bi-lingual platform for demand-driven technology information and advisory services in agriculture. Also, it acts as a gateways to knowledge based information related to agriculture and allied discipline. Further, it will provide platform for all stakeholders (farmers, private sector and the Government, research scholars) to access information, avail services, collaborate and share knowledge. The ultimate goal of this portal is to integrate agricultural stakeholders together for better production planning for farmers and other agricultural producers. Also the portal facilitates location specific information for what is where, providing access to distributed data and other information, disseminating spatial information, and conducting GIS analysis.">
+    <meta name="keywords" content="Crop Zoning, Development of Upazila Land Suitability Assessment and Crop Zoning System of Bangladesh, Land Suitability Assessment, Agriculture, BARC, Bangladesh Agricultural Research Council (BARC), cropping pattern, corpping pattern Bangladesh, corpping pattern bd">
+    <meta name="author" content="Programmer, Institute of Water Modelling (IWM)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Mobile Specific Metas
+  ================================================== -->
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://portal.cropzoning.gov.bd/assets/images/favicon.ico">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="E9q6IUZUEKzFPxeDsEmG7oPmIQHoV3uTWFYu9gWD">
+    <!-- CSS
+  ================================================== -->
+    <link href="https://portal.cropzoning.gov.bd/assets/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/css/bootstrap-theme.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/css/style.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/vendor/magnific/magnific-popup.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/vendor/owl-carousel/css/owl.carousel.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/vendor/owl-carousel/css/owl.theme.css" rel="stylesheet" type="text/css">
+    <!--[if lte IE 9]><link rel="stylesheet" type="text/css" href="css/ie.css" media="screen" /><![endif]-->
+
+    <link href="https://portal.cropzoning.gov.bd/assets/css/fonts/Kiron.css" rel="stylesheet" type="text/css">
+    
+    <link href="https://portal.cropzoning.gov.bd/assets/css/toastr.css" rel="stylesheet" type="text/css">
+    <link href="https://portal.cropzoning.gov.bd/assets/css/datatables.bootstrap.css" rel="stylesheet" type="text/css">
+    
+
+    <!-- Color Style -->
+    <link href="https://portal.cropzoning.gov.bd/assets/colors/color1.css" rel="stylesheet" type="text/css">
+
+    <script src="https://portal.cropzoning.gov.bd/assets/js/jquery-2.2.3.min.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/angular.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/app.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/service.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/bootbox.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/toastr.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/helper/helper.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/helper/ln-helper.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/helper/en-to-bn.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/angular-datatables.min.js"></script> <!-- Jquery Library Call -->
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/jquery.dataTables.min.js"></script> <!-- Jquery Library Call -->
+    
+    <script src="https://portal.cropzoning.gov.bd/assets/scripts/underscore.js"></script> <!-- Jquery Library Call -->
+
+    <link href="https://portal.cropzoning.gov.bd/assets/vendor/bootstrap-toggle/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://portal.cropzoning.gov.bd/assets/vendor/bootstrap-toggle/bootstrap-toggle.min.js"></script>
+
+    <script src="https://portal.cropzoning.gov.bd/assets/ckeditor/ckeditor.js"></script>
+    
+
+    <link href="https://portal.cropzoning.gov.bd/assets/css/custom.css" rel="stylesheet" type="text/css"><!-- CUSTOM STYLESHEET FOR STYLING -->
+
+    <!-- SCRIPTS
+    ================================================== -->
+    <script src="https://portal.cropzoning.gov.bd/assets/js/modernizr.js"></script><!-- Modernizr -->
+    <!-- 
+    <script src="https://portal.cropzoning.gov.bd/js/app.js" defer></script>
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://portal.cropzoning.gov.bd/css/app.css" rel="stylesheet"> 
+-->
+
+
+</head>
+
+<body class="home" onunload="clearLn()">
+    <div class="se-pre-con"></div>
+    <!--[if lt IE 7]>
+	    <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+    <![endif]-->
+    <div id="app" class="body">
+        <input type="hidden" id="hf_ln" name="hf_ln">
+
+        <div class="header-top">
+            <div class="container">
+                <div class="rows">
+                    <!-- SIDEBAR TOP MENU -->
+                    <div class="pull-left top1">
+                        <div class="widget pull-left">
+                            <div class="widget-inner">
+                                <div class="call-us">
+                                    <span>Phone: <a href="tel:(880) 02-9132214">(880) 02-9132214</a></span>
+                                    <span>Email: <a href="mailto:info@barc.gov.bd"> info@barc.gov.bd</a></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pull-right">
+                        <div class="pull-left top2">
+                            <div class="widget widget_nav_menu">
+                                <div class="widget-inner">
+                                    <a href="" target="_blank" class=" pull-right" style="padding: 0px 5px;">
+                                        <input id="btn_ln" type="checkbox" checked data-toggle="toggle" data-on="English" data-off="বাংলা" data-onstyle="success" data-offstyle="danger" data-size="mini" data-height="28">
+                                    </a>
+                                    <a href="http://cropzoning.gov.bd:81/" target="_blank" class="btn btn-primary btn-sm pull-right" style="padding: 0px 5px">
+                                        <span class="ln-en">CZIS</span>
+                                        <span class="ln-bn">ক্রপ জোনিং</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Header -->
+        <div class="header-wrapper">
+
+            <div class="row" style="background-image: url(/assets/images/banner_b.png);background-size: 100%; background-position: center; ">
+                <div class="row" style="background-color: rgba(255, 255, 255, .9); padding:15px;">
+                    <div class="col-xs-2" style="padding-left:30px;">
+                        <a href="/">
+                            <img src="https://portal.cropzoning.gov.bd/assets/images/logo-barc.png" width="90" style="min-width:50px;" />
+                        </a>
+                    </div>
+                    <div class="col-xs-8">
+                        <div style="float: left;width:100%; text-align:center;margin-bottom: 10px;min-height:70px;">
+                            <div style="font-size: 30px;font-weight: bold; color:#75970c;" id="portal_name_long">
+                                <span class="ln-en text-uppercase">Agri-Advisory Portal</span>
+                                <span class="ln-bn">কৃষি পরামর্শক বাতায়ন</span>
+                            </div>
+                            <div style="font-size: 20px;font-weight: bold; color:#75970c;" id="portal_name_short">
+                                <span class="ln-en text-uppercase">Agri-Advisory Portal</span>
+                                <span class="ln-bn" style="font-size: 35px;font-weight: bold;">কৃষি পরামর্শক বাতায়ন</span>
+                            </div>
+                            <div style="font-size: 20px;font-weight: bold;color:#0A0461;" id="barc_name_long">
+                                <span class="ln-en">Bangladesh Agricultural Research Council (BARC) </span>
+                                <span class="ln-bn">বাংলাদেশ কৃষি গবেষণা কাউন্সিল</span>
+                            </div>
+                            <div style="font-size: 14px;font-weight: bold;color:#0A0461;" id="barc_name_short">
+                                <span class="ln-en">Bangladesh Agricultural Research Council (BARC)</span>
+                                <span class="ln-bn">বাংলাদেশ কৃষি গবেষণা কাউন্সিল</span>
+                            </div>
+                            <div style="font-size: 12px;font-weight: bold; color:#0A0461;" id="gov_pep_long">
+                                <span class="ln-en">Ministry Of Agriculture</span>
+                                <span class="ln-bn">কৃষি মন্ত্রণালয় </span>
+                            </div>
+                            <div style="font-size: 8px;font-weight: bold; color:#0A0461;" id="gov_pep_short">
+                                <span class="ln-en">Ministry Of Agriculture</span>
+                                <span class="ln-bn">কৃষি মন্ত্রণালয় </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2 text-right" style="padding-right:30px;">
+                        <img src="https://portal.cropzoning.gov.bd/assets/images/logo-gov.png" width="90" style="min-width:50px;" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="main-navigation">
+                <div class="container">
+
+                    <a href="#" id="menu-toggle">Menu</a>
+                    <nav role="menu">
+                        <ul class="dd-menu sf-menu">
+                            <li>
+                                <a href="/">
+                                    <span class="ln-en">Home</span>
+                                    <span class="ln-bn">হোম</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">About Portal</span>
+                                    <span class="ln-bn">বাতায়ন পরিচিতি</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/aboutPortal">
+                                            <span class="ln-en">About Agri-Advisory Portal</span>
+                                            <span class="ln-bn">কৃষি পরামর্শ বাতায়ন সম্পর্কে</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/aboutCziis">
+                                            <span class="ln-en">About Crop Zoning System</span>
+                                            <span class="ln-bn">ক্রপ জোনিং সিস্টেম সম্পর্কে</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/aboutKhamari">
+                                            <span class="ln-en">About Crop Zoning System Component</span>
+                                            <span class="ln-bn">ক্রপ জোনিং সিস্টেম কম্পোনেন্ট সম্পর্কে</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/aboutProject">
+                                            <span class="ln-en">About Crop Zoning Project (New version)</span>
+                                            <span class="ln-bn">ক্রপ জোনিং প্রকল্প সম্পর্কে (নূতন ভার্সন)</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/copyrightPolicy">
+                                            <span class="ln-en">Copyright Policy</span>
+                                            <span class="ln-bn">কপিরাইট নীতি</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/termsOfUse">
+                                            <span class="ln-en">Terms of Use</span>
+                                            <span class="ln-bn">ব্যবহারের শর্তাবলী</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/feedback">
+                                            <span class="ln-en">Feedback</span>
+                                            <span class="ln-bn">মতামত</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Crop INFO</span>
+                                    <span class="ln-bn">ফসল তথ্য</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/CropInfo/ProductionTechs?c=3">
+                                            <span class="ln-en">Crop Production Technology</span>
+                                            <span class="ln-bn">ফসল উৎপাদন প্রযুক্তি</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/CropInfo/CropVarieties?c=3">
+                                            <span class="ln-en">Crop Variety Information</span>
+                                            <span class="ln-bn">ফসল জাতের পরিচিতি</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/CropEconomics">
+                                            <span class="ln-en">Crop Economics</span>
+                                            <span class="ln-bn">ফসল অর্থনীতি</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!-- Firoz Ebna Jobaier, CZP -->
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Seed Production</span>
+                                    <span class="ln-bn">বীজ উৎপাদন</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/seed-production?i=1">
+                                            <span class="ln-en">Onion Seed Production</span>
+                                            <span class="ln-bn">পেঁয়াজের বীজ উৎপাদন</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Innovative Agriculture</span>
+                                    <span class="ln-bn">উদ্ভাবনী কৃষি</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/innovative-agriculture?ia=2">
+                                            <span class="ln-en">Roof garden</span>
+                                            <span class="ln-bn">ছাদ বাগান</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/innovative-agriculture?ia=3">
+                                            <span class="ln-en">Hydroponic culture</span>
+                                            <span class="ln-bn">হাইড্রোফোনিক চাষ</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/innovative-agriculture?ia=4">
+                                            <span class="ln-en">Floating agriculture</span>
+                                            <span class="ln-bn">ভাসমান কৃষি</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/innovative-agriculture?ia=1">
+                                            <span class="ln-en">Vermicompost</span>
+                                            <span class="ln-bn">ভার্মিকম্পোস্ট</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Pest Management</span>
+                                    <span class="ln-bn">বালাই ব্যবস্থাপনা</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/pest-management?ia=1">
+                                            <span class="ln-en">Wheat Blast</span>
+                                            <span class="ln-bn">গমের ব্লাস্ট রোগ</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/pest-management?ia=2">
+                                            <span class="ln-en">Fruit bagging</span>
+                                            <span class="ln-bn">আম উৎপাদনে ফ্রুট ব্যাগিং</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/pest-management?ia=3">
+                                            <span class="ln-en">Sex Pheromone Trap</span>
+                                            <span class="ln-bn">সেক্স ফেরোমন ফাঁদ</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Post Harvest Management</span>
+                                    <span class="ln-bn">সংগ্রহত্তোর ব্যবস্থাপনা</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/post-harvest-management?ia=1">
+                                            <span class="ln-en">Hot Water Treatment</span>
+                                            <span class="ln-bn">গরম পানিতে আম ট্রিটমেন্ট</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="ln-en">Agri Mechanization</span>
+                                    <span class="ln-bn">কৃষি যান্ত্রিকীকরণ</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li>
+                                        <a href="/AgriMechanize/MaizeSheller">
+                                            <span class="ln-en">Maize Sheller</span>
+                                            <span class="ln-bn">ভূট্টা মাড়াই যন্ত্র</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/AgriMechanize/PotatoPlanter">
+                                            <span class="ln-en">Potato planter</span>
+                                            <span class="ln-bn">আলু রোপন মেশিন</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/AgriMechanize/PotatoHarvester">
+                                            <span class="ln-en">Potato Harvester</span>
+                                            <span class="ln-bn">আলু উত্তোলন যন্ত্র</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/AgriMechanize/PowerTillerSeeder">
+                                            <span class="ln-en">Power Tiller Seeder</span>
+                                            <span class="ln-bn">পাওয়ার টিলার বীজবপক</span>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="/gallery">
+                                    <span class="ln-en">Gallery</span>
+                                    <span class="ln-bn">গ্যালারী</span>
+                                </a>
+                            </li>
+                            <!-- <li>
+                                <a href="/faq">
+                                    <span class="ln-en">FAQ</span>
+                                    <span class="ln-bn">জিজ্ঞাসা</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/feedback">
+                                    <span class="ln-en">Feedback</span>
+                                    <span class="ln-bn">মতামত</span>
+                                </a>
+                            </li> -->
+                            
+                        </ul>
+
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <!-- End Header -->
+        
+<!-- Start Hero Area -->
+<div class="hero-area">
+    <div class="page-header dark">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <ol class="breadcrumb">
+                <li>
+                    <a href="#">
+                        <span class="ln-en">About Portal</span>
+                        <span class="ln-bn">বাতায়ন পরিচিতি</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <span class="ln-en">Copyright Policy</span>
+                    <span class="ln-bn">কপিরাইট নীতি</span>
+                </li>
+            </ol>
+            <h1>
+                <span class="ln-en">Copyright Policy</span>
+                <span class="ln-bn">কপিরাইট নীতি</span>
+            </h1>
+        </div>
+    </div>
+</div>
+<!-- Main Content -->
+<div id="main-container">
+    <div class="content padding-b0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-9 col-sm-7">
+                    <p align="justify" class="ln-en">Material presented on this Portal may be reproduced free of charge in any format or media without requiring specific permission. This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context. Where the material is being published or issued to others, the source must be prominently acknowledged.</p>
+                    <p align="justify" class="ln-bn">এই পোর্টালে উপস্থাপিত বিষয়গুলি কর্তৃপক্ষের নির্দিষ্ট অনুমতি ব্যতিরেকে বিনা মূল্যে ব্যবহার করা যেতে পারে। তবে এ সফটওয়্যার থেকে প্রাপ্ত তথ্য-উপাত্ত নির্ভুলভাবে উপস্থাপন করতে হবে এবং এটি কোন ভাবেই অপ্রাসঙ্গিকভাবে বা বিভ্রান্তির সৃষ্টি হয় এমন ক্ষেত্রে ব্যবহার করা যাবে না। এ সফটওয়্যার থেকে প্রাপ্ত তথ্য-উপাত্ত যদি কেউ ব্যবহার করেন অথবা প্রকাশনায় ব্যবহার করলে তার উৎস অবশ্যই উল্লেখ করতে হবে।</p>
+                </div>
+                <div class="col-md-3 col-sm-5">
+                    <div class="widget sidebar-widget widget_custom_menu">
+                        <ul>
+                            <li>
+                                <a href="/aboutPortal">
+                                    <span class="ln-en">About Agri-Advisory Portal</span>
+                                    <span class="ln-bn">কৃষি পরামর্শ বাতায়ন সম্পর্কে</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/aboutCziis">
+                                    <span class="ln-en">About CZIS</span>
+                                    <span class="ln-bn">ক্রপ জোনিং সম্পর্কে</span>
+                                </a>
+                            </li>
+                            <!-- Firoz Ebna Jobaier, CZP -->
+                            <li>
+                                <a href="/aboutKhamari">
+                                    <span class="ln-en">About Crop Zoning System Component</span>
+                                    <span class="ln-bn">ক্রপ জোনিং সিস্টেম কম্পোনেন্ট সম্পর্কে</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/aboutProject">
+                                    <span class="ln-en">About Crop Zoning Project (New version)</span>
+                                    <span class="ln-bn">ক্রপ জোনিং প্রকল্প সম্পর্কে (নূতন ভার্সন)</span>
+                                </a>
+                            </li>
+                            <li class="active">
+                                <a href="/copyrightPolicy">
+                                    <span class="ln-en">Copyright Policy</span>
+                                    <span class="ln-bn">কপিরাইট নীতি</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/termsOfUse">
+                                    <span class="ln-en">Terms of Use</span>
+                                    <span class="ln-bn">ব্যবহারের শর্তাবলী</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/feedback">
+                                    <span class="ln-en">Feedback</span>
+                                    <span class="ln-bn">মতামত</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+
+
+        <!-- Site Footer -->
+        <div class="site-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget footer_widget">
+                            <h4 class="widgettitle"><i class="fa fa-info-circle"></i> About Portal</h4>
+                            
+                            <p align="justify" class="ln-en">The agri-advisory portal developed under Crop Zoning Project of Bangladesh Agricultural Research Council is an ICT enabled bi-lingual platform for demand-driven technology information and <a style="color: #75970c;" href="/aboutPortal">Read More...</a></p>
+                            <p align="justify" class="ln-bn">কৃষি-পরামর্শক বাতায়ন বাংলাদেশ কৃষি গবেষণা কাউন্সিল (বিএআরসি) কর্তৃক বাস্তবায়িত ক্রপ জোনিং প্রকল্পের আওতায় নির্মাণ করা হয়েছে <a style="color: #75970c;" href="/aboutPortal">আরও পড়ুন...</a></p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <div class="widget footer_widget widget_links">
+                            <h4 class="widgettitle"><i class="fa fa-navicon"></i>Quick Links</h4>
+                            <nav role="menu">
+                                <ul>
+                                    <li><a href="http://www.barc.gov.bd" target="_blank">BARC</a></li>
+                                    <li><a href="http://www.iwmbd.org" target="_blank">IWM</a></li>
+                                    <li><a href="http://www.srdi.gov.bd/" target="_blank">SRDI</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <div class="widget footer_widget widget_links">
+                            <h4 class="widgettitle"><i class="fa fa-twitter"></i>Quick Links</h4>
+                            <nav role="menu">
+                                <ul>
+                                    <li><a href="http://climate.barcapps.gov.bd/" target="_blank">Climate Database</a></li>
+                                    <li><a href="http://lri.barcapps.gov.bd/" target="_blank">Land Resource Database</a></li>
+                                    <li><a href="http://agritech.barcapps.gov.bd/">Agricultural Technology Database</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <div class="widget footer_widget widget_links">
+                            <h4 class="widgettitle"><i class="fa fa-twitter"></i>Quick Links</h4>
+                            <nav role="menu">
+                                <ul>
+                                    <li><a href="http://armis.barcapps.gov.bd/home/login">ARMIS</a></li>
+                                    <li><a href="http://cropzoning.barcapps.gov.bd/">Crop Suitability and Zoning</a></li>
+                                    <li>
+                                        <a href="/contact">
+                                            <span class="ln-en">Contact</span>
+                                            <span class="ln-bn">যোগাযোগ</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="widget footer_widget widget_links">
+                            <h4 class="widgettitle"><i class="fa fa-twitter"></i>Quick Links</h4>
+                            <nav role="menu">
+                                <ul>
+                                    <li>
+                                <a href="/faq">
+                                    <span class="ln-en">FAQ</span>
+                                    <span class="ln-bn">জিজ্ঞাসা</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/feedback">
+                                    <span class="ln-en">Feedback</span>
+                                    <span class="ln-bn">মতামত</span>
+                                </a>
+                            </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Site Footer -->
+        <div class="site-footer-bottom">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-5 col-sm-5">
+                        <div class="copyrights-col-left">
+                            <p>&copy; 2026 <a href="http://barc.gov.bd/" target="_blank"> Bangladesh Agricultural Research Council</a>. All Rights Reserved</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-2">
+                        <div class="copyrights-col-right">
+                            <ul class="social-icons-rounded social-icons-colored text-center">
+                                <li class="facebook"><a href="#"><i class="fa fa-facebook-f"></i></a></li>
+                                <li class="youtube"><a href="#"><i class="fa fa-youtube-play"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-sm-5">
+                        <div class="copyrights-col-right">
+                            <p class="pull-right">
+                                Developed By <a href="http://www.iwmbd.org" target="_blank">
+                                    Institute of Water Modelling
+                                    <img src="/assets/images/iwm.png" width="50">
+                                </a>
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a id="back-to-top"><i class="fa fa-angle-double-up"></i></a>
+        
+    </div>
+    <script>
+        $(window).load(function() {
+            $(".se-pre-con").fadeOut("slow");;
+        });
+        $(document).ready(function() {
+            //  $('.ckeditor').ckeditor();
+            var init = function() {
+                // $(".ln-en").show();//tmp
+                // $(".ln-bn").hide();//tmp
+
+                curl = window.location.href;
+                loc = getPathFromUrl(curl);
+                base_url = window.location.origin;
+                path = loc.replace(base_url, '');
+                // console.log(base_url +", "+loc+", "+path);
+                if (path == '/') {
+                    localStorage.setItem('ln', 'bn');
+                }
+                ln = localStorage.getItem('ln');
+                if (ln == null || ln == 'bn') {
+                    $(".ln-bn").show();
+                    $(".ln-en").hide();
+                    $('#btn_ln').bootstrapToggle('on');
+                } else {
+                    $(".ln-bn").hide();
+                    $(".ln-en").show();
+                    $('#btn_ln').bootstrapToggle('off');
+                }
+                // if(ln==null || ln=='en'){
+                //     $(".ln-bn").hide();
+                //     $(".ln-en").show();
+                //     $('#btn_ln').bootstrapToggle('off');
+                // }else{
+                //     $(".ln-bn").show();
+                //     $(".ln-en").hide();
+                //     $('#btn_ln').bootstrapToggle('on');
+                // }
+
+            }
+            init();
+
+
+            $("#btn_ln").change(function() {
+                // $('#console-event').html('Toggle: ' + $(this).prop('checked'));
+                x = $(this).prop('checked');
+                //    console.log(x);
+                if (x) {
+                    localStorage.setItem('ln', 'bn');
+                    $(".ln-bn").show();
+                    $(".ln-en").hide();
+                } else {
+                    localStorage.setItem('ln', 'en');
+                    $(".ln-bn").hide();
+                    $(".ln-en").show();
+                }
+                //    location.reload();
+            });
+            // $("#btn_ln").click(function(){
+            //     //$("#ln_text").val=;
+            //     ln=localStorage.getItem('ln');
+            //     if(ln==null || ln=='en'){
+            //         localStorage.setItem('ln', 'bn');
+            //         $("#ln_text").html('বাংলা');
+            //     }else{
+            //         localStorage.setItem('ln', 'en');
+            //         $("#ln_text").html('English');
+            //     }
+            // });
+
+            clearLn = function() {
+                // localStorage.setItem('ln', 'bn');
+            }
+
+        });
+        // ln=localStorage.getItem('ln');
+        // if(ln==null || ln=='en'){
+        //     localStorage.setItem('ln', 'en');
+        //     document.getElementById('hf_ln').value='en';
+        // }
+        // else if(ln=='bn'){
+        //     //localStorage.setItem('ln', 'en');
+        //     document.getElementById('hf_ln').value='bn';
+        // }
+    </script>
+
+    <script src="https://portal.cropzoning.gov.bd/assets/vendor/magnific/jquery.magnific-popup.min.js"></script> <!-- PrettyPhoto Plugin -->
+    <script src="https://portal.cropzoning.gov.bd/assets/js/ui-plugins.js"></script> <!-- UI Plugins -->
+    <script src="https://portal.cropzoning.gov.bd/assets/js/helper-plugins.js"></script> <!-- Helper Plugins -->
+    <script src="https://portal.cropzoning.gov.bd/assets/vendor/owl-carousel/js/owl.carousel.min.js"></script> <!-- Owl Carousel -->
+    <script src="https://portal.cropzoning.gov.bd/assets/js/bootstrap.js"></script> <!-- UI -->
+    <script src="https://portal.cropzoning.gov.bd/assets/js/init.js"></script> <!-- All Scripts -->
+    <script src="https://portal.cropzoning.gov.bd/assets/vendor/flexslider/js/jquery.flexslider.js"></script> <!-- FlexSlider -->
+
+
+</body>
+
+</html>

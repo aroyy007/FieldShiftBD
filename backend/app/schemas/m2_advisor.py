@@ -58,6 +58,15 @@ class RecommendationSetStatus(StrEnum):
     AVAILABLE = "available"
     NO_APPROVED_KNOWLEDGE = "no_approved_knowledge"
     NO_SUPPORTED_FIT = "no_supported_fit"
+    PROFILE_INCOMPLETE = "profile_incomplete"
+
+
+class CropAssessmentStatus(StrEnum):
+    SUPPORTED_FIT = "supported_fit"
+    PROFILE_INCOMPLETE = "profile_incomplete"
+    CONDITIONS_NOT_MET = "conditions_not_met"
+    REGIONAL_CONTEXT_ONLY = "regional_context_only"
+    NO_EVIDENCE = "no_evidence"
 
 
 class SeasonPlanStatus(StrEnum):
@@ -113,6 +122,7 @@ class FarmProfileInput(M2Schema):
     land_unit: LandAreaUnit | None = None
     land_area_sqm: Decimal | None = Field(default=None, gt=0)
     soil_type: str | None = None
+    land_type: str | None = None
     irrigation_available: bool | None = None
     water_source: str | None = None
     previous_crop: PreviousCropOutcome | None = None
@@ -195,11 +205,41 @@ class CropRecommendation(M2Schema):
     knowledge_refs: list[KnowledgeReference] = Field(default_factory=list)
 
 
+class CropAssessment(M2Schema):
+    """Why a catalog crop was or was not recommended for the saved profile."""
+
+    crop: CropIdentity
+    status: CropAssessmentStatus
+    message: str
+    missing_profile_fields: list[str] = Field(default_factory=list)
+
+
+class RegionalSuitabilityEntry(M2Schema):
+    source_crop_name: str | None = None
+    season: str | None = None
+    situation: str | None = None
+    class_shares_percent: dict[str, float] = Field(default_factory=dict)
+
+
+class RegionalContext(M2Schema):
+    """Area-level context. It never establishes that a crop suits a field."""
+
+    crop: CropIdentity
+    scope: str
+    explanation: str
+    entries: list[RegionalSuitabilityEntry] = Field(default_factory=list)
+    knowledge_refs: list[KnowledgeReference] = Field(default_factory=list)
+
+
 class CropRecommendationSet(M2Schema):
     farmland_id: UUID
     status: RecommendationSetStatus
     message: str
     recommendations: list[CropRecommendation] = Field(default_factory=list)
+    profile_source: str = "request"
+    missing_profile_fields: list[str] = Field(default_factory=list)
+    crop_assessments: list[CropAssessment] = Field(default_factory=list)
+    regional_context: list[RegionalContext] = Field(default_factory=list)
 
 
 class CropSelectionInput(M2Schema):

@@ -1,0 +1,41 @@
+{
+  "geography_version": 1,
+  "owner": "M1 farm profile",
+  "purpose": "Canonical Bangladesh division/district/upazila identifiers. District and upazila names and geocodes are read from the pinned BARC crop-suitability API captures; this file adds only the division prefix table and spelling aliases.",
+  "source": {
+    "publisher": "Bangladesh Agricultural Research Council (BARC) crop-zoning suitability API",
+    "districts_capture": "app/data/source_captures/barc_crop_zoning/suitability/districts.json",
+    "upazilas_capture_pattern": "app/data/source_captures/barc_crop_zoning/suitability/upazilas_{district_code}.json",
+    "code_scheme": "Bangladesh Bureau of Statistics (BBS) geocodes: a district code is its 2-digit division code followed by the 2-digit district code; an upazila code appends a 2-digit upazila code to its district code.",
+    "coverage_note": "BARC lists 64 districts and 482 upazilas. A farm in an upazila BARC does not list keeps its typed name but has no upazila geocode."
+  },
+  "region_code_format": {
+    "country": "BD",
+    "division": "BD-DIV-{2-digit BBS division code}",
+    "district": "BD-DIST-{4-digit BBS district code}",
+    "upazila": "BD-UPZ-{6-digit BBS upazila code}"
+  },
+  "divisions": [
+    {"code": "10", "name": "Barishal", "name_bn": "বরিশাল", "aliases": ["Barisal"]},
+    {"code": "20", "name": "Chattogram", "name_bn": "চট্টগ্রাম", "aliases": ["Chittagong"]},
+    {"code": "30", "name": "Dhaka", "name_bn": "ঢাকা", "aliases": []},
+    {"code": "40", "name": "Khulna", "name_bn": "খুলনা", "aliases": []},
+    {"code": "45", "name": "Mymensingh", "name_bn": "ময়মনসিংহ", "aliases": []},
+    {"code": "50", "name": "Rajshahi", "name_bn": "রাজশাহী", "aliases": []},
+    {"code": "55", "name": "Rangpur", "name_bn": "রংপুর", "aliases": []},
+    {"code": "60", "name": "Sylhet", "name_bn": "সিলেট", "aliases": []}
+  ],
+  "district_aliases": {
+    "2019": ["Comilla", "Kumilla"],
+    "2022": ["Cox's Bazar", "Coxs Bazar", "Cox Bazar"],
+    "2012": ["Brahmanbaria"],
+    "2015": ["Chittagong"],
+    "1006": ["Barisal"],
+    "4041": ["Jessore"],
+    "5010": ["Bogra"],
+    "6058": ["Moulvibazar", "Moulvi Bazar"],
+    "4572": ["Netrokona"],
+    "5070": ["Chapai Nawabganj", "Nawabganj"],
+    "1042": ["Jhalakathi", "Jhalokati"]
+  }
+}

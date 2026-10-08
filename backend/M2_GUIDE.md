@@ -2,16 +2,19 @@
 
 ## M2 INPUTS
 
-- M1 `FarmProfile` data using the M2 `FarmProfileInput` schema.
+- The saved M1 farmland and farmer profile, composed into the M2
+  `FarmProfileInput` contract by `m2_advisor.profile_from_farmland`.
 - Crop and variety catalogue records, farmland records, and approved
   `AgriculturalKnowledge` records from the existing shared persistence layer.
 - Farmer crop selection, season dates/budget, season-plan request metadata, and
   season outcome information.
 
-Until M1 is connected, callers can pass a contract-shaped mock profile directly
-to `POST /advisor/recommendations`. The HTTP path still requires its
-`farmland_id` to refer to an existing farmland record; service tests use a mock
-session for full M1-independent behavior.
+M1 is connected: on the HTTP path the saved farmland is authoritative. Both
+`POST /advisor/farmlands/{farmland_id}/recommendations` and the older
+`POST /advisor/recommendations` (which reads only `farmland_id`, `farmer_id`,
+and `crop_preferences` from its body) build the profile from saved M1 data, so
+persisted recommendations always match the saved profile. Service tests can
+still pass a contract-shaped profile to `recommend_crops` with a mock session.
 
 ## M2 OUTPUTS
 
@@ -44,7 +47,9 @@ M2 does not set or expose the current operational growth stage.
 
 ## M2 DEPENDENCIES
 
-- M1 FarmProfile contract (currently accepted directly as an API payload/mock).
+- M1 saved farmland/farmer profile, M1 crop catalog (`GET /crops`), and M1
+  reference vocabularies (`GET /reference/locations`,
+  `GET /reference/profile-vocabulary`).
 - Existing shared crop, farmland, season, plan, and knowledge persistence
   models.
 - No dependency on M3 implementation, NASA, ML, LLM, or external agricultural
@@ -101,7 +106,8 @@ All routes are mounted under `/advisor`:
 
 | Method and path | Purpose |
 |---|---|
-| `POST /recommendations` | Generate explainable recommendations from a farm profile and approved knowledge; returns an explicit empty-result reason |
+| `POST /farmlands/{farmland_id}/recommendations` | Recommend from the saved M1 profile; returns per-crop assessments, missing profile fields, and separate regional context |
+| `POST /recommendations` | Same, reading only `farmland_id`/`crop_preferences` from the body (kept for compatibility) |
 | `GET /farmlands/{farmland_id}/recommendations` | Read saved recommendations for a farmland |
 | `POST /recommendations/{recommendation_id}/dismiss` | Dismiss a proposed recommendation |
 | `POST /seasons` | Select a crop and create a planned season |
@@ -226,13 +232,13 @@ pages reviewed, their traceable URLs, supportable information, and limitations.
 Potato is the initial target because the plan's Golden Farm scenario names
 potato. Wheat and maize appear in frontend demo examples, but those examples do
 not establish Bangladesh agronomic context and are only future candidates.
-There are no repository crop or variety seed records, so source snapshots are
-bound to M1's crop catalog at import time rather than duplicating its IDs. The
+The M1 crop catalog is seeded by `scripts.import_reference_data` (see
+"Current knowledge coverage" below); source records bind to its crop and
+variety rows at import time. The
 first source-policy snapshot covers BARC Potato zoning for Comilla upazila only.
 It reports the area in each suitability class and is accepted only as regional
 context. It does not assess an individual farm and cannot create a crop
-recommendation by itself. The M1 crop catalog must contain Potato before the
-importer can add the record. It is not variety-specific and is attached only to
+recommendation by itself. The importer binds it to the M1 Potato row. It is not variety-specific and is attached only to
 the M1 Potato crop row, with no crop-variety ID.
 
 BARC's public Comilla-upazila Potato map and methodology page were captured with
@@ -268,10 +274,57 @@ validator checks the official HTTPS host and route, linked BARC methodology,
 the pinned map/methodology capture digests and class values, crop/upazila match,
 nonnegative areas and exact totals, regional-only disclosure, and the 180-day
 refresh window. Regional aggregate evidence is kept out of farm-fit factors and
-recommendation references. Import it after M1 seeds the crop catalog by running
-`python -m scripts.import_m2_barc_evidence` from `backend`. The import is
+recommendation references. It is imported, with the M1 catalog and all other policy-accepted records, by
+`python -m scripts.import_reference_data` from `backend`
+(`scripts.import_m2_barc_evidence` still imports this snapshot alone). The import is
 idempotent and does not modify M1-owned crop or farmland records. It does not
 scrape external sources at runtime. If no accepted and effective evidence
 matches a farm's crop and upazila, M2 still returns missing evidence. Season
 plans and harvest guidance remain fail-closed until crop-specific sources
 support those outputs.
+
+## Current knowledge coverage (2026-10-08)
+
+Run from `backend` after `alembic upgrade head`:
+
+```bash
+python -m scripts.import_reference_data --check-only
+python -m scripts.import_reference_data
+```
+
+The command imports the M1 crop catalog (Potato, Wheat, Maize, Rice and 245
+official variety names), the legacy BARC Potato/Comilla snapshot, and every
+record the automated policies accept from the pinned BARC captures in
+`app/data/source_captures/barc_crop_zoning/` (refresh them with
+`python -m scripts.capture_barc_portal_sources`). It is idempotent, never
+overwrites rows owned by people or other policies, and exits with status 3 when
+it reports a conflict.
+
+| Policy | What it accepts | Records |
+|---|---|---|
+| `m2-barc-portal-bilingual-v1` | Values stated in both the English and Bangla text of one BARC portal record (`barc_portal_claims.json`) | Potato and wheat land/soil conditions, wheat maturity indicator, maize harvest calendar |
+| `m2-barc-portal-variety-duration-v1` | Published variety duration, 30-250 days, directly planted crops | 112 potato/wheat/maize varieties |
+| `m2-barc-czs-upazila-suitability-v1` | Upazila suitability-class distribution, `regional_context_only` | 4 crops × 48 upazilas (Cumilla, Gazipur, Dhaka, Mymensingh, Rajshahi) |
+| `m2-barc-upazila-zoning-v1` | Legacy Potato/Comilla map snapshot, `regional_context_only` | 1 |
+
+Every policy row expires 180 days after capture. At read time M2 rebuilds each
+reviewerless row from the pinned capture and claim manifest and ignores it if
+anything differs. Regional context is returned in `regional_context`, never as
+a recommendation reason.
+
+What farmers get:
+
+- **Recommendations:** Potato (high land + loam) and Wheat (high or
+  medium-high land + loam or clay loam), checked against the saved M1
+  `land_type` and `soil_type`. When those fields are missing the response is
+  `profile_incomplete` with `missing_profile_fields`; otherwise crops whose
+  conditions do not match are listed in `crop_assessments`.
+- **Harvest guidance:** a harvest window from the selected potato, wheat, or
+  maize variety's published duration and the season planting date; the wheat
+  golden-colour maturity indicator; maize seasonal harvest periods.
+- **Not available:** season plans, growth stages, initial tasks, and therefore
+  season activation, for every crop. No inspected source defines growth stages
+  in a machine-verifiable, bilingual-consistent form (see
+  `barc_portal_claims.json` → `rejected_claims`). The API returns 409 with that
+  explanation and creates nothing.
+

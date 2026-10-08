@@ -39,7 +39,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
   const router = useRouter();
-  const { login } = useAppContext();
+  const { login, loadError } = useAppContext();
   const compact = width < 380 || height < 660;
   const tiny = width < 330 || height < 580;
   const pageHorizontal = width < 330 ? 18 : width < 370 ? 22 : 25;
@@ -188,7 +188,7 @@ export default function Login() {
             </Text>
           </View>
 
-          {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
+          {message || loadError ? <Text accessibilityRole="alert" style={styles.message}>{message || loadError}</Text> : null}
 
           <Pressable
             accessibilityRole="button"

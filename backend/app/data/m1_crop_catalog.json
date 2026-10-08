@@ -1,0 +1,53 @@
+{
+  "catalog_version": 1,
+  "owner": "M1 crop catalog",
+  "purpose": "Reference crop identities and variety names shared by M1, M2, M3 farm state, M5 chat context, and M6 crop matching. The catalog stores names and identifiers only; it does not state agronomic suitability.",
+  "variety_source": {
+    "publisher": "Bangladesh Agricultural Research Council (BARC) Agri-Advisory Portal",
+    "page_url": "https://portal.cropzoning.gov.bd/CropInfo/CropVarieties?c=3",
+    "capture_dir": "app/data/source_captures/barc_crop_zoning/portal",
+    "note": "Variety names are the portal's official names with repeated whitespace collapsed. Portal variety lists group rice varieties by season (Boro, T. Aman); the M1 catalog keeps one Rice crop and records the portal list each variety came from."
+  },
+  "crops": [
+    {
+      "key": "potato",
+      "name": "Potato",
+      "name_bn": "আলু",
+      "scientific_name": "Solanum tuberosum",
+      "aliases": ["potato", "potatoes", "alu", "aloo", "আলু"],
+      "portal_crop_ids": [36],
+      "suitability_api_names": ["Potato"],
+      "m6_label_prefix": "Potato"
+    },
+    {
+      "key": "wheat",
+      "name": "Wheat",
+      "name_bn": "গম",
+      "scientific_name": "Triticum aestivum",
+      "aliases": ["wheat", "gom", "গম"],
+      "portal_crop_ids": [4],
+      "suitability_api_names": ["Wheat"],
+      "m6_label_prefix": "Wheat"
+    },
+    {
+      "key": "maize",
+      "name": "Maize",
+      "name_bn": "ভুট্টা",
+      "scientific_name": "Zea mays",
+      "aliases": ["maize", "corn", "bhutta", "vutta", "ভুট্টা", "ভূট্টা"],
+      "portal_crop_ids": [5],
+      "suitability_api_names": ["Maize"],
+      "m6_label_prefix": "Corn"
+    },
+    {
+      "key": "rice",
+      "name": "Rice",
+      "name_bn": "ধান",
+      "scientific_name": "Oryza sativa",
+      "aliases": ["rice", "paddy", "dhan", "ধান", "boro rice", "aman rice", "boro dhan", "rice (boro)", "rice (t. aman)"],
+      "portal_crop_ids": [3, 2],
+      "suitability_api_names": ["Boro dhan", "T. Aman dhan", "B. Aman dhan", "B. Aus dhan", "T. Aus dhan"],
+      "m6_label_prefix": "Rice"
+    }
+  ]
+}

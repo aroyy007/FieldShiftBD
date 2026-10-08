@@ -1,6 +1,6 @@
 """Business logic for crop recommendations and the season lifecycle (M2)."""
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -9,7 +9,8 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.core import Crop, CropVariety, Farmland
+from app.models.core import AgriculturalKnowledge, Crop, CropVariety, Farmland, FarmlandCropPreference
+from app.models.profile import FarmerProfile
 from app.models.season import (
     CropRecommendation as CropRecommendationRecord,
     GrowthStage,
@@ -19,6 +20,8 @@ from app.models.season import (
 from app.schemas.m2_advisor import (
     CropRecommendation,
     CropRecommendationSet,
+    CropAssessment,
+    CropAssessmentStatus,
     CropIdentity,
     FarmProfileInput,
     GrowthStageDefinition,
@@ -27,12 +30,21 @@ from app.schemas.m2_advisor import (
     KnowledgeReference,
     RecommendationReasoning,
     RecommendationSetStatus,
+    RegionalContext,
+    RegionalSuitabilityEntry,
     SeasonOutcomeInput,
     SeasonOutcomeResponse,
     SeasonPlanCreate,
     SeasonPlanResponse,
     SeasonResponse,
     SuitabilityFactor,
+)
+from app.services.m1_reference import (
+    ReferenceDataError,
+    ResolvedLocation,
+    land_type_code,
+    resolve_location,
+    soil_texture_code,
 )
 from app.services.m2_knowledge import AgriculturalEvidence, KnowledgeQuery, get_relevant_evidence
 
@@ -92,6 +104,20 @@ def _approved_knowledge(
     return list(get_relevant_evidence(db, query).items)
 
 
+def _resolved_location(profile: FarmProfileInput) -> ResolvedLocation | None:
+    if profile.location is None:
+        return None
+    try:
+        return resolve_location(
+            profile.location.division,
+            profile.location.district,
+            profile.location.upazila,
+            profile.location.country_code or "BD",
+        )
+    except ReferenceDataError:
+        return None
+
+
 def _profile_context(profile: FarmProfileInput, planting_date: date | None = None) -> dict[str, Any]:
     context: dict[str, Any] = {}
     for key in (
@@ -102,11 +128,23 @@ def _profile_context(profile: FarmProfileInput, planting_date: date | None = Non
         value = getattr(profile, key, None)
         if value is not None:
             context[key] = value
+    soil_code = soil_texture_code(profile.soil_type)
+    if soil_code:
+        context["soil_texture"] = soil_code
+    land_code = land_type_code(profile.land_type)
+    if land_code:
+        context["land_type"] = land_code
     if profile.location:
         for key in ("country_code", "division", "district", "upazila"):
             value = getattr(profile.location, key, None)
             if value is not None:
                 context[key] = value
+        resolved = _resolved_location(profile)
+        if resolved is not None:
+            for key in ("division_code", "district_code", "upazila_code"):
+                value = getattr(resolved, key)
+                if value is not None:
+                    context[key] = value
     if planting_date:
         context["planting_date"] = planting_date.isoformat()
         context["planting_month"] = planting_date.month
@@ -119,7 +157,44 @@ def _profile_regions(profile: FarmProfileInput) -> set[str]:
     if profile.location:
         values.update((profile.location.country_code, profile.location.division,
                        profile.location.district, profile.location.upazila))
+        resolved = _resolved_location(profile)
+        if resolved is not None:
+            values.update(resolved.region_codes())
     return {value for value in values if value}
+
+
+def profile_from_farmland(
+    db: Session, farmland: Farmland, crop_preferences: list[UUID] | None = None,
+    budget_amount: Decimal | None = None,
+) -> FarmProfileInput:
+    """Compose the M1 → M2 contract from the saved M1 farmland and farmer profile."""
+    farmer_profile = db.scalar(select(FarmerProfile).where(FarmerProfile.farmer_id == farmland.farmer_id))
+    return FarmProfileInput(
+        farmland_id=farmland.id,
+        farmer_id=farmland.farmer_id,
+        location={
+            "country_code": farmland.country_code,
+            "division": farmland.division,
+            "district": farmland.district,
+            "upazila": farmland.upazila,
+            "village_or_locality": farmland.village_or_locality,
+            "latitude": farmland.latitude,
+            "longitude": farmland.longitude,
+        },
+        land_area_sqm=farmland.land_area_sqm,
+        soil_type=farmland.soil_type,
+        land_type=farmland.land_type,
+        irrigation_available=farmland.irrigation_available,
+        water_source=farmland.water_source,
+        farming_method=farmland.farming_method,
+        budget_amount=budget_amount if budget_amount is not None else farmland.budget_amount,
+        budget_currency=farmland.budget_currency,
+        previous_yield=farmland.previous_yield_amount,
+        farming_experience_years=farmer_profile.farming_experience_years if farmer_profile else None,
+        equipment=list(farmer_profile.equipment or []) if farmer_profile else [],
+        livestock=list(farmer_profile.livestock or []) if farmer_profile else [],
+        crop_preferences=list(crop_preferences or []),
+    )
 
 
 def _season_profile(farmland: Farmland, season: Season) -> FarmProfileInput:
@@ -137,6 +212,7 @@ def _season_profile(farmland: Farmland, season: Season) -> FarmProfileInput:
         },
         land_area_sqm=farmland.land_area_sqm,
         soil_type=farmland.soil_type,
+        land_type=getattr(farmland, "land_type", None),
         irrigation_available=farmland.irrigation_available,
         water_source=farmland.water_source,
         farming_method=farmland.farming_method,
@@ -178,20 +254,16 @@ def _matches_profile(condition: Any, profile: FarmProfileInput) -> bool:
     """Match only explicitly supported, present profile fields; fail closed otherwise."""
     if not isinstance(condition, dict) or not condition:
         return False
-    scalar_fields = {
-        "soil_type": profile.soil_type,
-        "irrigation_available": profile.irrigation_available,
-        "water_source": profile.water_source,
-        "farming_method": profile.farming_method,
-    }
-    location_fields = {
-        "country_code": profile.location.country_code if profile.location else None,
-        "division": profile.location.division if profile.location else None,
-        "district": profile.location.district if profile.location else None,
-        "upazila": profile.location.upazila if profile.location else None,
+    context = _profile_context(profile)
+    supported = {
+        "soil_type", "soil_texture", "land_type", "irrigation_available", "water_source",
+        "farming_method", "country_code", "division", "district", "upazila",
+        "division_code", "district_code", "upazila_code",
     }
     for key, expected in condition.items():
-        actual = scalar_fields.get(key, location_fields.get(key))
+        if key not in supported:
+            return False
+        actual = context.get(key)
         if actual is None:
             return False
         allowed = expected if isinstance(expected, list) else [expected]
@@ -261,7 +333,121 @@ def _recommendation_reasoning(
     ), refs
 
 
-def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendationSet:
+_NON_FIT_CATEGORIES = frozenset({"season_plan", "crop_calendar", "harvest_guidance", "harvest"})
+# Profile-context keys a knowledge condition can require, mapped to the M1
+# farm-profile field the farmer must fill in.
+_CONDITION_PROFILE_FIELDS = {
+    "soil_texture": "soil_type",
+    "soil_type": "soil_type",
+    "land_type": "land_type",
+    "irrigation_available": "irrigation_available",
+    "water_source": "water_source",
+    "farming_method": "farming_method",
+    "division": "division",
+    "division_code": "division",
+    "district": "district",
+    "district_code": "district",
+    "upazila": "upazila",
+    "upazila_code": "upazila",
+    "country_code": "country_code",
+}
+
+
+def _is_regional(row: AgriculturalEvidence) -> bool:
+    return isinstance(row.content, dict) and row.content.get("evidence_role") == "regional_context_only"
+
+
+def _missing_fields_for(rows: list[AgriculturalEvidence], context: dict[str, Any]) -> list[str]:
+    """Profile fields that every declared positive condition still needs."""
+    per_condition: list[set[str]] = []
+    for row in rows:
+        for condition in getattr(row, "declared_conditions", ()) or ():
+            missing = {
+                _CONDITION_PROFILE_FIELDS.get(key, key)
+                for key in condition
+                if context.get(key) is None
+            }
+            per_condition.append(missing)
+    if not per_condition or any(not missing for missing in per_condition):
+        return []
+    return sorted(set().union(*per_condition))
+
+
+def _regional_context(crop: Crop, row: AgriculturalEvidence) -> RegionalContext | None:
+    content = row.content if isinstance(row.content, dict) else {}
+    context = content.get("context") if isinstance(content.get("context"), dict) else {}
+    evidence = content.get("evidence") if isinstance(content.get("evidence"), dict) else {}
+    identity = CropIdentity(crop_id=crop.id, name=crop.name, scientific_name=crop.scientific_name)
+    if isinstance(evidence.get("entries"), list):
+        entries = [
+            RegionalSuitabilityEntry(
+                source_crop_name=entry.get("crop_name"),
+                season=entry.get("season"),
+                situation=entry.get("situation"),
+                class_shares_percent=entry.get("class_shares_percent", {}),
+            )
+            for entry in evidence["entries"]
+            if isinstance(entry, dict)
+        ]
+        place = ", ".join(part for part in (context.get("upazila"), context.get("district")) if part)
+        explanation = (
+            f"BARC's crop-zoning data shows how the mapped area of {place or 'this upazila'} is spread "
+            f"across suitability classes for {crop.name} (very suitable = 80-100% of attainable yield, "
+            "suitable = 60-80%, moderately suitable = 40-60%, marginally suitable = 20-40%, "
+            "not suitable = below 20%). This is upazila-level context, not an assessment of your field."
+        )
+        scope = f"Upazila: {place}" if place else "Upazila"
+    else:
+        factors = content.get("factors") if isinstance(content.get("factors"), dict) else {}
+        factor = next(iter(factors.values()), {}) if factors else {}
+        explanation = factor.get("explanation") if isinstance(factor, dict) else None
+        if not isinstance(explanation, str):
+            return None
+        areas = evidence.get("area_hectares_by_class")
+        entries = []
+        if isinstance(areas, dict) and areas.get("total"):
+            entries.append(RegionalSuitabilityEntry(
+                class_shares_percent={
+                    key: round(value * 100 / areas["total"], 1)
+                    for key, value in areas.items() if key != "total"
+                },
+            ))
+        place = ", ".join(part for part in (context.get("upazila"), context.get("district")) if part)
+        scope = f"Upazila: {place}" if place else "Upazila"
+    return RegionalContext(
+        crop=identity, scope=scope, explanation=explanation, entries=entries,
+        knowledge_refs=[_knowledge_ref(row)],
+    )
+
+
+def _assessment(crop: Crop, status: CropAssessmentStatus, missing: list[str]) -> CropAssessment:
+    name = crop.name
+    readable = ", ".join(field.replace("_", " ") for field in missing)
+    messages = {
+        CropAssessmentStatus.SUPPORTED_FIT: f"Your saved farm profile matches published conditions for {name}.",
+        CropAssessmentStatus.PROFILE_INCOMPLETE: (
+            f"Add {readable} to your farm profile so the published conditions for {name} can be checked."
+        ),
+        CropAssessmentStatus.CONDITIONS_NOT_MET: (
+            f"Your saved farm profile does not match the published conditions for {name}, so no "
+            "evidence supports recommending it. This does not prove the crop cannot grow here."
+        ),
+        CropAssessmentStatus.REGIONAL_CONTEXT_ONLY: (
+            f"Only upazila-level context is available for {name}; it cannot establish a fit for your field."
+        ),
+        CropAssessmentStatus.NO_EVIDENCE: f"No approved, current evidence covers {name} for this farm.",
+    }
+    return CropAssessment(
+        crop=CropIdentity(crop_id=crop.id, name=crop.name, scientific_name=crop.scientific_name),
+        status=status,
+        message=messages[status],
+        missing_profile_fields=missing,
+    )
+
+
+def recommend_crops(
+    db: Session, profile: FarmProfileInput, *, profile_source: str = "request"
+) -> CropRecommendationSet:
     if profile.farmland_id is None:
         raise ValueError("farmland_id is required to scope and persist recommendations")
     farmland = db.get(Farmland, profile.farmland_id)
@@ -272,7 +458,6 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
 
     preference_ids = set(profile.crop_preferences)
     if not preference_ids:
-        from app.models.core import FarmlandCropPreference
         preference_ids = set(db.scalars(select(FarmlandCropPreference.crop_id).where(
             FarmlandCropPreference.farmland_id == farmland.id
         )))
@@ -280,23 +465,42 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
     crops = list(db.scalars(select(Crop).order_by(Crop.name)))
     crops.sort(key=lambda crop: (crop.id not in preference_ids, crop.name.casefold()))
     results: list[CropRecommendation] = []
+    assessments: list[CropAssessment] = []
+    regional: list[RegionalContext] = []
+    missing_overall: set[str] = set()
     today = _farm_today()
+    context = _profile_context(profile)
+    regions = _profile_regions(profile)
     has_approved_knowledge = False
     for crop in crops:
-        rows = _approved_knowledge(
-            db,
-            crop.id,
-            today,
-            region_values=_profile_regions(profile),
-            context=_profile_context(profile),
-            crop_name=crop.name,
-        )
-        if not rows:
+        rows = [
+            row for row in _approved_knowledge(
+                db, crop.id, today, region_values=regions, context=context, crop_name=crop.name,
+            )
+            if row.category not in _NON_FIT_CATEGORIES
+        ]
+        for row in rows:
+            if _is_regional(row):
+                item = _regional_context(crop, row)
+                if item is not None:
+                    regional.append(item)
+        if rows:
+            has_approved_knowledge = True
+        fit_rows = [row for row in rows if not _is_regional(row)]
+        if not fit_rows:
+            status = CropAssessmentStatus.REGIONAL_CONTEXT_ONLY if rows else CropAssessmentStatus.NO_EVIDENCE
+            assessments.append(_assessment(crop, status, []))
             continue
-        has_approved_knowledge = True
         reasoning, refs = _recommendation_reasoning(profile, rows)
         if not reasoning.positive_factors:
             # Approved references and general crop facts alone do not prove fit.
+            missing = _missing_fields_for(fit_rows, context)
+            missing_overall.update(missing)
+            assessments.append(_assessment(
+                crop,
+                CropAssessmentStatus.PROFILE_INCOMPLETE if missing else CropAssessmentStatus.CONDITIONS_NOT_MET,
+                missing,
+            ))
             continue
         recommendation = CropRecommendationRecord(
             farmland_id=farmland.id,
@@ -308,6 +512,7 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
         )
         db.add(recommendation)
         db.flush()
+        assessments.append(_assessment(crop, CropAssessmentStatus.SUPPORTED_FIT, []))
         results.append(CropRecommendation(
             recommendation_id=recommendation.id,
             farmland_id=farmland.id,
@@ -321,6 +526,12 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
     if results:
         state = RecommendationSetStatus.AVAILABLE
         message = "Recommendations are based on matching factors in approved agricultural knowledge."
+    elif missing_overall:
+        state = RecommendationSetStatus.PROFILE_INCOMPLETE
+        message = (
+            "Approved knowledge exists, but your farm profile is missing information needed to check it: "
+            + ", ".join(field.replace("_", " ") for field in sorted(missing_overall)) + "."
+        )
     elif has_approved_knowledge:
         state = RecommendationSetStatus.NO_SUPPORTED_FIT
         message = "Approved knowledge is available, but no crop has a supported positive fit for the supplied profile."
@@ -328,7 +539,9 @@ def recommend_crops(db: Session, profile: FarmProfileInput) -> CropRecommendatio
         state = RecommendationSetStatus.NO_APPROVED_KNOWLEDGE
         message = "No approved, currently effective agricultural knowledge applies to this farm; suitability cannot be established."
     return CropRecommendationSet(
-        farmland_id=farmland.id, status=state, message=message, recommendations=results
+        farmland_id=farmland.id, status=state, message=message, recommendations=results,
+        profile_source=profile_source, missing_profile_fields=sorted(missing_overall),
+        crop_assessments=assessments, regional_context=regional,
     )
 
 
@@ -459,11 +672,14 @@ def create_season_plan(db: Session, season_id: UUID, data: SeasonPlanCreate) -> 
     knowledge = _approved_knowledge(
         db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
-        {"season_plan", "crop_calendar"},
+        {"season_plan", "crop_calendar"}, crop_name=_crop_name(db, season.crop_id),
     )
     plan_row = _select_season_plan_knowledge(knowledge, season.crop_variety_id)
     if plan_row is None:
-        raise M2ConflictError("No approved season-plan knowledge exists for this crop")
+        raise M2ConflictError(
+            "No approved season-plan knowledge exists for this crop: no verified source defines its "
+            "growth stages, so no stages or tasks were created"
+        )
     content = plan_row.content if isinstance(plan_row.content, dict) else {}
     raw_stages = content.get("growth_stages", [])
     raw_tasks = content.get("initial_tasks", [])
@@ -534,7 +750,7 @@ def get_season_plan(db: Session, season_id: UUID) -> SeasonPlanResponse:
     knowledge = _approved_knowledge(
         db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
-        {"season_plan", "crop_calendar"},
+        {"season_plan", "crop_calendar"}, crop_name=_crop_name(db, season.crop_id),
     )
     plan_knowledge = _select_season_plan_knowledge(knowledge, season.crop_variety_id)
     raw_tasks = plan_knowledge.content.get("initial_tasks", []) if plan_knowledge else []
@@ -557,6 +773,19 @@ def get_season_plan(db: Session, season_id: UUID) -> SeasonPlanResponse:
     )
 
 
+def _crop_name(db: Session, crop_id: UUID) -> str | None:
+    crop = db.get(Crop, crop_id)
+    return crop.name if crop is not None else None
+
+
+def _extend_unique(target: list[str], values: Any) -> None:
+    if not isinstance(values, list):
+        return
+    for value in values:
+        if isinstance(value, str) and value.strip() and value not in target:
+            target.append(value)
+
+
 def get_harvest_guidance(db: Session, season_id: UUID) -> HarvestGuidance:
     season = db.get(Season, season_id)
     if season is None:
@@ -568,16 +797,47 @@ def get_harvest_guidance(db: Session, season_id: UUID) -> HarvestGuidance:
     rows = _approved_knowledge(
         db, season.crop_id, _farm_today(), season.crop_variety_id,
         _profile_regions(profile), _profile_context(profile, season.planting_date),
-        {"harvest_guidance", "harvest"},
+        {"harvest_guidance", "harvest"}, crop_name=_crop_name(db, season.crop_id),
     )
-    matching = rows
+    matching = list(rows)
     matching.sort(key=lambda row: row.crop_variety_id != season.crop_variety_id)
     if not matching:
         raise M2ConflictError("No approved harvest guidance exists for this crop")
-    payload = matching[0].content if isinstance(matching[0].content, dict) else {}
+
+    merged: dict[str, Any] = {"maturity_indicators": [], "guidance": [], "uncertainty_notes": []}
+    window_start = window_end = None
+    for row in matching:
+        payload = row.content if isinstance(row.content, dict) else {}
+        for key in ("maturity_indicators", "guidance", "uncertainty_notes"):
+            _extend_unique(merged[key], payload.get(key))
+        if window_start is None and payload.get("recommended_window_start"):
+            window_start = payload.get("recommended_window_start")
+            window_end = payload.get("recommended_window_end")
+        window_days = payload.get("harvest_window_days_after_planting")
+        if window_start is None and isinstance(window_days, dict):
+            if season.planting_date is not None:
+                window_start = season.planting_date + timedelta(days=int(window_days["min"]))
+                window_end = season.planting_date + timedelta(days=int(window_days["max"]))
+            else:
+                _extend_unique(merged["uncertainty_notes"], [
+                    "Add a planting date to this season to compute a harvest window from the variety duration."
+                ])
+    if season.crop_variety_id is None and next(iter(db.scalars(
+        select(AgriculturalKnowledge.id).where(
+            AgriculturalKnowledge.crop_id == season.crop_id,
+            AgriculturalKnowledge.crop_variety_id.is_not(None),
+            AgriculturalKnowledge.category.in_(("harvest_guidance", "harvest")),
+            AgriculturalKnowledge.review_status == "approved",
+        ).limit(1)
+    )), None) is not None:
+        _extend_unique(merged["uncertainty_notes"], [
+            "Select a variety for this season to see its published duration and a harvest window."
+        ])
     return HarvestGuidance.model_validate({
-        **payload,
-        "knowledge_refs": [_knowledge_ref(matching[0]).model_dump(mode="json")],
+        **merged,
+        "recommended_window_start": window_start,
+        "recommended_window_end": window_end,
+        "knowledge_refs": [_knowledge_ref(row).model_dump(mode="json") for row in matching],
     })
 
 

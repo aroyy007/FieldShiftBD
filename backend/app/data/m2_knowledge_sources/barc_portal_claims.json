@@ -1,0 +1,106 @@
+{
+  "manifest_version": 1,
+  "policy_id": "m2-barc-portal-bilingual-v1",
+  "extracted_on": "2026-10-08",
+  "purpose": "Claims extracted from pinned BARC Agri-Advisory Portal API captures. The import policy re-verifies every claimed value against the captured English AND Bangla text; a value is accepted only when both language versions state it. Exclusions below narrow claims further where a qualifier differs between languages or cannot be checked against the farm profile.",
+  "source": {
+    "publisher": "Bangladesh Agricultural Research Council (BARC) — Agri-Advisory Portal, Crop Zoning project",
+    "license_capture": "portal/copyright_policy.html",
+    "license_summary": "The portal's copyright policy allows reproduction free of charge without specific permission, provided material is reproduced accurately, not used in a misleading context, and the source is prominently acknowledged.",
+    "disclaimer": "The portal's terms of use advise users to verify information with the relevant sources and obtain professional advice before acting on it."
+  },
+  "claims": [
+    {
+      "claim_id": "potato-land-soil-v1",
+      "crop_key": "potato",
+      "claim_type": "land_soil_condition",
+      "category": "crop_suitability",
+      "capture": "portal/prod_tech_36.json",
+      "page_url": "https://portal.cropzoning.gov.bd/CropInfo/ProductionTechs?c=36",
+      "fields": {"en": "land_and_soil", "bn": "land_and_soil_bn"},
+      "values": {"land_type": ["high"], "soil_texture": ["loam"]},
+      "excluded": [
+        {"dimension": "land_type", "value": "medium_high", "reason": "The Bangla text limits medium-high land to land from which water drains early (within Kartik); the farm profile does not record drainage timing."},
+        {"dimension": "soil_texture", "value": "sandy_loam", "reason": "Stated only in the English text."},
+        {"dimension": "soil_texture", "value": "clay_loam", "reason": "Stated only in the Bangla text."}
+      ],
+      "explanation": "BARC's Agri-Advisory Portal states, in both its English and Bangla text, that high land with loam soil is suitable for potato cultivation. Your saved land type and soil texture match these conditions. This is a published general condition, not a test of your field or a yield guarantee."
+    },
+    {
+      "claim_id": "wheat-land-soil-v1",
+      "crop_key": "wheat",
+      "claim_type": "land_soil_condition",
+      "category": "crop_suitability",
+      "capture": "portal/prod_tech_4.json",
+      "page_url": "https://portal.cropzoning.gov.bd/CropInfo/ProductionTechs?c=4",
+      "fields": {"en": "land_and_soil", "bn": "land_and_soil_bn"},
+      "values": {"land_type": ["high", "medium_high"], "soil_texture": ["loam", "clay_loam"]},
+      "excluded": [
+        {"dimension": "land_type", "value": "medium_low", "reason": "Both texts allow medium-low land only where flood water recedes early, but they give different deadlines (English: before mid-November; Bangla: within October); the farm profile does not record recession timing."},
+        {"dimension": "soil_texture", "value": "sandy_loam", "reason": "Stated only in the English text."},
+        {"dimension": "soil_texture", "value": "clay", "reason": "Stated only in the English text, and only for rainfed or residual-moisture cultivation."}
+      ],
+      "explanation": "BARC's Agri-Advisory Portal states, in both its English and Bangla text, that wheat grows well on high and medium-high land with loam or clay loam soil. Your saved land type and soil texture match these conditions. This is a published general condition, not a test of your field or a yield guarantee."
+    },
+    {
+      "claim_id": "wheat-maturity-indicator-v1",
+      "crop_key": "wheat",
+      "claim_type": "maturity_indicator",
+      "category": "harvest_guidance",
+      "capture": "portal/prod_tech_4.json",
+      "page_url": "https://portal.cropzoning.gov.bd/CropInfo/ProductionTechs?c=4",
+      "fields": {"en": "harvesting_time", "bn": "harvesting_time_bn"},
+      "values": {"indicators": ["golden_colour"]},
+      "excluded": [
+        {"dimension": "indicators", "value": "sunny_day_harvest", "reason": "Stated only in the English text."},
+        {"dimension": "indicators", "value": "hard_grain_no_shedding", "reason": "Stated only in the Bangla text."}
+      ],
+      "maturity_indicators": ["The crop turns a golden colour at full maturity."],
+      "guidance": ["BARC's Agri-Advisory Portal advises harvesting wheat at full maturity, when the crop turns golden. The English and Bangla text both state this indicator."],
+      "uncertainty_notes": ["This is a visual maturity indicator from a general advisory, not a date for your field."]
+    },
+    {
+      "claim_id": "maize-harvest-calendar-v1",
+      "crop_key": "maize",
+      "claim_type": "seasonal_harvest_period",
+      "category": "harvest_guidance",
+      "capture": "portal/prod_tech_5.json",
+      "page_url": "https://portal.cropzoning.gov.bd/CropInfo/ProductionTechs?c=5",
+      "fields": {"en": "harvesting_time", "bn": "harvesting_time_bn"},
+      "values": {"periods": [{"season": "rabi", "months": [3, 4]}, {"season": "kharif_1", "months": [6]}]},
+      "excluded": [],
+      "guidance": [
+        "Rabi-season maize: BARC's Agri-Advisory Portal gives late March to the second week of April as the harvest period.",
+        "Kharif-1 maize: the portal gives mid to late June as the harvest period."
+      ],
+      "uncertainty_notes": ["These are seasonal calendar periods, not dates computed for your sowing date or variety."]
+    }
+  ],
+  "variety_duration": {
+    "claim_type": "variety_duration",
+    "category": "harvest_guidance",
+    "crops": ["potato", "wheat", "maize"],
+    "capture_pattern": "portal/variety/{portal_variety_id}.json",
+    "page_url": "https://portal.cropzoning.gov.bd/CropInfo/CropVarieties?c={portal_crop_id}",
+    "bounds_days": {"min": 30, "max": 250},
+    "note": "Structured numeric fields (duration_days_from/duration_days_to). Rice is excluded: transplanted rice durations may count from seedbed sowing or transplanting, and the portal does not say which."
+  },
+  "regional_context": {
+    "claim_type": "upazila_suitability_context",
+    "category": "crop_suitability",
+    "capture_pattern": "suitability/upazila/{upazila_code}.json",
+    "page_url": "https://portal.cropzoning.gov.bd/cropSuitability?distcode={district_code}&upcode={upazila_code}",
+    "note": "Upazila aggregate distribution across BARC suitability classes (very suitable = 80-100% of attainable yield ... not suitable = 0-20%). The API does not state the area unit, so only unit-free shares are presented. Regional context never establishes a field-level fit."
+  },
+  "rejected_claims": [
+    {"crop_key": "potato", "topic": "sowing window", "fields": ["sowing_seed", "sowing_seed_bn"], "reason": "English gives 15-30 November (optimum) and October-December; Bangla gives region-specific windows (north: first week of November; south: first to last week of November). The numbers disagree."},
+    {"crop_key": "potato", "topic": "irrigation timing", "fields": ["irrigation", "irrigation_bn"], "reason": "English gives 20-25, 35-45, and 60-65 days after sowing; Bangla gives 20-25, 30-35, and 60-65 days. The second interval disagrees (and the 2013 handbook gave 8-10, 40-45, 60-65)."},
+    {"crop_key": "potato", "topic": "harvest timing", "fields": ["harvesting_time", "harvesting_time_bn"], "reason": "English gives 80-90 days after sowing; Bangla gives 100-120 days after planting. The numbers disagree."},
+    {"crop_key": "maize", "topic": "land and soil", "fields": ["land_and_soil", "land_and_soil_bn"], "reason": "No soil texture is named positively in both texts (English: sandy loam best, all soils except sandy or heavy clay; Bangla: loam and clay loam). The English land-type statement is limited to the kharif season; the Bangla one is general."},
+    {"crop_key": "wheat", "topic": "irrigation and growth-stage timing", "fields": ["irrigation", "irrigation_bn", "fertilizer_method_of_application"], "reason": "The English irrigation field contains fertilizer text. Bangla names crown-root initiation (17-21 DAS), heading (50-55 DAS), and grain filling (70-75 DAS); the English fertilizer text gives the first irrigation at 17-20 DAS and names no stages. Stage names and day ranges are not corroborated."},
+    {"crop_key": "rice", "topic": "land and soil (Boro)", "fields": ["land_and_soil", "land_and_soil_bn"], "reason": "The English text applies only to BRRI dhan29 with irrigation; the Bangla text applies to Boro rice generally on all land types. The scopes differ."},
+    {"crop_key": "rice", "topic": "harvest (Boro)", "fields": ["harvesting_time", "harvesting_time_bn"], "reason": "English gives a grain-colour maturity indicator; Bangla gives the months Chaitra-Baishakh (April-May). Neither claim appears in both texts."},
+    {"crop_key": "rice", "topic": "seedbed sowing window (Boro)", "fields": ["sowing_seed", "sowing_seed_bn"], "reason": "Both texts agree on 1-20 November, but no M2 contract consumes a seedbed sowing date. Not imported."},
+    {"crop_key": "all", "topic": "growth-stage definitions", "fields": [], "reason": "No inspected portal field defines a complete crop growth-stage sequence with stage durations in both languages. BARI's 10th-edition Krishi Projukti Hatboi (December 2024) uses a legacy SutonnyMJ font encoding whose text cannot be extracted reliably, and BRRI's cultivation PDFs are scanned images. IRRI's tropical rice phase averages (about 35 days reproductive, about 30 days ripening) do not establish Boro-season durations."}
+  ]
+}

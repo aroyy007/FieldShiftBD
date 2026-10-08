@@ -1,0 +1,1935 @@
+{
+  "manifest_version": 1,
+  "publisher": "Bangladesh Agricultural Research Council (BARC)",
+  "captured_by": "backend/scripts/capture_barc_portal_sources.py",
+  "files": [
+    {
+      "path": "portal/copyright_policy.html",
+      "url": "https://portal.cropzoning.gov.bd/copyrightPolicy",
+      "retrieved_at": "2026-10-08T17:00:58+06:00",
+      "sha256": "CF1A7DBC9221B1E39F605E8ECB09D17FCB25FBB6E81FE779E9D2C6EDF5BF03A3",
+      "bytes": 42672,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "path": "portal/crops_all_info.json",
+      "url": "https://portal.cropzoning.gov.bd/api/crops-all-info",
+      "retrieved_at": "2026-10-08T17:00:59+06:00",
+      "sha256": "6594B32B5F1BFEBF06275827E5F517A5B03DACF2C8F0496FC109F04023DE1AFC",
+      "bytes": 13588,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/prod_tech_3.json",
+      "url": "https://portal.cropzoning.gov.bd/api/crop/get-prod-tech/3",
+      "retrieved_at": "2026-10-08T17:01:02+06:00",
+      "sha256": "D43D1AF8DBA9B61C118376B8481891DA8313DD3C2A0E258C336B7C7F19CAA2CE",
+      "bytes": 22882,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/prod_tech_36.json",
+      "url": "https://portal.cropzoning.gov.bd/api/crop/get-prod-tech/36",
+      "retrieved_at": "2026-10-08T17:01:00+06:00",
+      "sha256": "5AB5293E1107615B20359AD7B1ED96407039F8C869C9D51819DF936EDCA8EFE8",
+      "bytes": 15710,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/prod_tech_4.json",
+      "url": "https://portal.cropzoning.gov.bd/api/crop/get-prod-tech/4",
+      "retrieved_at": "2026-10-08T17:01:00+06:00",
+      "sha256": "4AC7C090CB617AA2A3EE83CC38A4F17F4FB47FC4E30F319DFD072A1E6DC4A160",
+      "bytes": 16919,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/prod_tech_5.json",
+      "url": "https://portal.cropzoning.gov.bd/api/crop/get-prod-tech/5",
+      "retrieved_at": "2026-10-08T17:01:01+06:00",
+      "sha256": "A2036348E3023DB04E752264E1187FC28CCDB5B5AE7B6D9BE45882E22FB07921",
+      "bytes": 14985,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/100.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/100",
+      "retrieved_at": "2026-10-08T17:02:36+06:00",
+      "sha256": "9C701CB7ACF2259B90180F823C2005B668E58E8F1952499A27C85E22C5ADDC36",
+      "bytes": 1350,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/101.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/101",
+      "retrieved_at": "2026-10-08T17:02:48+06:00",
+      "sha256": "DFD9324AD02A92B61B3F3745EE3873FD6C8AD1ACCE503A451B5EBD234F67C8D3",
+      "bytes": 1286,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/102.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/102",
+      "retrieved_at": "2026-10-08T17:02:47+06:00",
+      "sha256": "D690CBA22335E4D0D9910270E2298D6D7E94326FDBDCE869D2F47419384E2B57",
+      "bytes": 1300,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/103.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/103",
+      "retrieved_at": "2026-10-08T17:02:47+06:00",
+      "sha256": "B614A5AB5DF904620D511BFC57EF12A26E0F67D84834A8C919B2818D71EEDEDD",
+      "bytes": 898,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/104.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/104",
+      "retrieved_at": "2026-10-08T17:02:46+06:00",
+      "sha256": "19F9F30D5C8A9FD8AB0CB9F5EA93114450782FDCE5C705793D00162DE0BCFCCC",
+      "bytes": 1037,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/105.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/105",
+      "retrieved_at": "2026-10-08T17:02:45+06:00",
+      "sha256": "A2D044C5FD900331DE18A2433DC954EF255F1CA077B02179C22197371D2793A7",
+      "bytes": 1180,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/106.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/106",
+      "retrieved_at": "2026-10-08T17:02:44+06:00",
+      "sha256": "41BB8B826C06330F647740D548A71AD3CE97B4A1B8C6BB938A39687AB7523D2F",
+      "bytes": 940,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/107.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/107",
+      "retrieved_at": "2026-10-08T17:02:43+06:00",
+      "sha256": "7C72280156FD98679EA970838C85ED9D67407DE0F56C13B194FC9D37E05ABC51",
+      "bytes": 1967,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/108.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/108",
+      "retrieved_at": "2026-10-08T17:02:35+06:00",
+      "sha256": "885D46BD32ADC6411242C48BC42637B1E351621813832D90F8CB5026C3DD9645",
+      "bytes": 3196,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/109.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/109",
+      "retrieved_at": "2026-10-08T17:02:28+06:00",
+      "sha256": "F451FA8C03B9C33FB4A7CE72DE09141E9BCB49CF65CE69B44944B38E5CA96224",
+      "bytes": 1762,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/110.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/110",
+      "retrieved_at": "2026-10-08T17:02:27+06:00",
+      "sha256": "F38B84D43B7BEA2E0644CAD477B34010596E1C08DDC3A002E29CEDD18EE3E46C",
+      "bytes": 1588,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/111.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/111",
+      "retrieved_at": "2026-10-08T17:02:26+06:00",
+      "sha256": "9D31B33A1D704DF38E7886A39009674702B4C7BC9AB81854006C88245D824369",
+      "bytes": 1761,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/112.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/112",
+      "retrieved_at": "2026-10-08T17:02:25+06:00",
+      "sha256": "E2493AB389C3A7C017C21E0AA4FCA91A26B81CC870CB5A78D503087EAFBBCEA9",
+      "bytes": 2163,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/113.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/113",
+      "retrieved_at": "2026-10-08T17:02:24+06:00",
+      "sha256": "5746F1DF8747022007FC5081F169B5A3CB78877E8EB604AD3764EDF93003A6DB",
+      "bytes": 2424,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/114.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/114",
+      "retrieved_at": "2026-10-08T17:02:23+06:00",
+      "sha256": "1F58887A897CF6C35777B0DC2642E1BCB019A3822268D3C161A75E319BB883E1",
+      "bytes": 2215,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/115.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/115",
+      "retrieved_at": "2026-10-08T17:02:22+06:00",
+      "sha256": "42B2B7F5673F090F02C5042BEFAC01305B6321B434B4B6D2944989F1BEBC70D3",
+      "bytes": 2559,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/116.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/116",
+      "retrieved_at": "2026-10-08T17:02:21+06:00",
+      "sha256": "890E7517126DC30E219DC309FF8B2E045CF1FF7D43B9E90BA9D40D9A64C18D73",
+      "bytes": 2667,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/117.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/117",
+      "retrieved_at": "2026-10-08T17:02:21+06:00",
+      "sha256": "361FB6E79C1314EB20727876BD20498DAFD60645DF77DB04AFF1D118444FF021",
+      "bytes": 2232,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/118.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/118",
+      "retrieved_at": "2026-10-08T17:02:20+06:00",
+      "sha256": "E0910825ECFC06F77DFAD3F32CDAB17F33C9486FCB167F573A7DCC2455277FDD",
+      "bytes": 2577,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/119.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/119",
+      "retrieved_at": "2026-10-08T17:02:19+06:00",
+      "sha256": "F0B634B897DC758BD27BE1EAF472352CCFFE9F0735453E87237D31D79A4156DF",
+      "bytes": 2022,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/120.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/120",
+      "retrieved_at": "2026-10-08T17:02:18+06:00",
+      "sha256": "ED81B7F4978843B935153F49AAF87CAE503D2FC7FBB8466F2F9FFBE62704F675",
+      "bytes": 2292,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/121.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/121",
+      "retrieved_at": "2026-10-08T17:02:17+06:00",
+      "sha256": "4F7664F0A38AE9AC14C82BD64822CA9335AFE65D2633E545A5B24AA7246E1077",
+      "bytes": 2148,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/122.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/122",
+      "retrieved_at": "2026-10-08T17:02:16+06:00",
+      "sha256": "3EE70EB97C58C5FC78EC7503BD9FB4F2C42FD0D38DB10141C1554F6A1B05E7C3",
+      "bytes": 2038,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/123.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/123",
+      "retrieved_at": "2026-10-08T17:02:15+06:00",
+      "sha256": "3BBA31A9B36B7E6455EE06945740F002D4FCB0C681123F163302542F39938781",
+      "bytes": 2523,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/124.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/124",
+      "retrieved_at": "2026-10-08T17:02:15+06:00",
+      "sha256": "5D5A4B64EB2B2A88C0FE02CB79EBD9920E0D3E6FDB8799E093993CF30CF272D0",
+      "bytes": 1217,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/506.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/506",
+      "retrieved_at": "2026-10-08T17:01:26+06:00",
+      "sha256": "04FBFE8C19D50F8E5F4949F71223451103F0F1FC1B355BDADCA40618A15559FE",
+      "bytes": 1423,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/509.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/509",
+      "retrieved_at": "2026-10-08T17:01:16+06:00",
+      "sha256": "A768EB21C10A2A98581B729C02130C7DF9AE67D6B879A226C3339CEFF13DF86F",
+      "bytes": 1402,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/511.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/511",
+      "retrieved_at": "2026-10-08T17:01:06+06:00",
+      "sha256": "9CDBD01144CA83D6C1228032CD333C197D1B53975C09949C42B793AD7917C643",
+      "bytes": 1491,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/513.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/513",
+      "retrieved_at": "2026-10-08T17:02:09+06:00",
+      "sha256": "53779139AD164051A1B2D4F5389C9A884FF5AF33804D27B3A23B2F069A51D984",
+      "bytes": 2541,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/514.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/514",
+      "retrieved_at": "2026-10-08T17:02:08+06:00",
+      "sha256": "4D13EEBC1FDE605C2543F2CBE6B499053CCCAAD3E07EE46223F0E237EBF84BB3",
+      "bytes": 1392,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/515.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/515",
+      "retrieved_at": "2026-10-08T17:02:07+06:00",
+      "sha256": "8DD74710B5794EDDB411636D7D54CBF81A9BEA273ED6C0B1B40E795BB1B66B1E",
+      "bytes": 1435,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/516.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/516",
+      "retrieved_at": "2026-10-08T17:02:06+06:00",
+      "sha256": "B08A7A3FBFD78ECDA0F4CEBAADF93BCC9AD849A75405487BF5BE12C437513EF0",
+      "bytes": 1346,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/517.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/517",
+      "retrieved_at": "2026-10-08T17:02:05+06:00",
+      "sha256": "451F7B31CEF921D7741F5807DF740B7AB842C52816680BEDA495259D42953FB7",
+      "bytes": 1286,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/519.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/519",
+      "retrieved_at": "2026-10-08T17:02:04+06:00",
+      "sha256": "6C4AEE3C129D195A92520B6421AD50DF4C45255E31863B1E46456715899969F2",
+      "bytes": 1287,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/521.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/521",
+      "retrieved_at": "2026-10-08T17:02:03+06:00",
+      "sha256": "03969172E1FD9F6F678C08B5F67F2BB03DC585607EB36ABF1D6EFD6365E40479",
+      "bytes": 1264,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/523.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/523",
+      "retrieved_at": "2026-10-08T17:02:02+06:00",
+      "sha256": "8B377FB87D6672625AAF7F15E7CAB969A7C62E32735192B51885D8ECC209F4EA",
+      "bytes": 1240,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/525.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/525",
+      "retrieved_at": "2026-10-08T17:02:01+06:00",
+      "sha256": "BC3FFCAF39D5392EC6D59AA2657A801322CE0FCD8D1BF853CAED8395D4A87451",
+      "bytes": 1306,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/527.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/527",
+      "retrieved_at": "2026-10-08T17:02:01+06:00",
+      "sha256": "A4EA5F9AF7536349F9D5D627D3ED595C01D1BBA1F6FBFE8D06D22F0E825EE6B3",
+      "bytes": 1324,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/529.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/529",
+      "retrieved_at": "2026-10-08T17:02:00+06:00",
+      "sha256": "78A3FAF9B7F0C37903D7DE40818E503A1360D1CFCF8F40780C4D2B5BBE96E95B",
+      "bytes": 1311,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/532.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/532",
+      "retrieved_at": "2026-10-08T17:01:59+06:00",
+      "sha256": "A5830B9A61CFC5DF3D501CC18E75E05B0DC79D494A428F38C546AB7526D6A519",
+      "bytes": 1302,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/534.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/534",
+      "retrieved_at": "2026-10-08T17:01:58+06:00",
+      "sha256": "2E981F7676912367EF710B1996C3A77AF4D7EBCF2F88BC73A7F4F61776B77735",
+      "bytes": 1426,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/536.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/536",
+      "retrieved_at": "2026-10-08T17:01:57+06:00",
+      "sha256": "C746998BDF25F5333C06C026DBFAE030344FBE4A3BEDA5B82E843651819B0398",
+      "bytes": 1152,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/538.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/538",
+      "retrieved_at": "2026-10-08T17:01:56+06:00",
+      "sha256": "4F211CDF163A2814C5FC340C360DB6E025B74376D3A5D057BFAE54E07D0DFE92",
+      "bytes": 1429,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/541.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/541",
+      "retrieved_at": "2026-10-08T17:01:55+06:00",
+      "sha256": "20A8333C1F1926043405871B2E0F54EB230667E525FBD1CA51C5A1EEB717B106",
+      "bytes": 1461,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/543.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/543",
+      "retrieved_at": "2026-10-08T17:01:55+06:00",
+      "sha256": "CF6E2FCE5BA48BC3FB371E9863B5F8895B69F537D8C6D662F444BFFB6281839C",
+      "bytes": 1289,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/545.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/545",
+      "retrieved_at": "2026-10-08T17:01:54+06:00",
+      "sha256": "23399E760BA8BB60ED7CF6597154E6A97738ED00B652E56740997D1C9F9A234A",
+      "bytes": 1344,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/547.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/547",
+      "retrieved_at": "2026-10-08T17:01:53+06:00",
+      "sha256": "242A70DDD2B752CFE5F7339A5E6DC7F37043AE115196780E3ED1549B7659843F",
+      "bytes": 1318,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/548.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/548",
+      "retrieved_at": "2026-10-08T17:01:52+06:00",
+      "sha256": "17A8E762AA5A88950B92DB95DC22CEC4FE40C87E8C6EFA95D996C62022E2998B",
+      "bytes": 1421,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/550.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/550",
+      "retrieved_at": "2026-10-08T17:01:50+06:00",
+      "sha256": "7B90347398E87D62B8CE529584FE1927348DDFC275F1F76F3927D7E712212529",
+      "bytes": 1487,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/552.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/552",
+      "retrieved_at": "2026-10-08T17:01:50+06:00",
+      "sha256": "9C3C2708F511FAC8E5642A587A31F9C9DDD7A0B884E55420469DF55DE5C7C4F4",
+      "bytes": 1486,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/554.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/554",
+      "retrieved_at": "2026-10-08T17:01:49+06:00",
+      "sha256": "F437A92ED46A53ECC324999B5CBAC124B07D9D5E84BB685A0BF8AD6C49BCAAC0",
+      "bytes": 1388,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/556.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/556",
+      "retrieved_at": "2026-10-08T17:01:48+06:00",
+      "sha256": "F3E4892EC72597F4350FC5260753C3C0402287753D008684F7F76AA2A40610A5",
+      "bytes": 1716,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/558.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/558",
+      "retrieved_at": "2026-10-08T17:01:47+06:00",
+      "sha256": "09E0168D7528584C4338D9D33466B5E6039655FC8D3425C429E6C62C0DF3192D",
+      "bytes": 1454,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/561.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/561",
+      "retrieved_at": "2026-10-08T17:01:46+06:00",
+      "sha256": "A042E6F27DF8EBB0984D6D390FEDED29C281495B6F9C455E5CB1AE8CE43FB91C",
+      "bytes": 1288,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/562.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/562",
+      "retrieved_at": "2026-10-08T17:01:45+06:00",
+      "sha256": "B577DF71A3F1D8764A3CD3C1755C1A9481DBEA8D91629ED90A990C819D5919AE",
+      "bytes": 1247,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/563.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/563",
+      "retrieved_at": "2026-10-08T17:01:44+06:00",
+      "sha256": "FA5C1D3189E19801F8482237BB3876D0CE1E66019C93D967A2C9BEC036104FD1",
+      "bytes": 1259,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/564.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/564",
+      "retrieved_at": "2026-10-08T17:01:43+06:00",
+      "sha256": "D8068BB14D740A36B668F393DB47DC3B9465DB57A8C7061991D6A4D223F75DC6",
+      "bytes": 1297,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/565.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/565",
+      "retrieved_at": "2026-10-08T17:01:42+06:00",
+      "sha256": "7308C38DF3ECD20FEAC9BF84DEF6D225C2B3D668F50C30A803927C5C6D3BF17A",
+      "bytes": 1384,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/566.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/566",
+      "retrieved_at": "2026-10-08T17:01:42+06:00",
+      "sha256": "04AD3F9B7EA1F778841FA8F9F1D0F5A7CC08AAFC4394507F6E297A883971306D",
+      "bytes": 1688,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/567.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/567",
+      "retrieved_at": "2026-10-08T17:01:41+06:00",
+      "sha256": "38379E331CFA3FCFE7EA61E9CD19ABDC950D901CE9FCEF2823BD8E3AA8BC7A2D",
+      "bytes": 1289,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/568.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/568",
+      "retrieved_at": "2026-10-08T17:01:40+06:00",
+      "sha256": "5002A696A051055988BB90C30923C05360BD802785420D6C46FCD153C77B565D",
+      "bytes": 1241,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/569.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/569",
+      "retrieved_at": "2026-10-08T17:01:39+06:00",
+      "sha256": "2956EC6FAA5F7C00D4B7178ED99223181F7393977AF52BBF44B2A352DD6A38F8",
+      "bytes": 1262,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/570.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/570",
+      "retrieved_at": "2026-10-08T17:01:38+06:00",
+      "sha256": "EA00A0425E027F675CE1CE2E0A515DEE465FCC5EF42AEA167D70831E95531159",
+      "bytes": 1392,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/571.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/571",
+      "retrieved_at": "2026-10-08T17:01:37+06:00",
+      "sha256": "14B101EA418CB55F48B2BBD614E6D4E59CF76A155C1E6E8324F15BC4DB617E79",
+      "bytes": 1266,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/572.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/572",
+      "retrieved_at": "2026-10-08T17:01:36+06:00",
+      "sha256": "F22CF52877258BEF2DEBBF16B99599D887FEA49AE2527A2DA5C5067FD98C9AEA",
+      "bytes": 1247,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/573.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/573",
+      "retrieved_at": "2026-10-08T17:01:35+06:00",
+      "sha256": "978B17A0694C01C16717614CB5ABA62693D40A72CC93DE25FE7E956B5BD91ACB",
+      "bytes": 1189,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/574.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/574",
+      "retrieved_at": "2026-10-08T17:01:34+06:00",
+      "sha256": "F528818E74CC945C1A326E1E41252CAA963ED1C5156413D0961DBC1CEFBF20EE",
+      "bytes": 1382,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/575.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/575",
+      "retrieved_at": "2026-10-08T17:01:33+06:00",
+      "sha256": "F783969AA52CA8191DD563B0F66F358B7805AFAB19A1712F3BB1D19EC685407E",
+      "bytes": 1680,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/576.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/576",
+      "retrieved_at": "2026-10-08T17:01:33+06:00",
+      "sha256": "8C174B6A46DD1EDF62D1CAD3A2B1543D78020389D78003334EA1A78464F5F677",
+      "bytes": 1614,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/577.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/577",
+      "retrieved_at": "2026-10-08T17:01:32+06:00",
+      "sha256": "7B14927E76BC4B6CCFBC3216772C018973E817B98B1D6332AF52F7A913EF8820",
+      "bytes": 1485,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/578.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/578",
+      "retrieved_at": "2026-10-08T17:01:31+06:00",
+      "sha256": "5C1A6BC017F9CAFB9801416B8BFD877F7B74D92684A982FE84CB735D969EBED4",
+      "bytes": 1514,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/579.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/579",
+      "retrieved_at": "2026-10-08T17:01:30+06:00",
+      "sha256": "6122DF6748EF28442C9270FC5C2B71CAA0382276EB2D63980B04F4CF3DDB9E04",
+      "bytes": 1627,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/580.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/580",
+      "retrieved_at": "2026-10-08T17:01:29+06:00",
+      "sha256": "3B309EE1F128F26B8E466D58AA70B594D9E73D6143D71AF0149435A75545A79D",
+      "bytes": 1543,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/581.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/581",
+      "retrieved_at": "2026-10-08T17:01:28+06:00",
+      "sha256": "FA3E42AC6381BB6B4D3E60280CC67620F10935F41CB1CDF9C6E60647277887F4",
+      "bytes": 1571,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/582.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/582",
+      "retrieved_at": "2026-10-08T17:01:27+06:00",
+      "sha256": "7DA08AD08379F4B6ED25BB2208E5F17B4C80241E03D4584AB5076C319890EA1F",
+      "bytes": 1587,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/584.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/584",
+      "retrieved_at": "2026-10-08T17:01:25+06:00",
+      "sha256": "190AF7034F1F98F5EC98ED06872ACCD39845462AE2EB223FE7B6F5A4E98D842C",
+      "bytes": 1759,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/586.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/586",
+      "retrieved_at": "2026-10-08T17:01:24+06:00",
+      "sha256": "5804D70264FC27A28554602EA8FD5FEA127A309176F55C5804756CE99987B4DD",
+      "bytes": 1500,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/588.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/588",
+      "retrieved_at": "2026-10-08T17:01:23+06:00",
+      "sha256": "4305EB7D687C50CCE75638E4CB0F3FB2704F7523BEB929AFCDEC4BFD357B392A",
+      "bytes": 1526,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/590.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/590",
+      "retrieved_at": "2026-10-08T17:01:23+06:00",
+      "sha256": "4CE7774D7C6AE5818A49567C00703867AB7E901125D8E5F6E6E6846F168D4435",
+      "bytes": 1614,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/592.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/592",
+      "retrieved_at": "2026-10-08T17:01:22+06:00",
+      "sha256": "8B46F2F2DDB673147D8BF76A539588CE37499CADB6856BD9E2CC2199B8183E08",
+      "bytes": 1554,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/594.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/594",
+      "retrieved_at": "2026-10-08T17:01:21+06:00",
+      "sha256": "1090409CAFBDA4C2483553B9050A65D2FC5A8F2BC5C160A2F5EE00A8C6321630",
+      "bytes": 1718,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/598.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/598",
+      "retrieved_at": "2026-10-08T17:01:20+06:00",
+      "sha256": "963318335FFDAFD88B26E05AFD89258759C945E58488FF1FFE65BDE404D5D236",
+      "bytes": 1715,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/600.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/600",
+      "retrieved_at": "2026-10-08T17:01:19+06:00",
+      "sha256": "CE2601D41DE69A94B3B207465A2F4DD0F20BE23F887AA346F1F01D36A3219EEE",
+      "bytes": 1503,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/602.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/602",
+      "retrieved_at": "2026-10-08T17:01:18+06:00",
+      "sha256": "1F400501B7BFB9D8A4E511AAE11A0045BB468794B6A4A2709E73E544C13BD4B6",
+      "bytes": 1926,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/604.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/604",
+      "retrieved_at": "2026-10-08T17:01:17+06:00",
+      "sha256": "C94122169A73FB971CB65FDA69F2E3030BC257C60BCC3343F82B321BA5A03557",
+      "bytes": 1456,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/645.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/645",
+      "retrieved_at": "2026-10-08T17:02:10+06:00",
+      "sha256": "C4F6B4872376102E09E60643CC44C2621E2EFEEEBE410E4B61CCD8AC9770F670",
+      "bytes": 2509,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/650.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/650",
+      "retrieved_at": "2026-10-08T17:01:15+06:00",
+      "sha256": "C8DD466FA047A8EA8807BA2A17C1860B9C80DE3B4A0BC81F214F52888B951E8F",
+      "bytes": 1664,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/651.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/651",
+      "retrieved_at": "2026-10-08T17:01:15+06:00",
+      "sha256": "7971FC7C57388BAF952751C6E593EA1B3A03EBF4F02074D7AC88BDFC45B1514D",
+      "bytes": 1759,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/652.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/652",
+      "retrieved_at": "2026-10-08T17:01:14+06:00",
+      "sha256": "B65553E6217B070FC340BF0C895C6A8CA20102A3D118B4D80E877B39B029DB72",
+      "bytes": 1028,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/653.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/653",
+      "retrieved_at": "2026-10-08T17:01:13+06:00",
+      "sha256": "51949AD3E46405F1D8BD1CB99ACE8811F4E3F7E60D7FE1E475E41A0E091A5147",
+      "bytes": 1089,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/654.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/654",
+      "retrieved_at": "2026-10-08T17:01:12+06:00",
+      "sha256": "C595D56835414F547DD48C1A356B488E7B30569CF61A1536E6DF681935126240",
+      "bytes": 1141,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/655.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/655",
+      "retrieved_at": "2026-10-08T17:01:11+06:00",
+      "sha256": "B1F03087C0D3B3DAE1DD1CB832794744E94E2237BED2A99ADF6937F512D8A30B",
+      "bytes": 1037,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/656.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/656",
+      "retrieved_at": "2026-10-08T17:01:09+06:00",
+      "sha256": "45951AE23AD905A02A18FDCD76423DBC4FF11DDE4369D71DECEE56F88E3EB785",
+      "bytes": 1408,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/657.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/657",
+      "retrieved_at": "2026-10-08T17:01:08+06:00",
+      "sha256": "1D70487C5DEAED088D6950CAC531443D73B49C96E06FB0553269013666F62394",
+      "bytes": 1190,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/658.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/658",
+      "retrieved_at": "2026-10-08T17:01:07+06:00",
+      "sha256": "27EED701B180740B08C922098547C4C22C3D6694844FD3288AAA616E789DFBD5",
+      "bytes": 1128,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/659.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/659",
+      "retrieved_at": "2026-10-08T17:01:07+06:00",
+      "sha256": "1025379803831281D87E8C5A71B216C40EF8A02B80635BAC27F205FD16E18D19",
+      "bytes": 1491,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/660.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/660",
+      "retrieved_at": "2026-10-08T17:01:05+06:00",
+      "sha256": "9C35884C5F3C5D19D8FB0CB26788C915B620EF63C9AB60CF05D77C39DA3972CE",
+      "bytes": 1319,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/661.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/661",
+      "retrieved_at": "2026-10-08T17:01:04+06:00",
+      "sha256": "9DAA8D7214FDCC5FBF72302094C7E820FF517E7262485132A4B66F4EAC7A85FC",
+      "bytes": 1586,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/683.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/683",
+      "retrieved_at": "2026-10-08T17:02:14+06:00",
+      "sha256": "3F9CE591EAB68853B1766CEA80613E7DEBB85908AEEC0B2DEA7305148F5C48C6",
+      "bytes": 2476,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/684.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/684",
+      "retrieved_at": "2026-10-08T17:02:13+06:00",
+      "sha256": "21387304D4C18444368C5AAB1576D4D35F841CE3AD56D6FCC39CA25288E3F18C",
+      "bytes": 2459,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/85.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/85",
+      "retrieved_at": "2026-10-08T17:02:29+06:00",
+      "sha256": "999E276E58F5DA5DB12D8125F98D1B1EE0676B81D53F990380446AFF0DCFBE2C",
+      "bytes": 1010,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/86.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/86",
+      "retrieved_at": "2026-10-08T17:02:32+06:00",
+      "sha256": "F5772017D9A84DE3391CC42AE0CC784D58F8B5BD83977268CF033F1973C39785",
+      "bytes": 1386,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/87.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/87",
+      "retrieved_at": "2026-10-08T17:02:31+06:00",
+      "sha256": "ECB46E782FFDB990B792736116F45179C5A2A33BA2911A87B691A9F9C0C952DB",
+      "bytes": 1336,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/88.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/88",
+      "retrieved_at": "2026-10-08T17:02:30+06:00",
+      "sha256": "AB1E27C73F5FB76B5D9663B46EE06EF81EFA5B59C389405604E43A574CAF1000",
+      "bytes": 1327,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/882.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/882",
+      "retrieved_at": "2026-10-08T17:02:12+06:00",
+      "sha256": "BCDCB2FF75506A970DB29A12071C0A72641C963949B408EBE74D5BC83B916F17",
+      "bytes": 1687,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/883.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/883",
+      "retrieved_at": "2026-10-08T17:02:11+06:00",
+      "sha256": "47C8F5DFDA877D98B9371A1E7494575B1CC3E8313240EB102EF1ADFBF488B2C7",
+      "bytes": 1332,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/89.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/89",
+      "retrieved_at": "2026-10-08T17:02:34+06:00",
+      "sha256": "B2DB297DF6FD3F6B1278206719B57D3B58110D5768A06084DC5331618972D5A0",
+      "bytes": 1376,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/90.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/90",
+      "retrieved_at": "2026-10-08T17:02:33+06:00",
+      "sha256": "FBDA1A4491F59928A0D2B766AD9DA8ED7B04891E473CE5817478EE23E4F25872",
+      "bytes": 1507,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/91.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/91",
+      "retrieved_at": "2026-10-08T17:02:33+06:00",
+      "sha256": "267799B1FF42CF7DC4212C74E4BD6CD5A8B39B9DD9D924553E20F97C3A940404",
+      "bytes": 1202,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/92.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/92",
+      "retrieved_at": "2026-10-08T17:02:49+06:00",
+      "sha256": "84A36C62CAFC299D49EDC683EAB82481B017E2E90928B2BE7BB86354B192F9C7",
+      "bytes": 1301,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/93.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/93",
+      "retrieved_at": "2026-10-08T17:02:42+06:00",
+      "sha256": "FFCFBC15EC4FD9FCCE2C7C1327AA649770116FB467B9E2C129EAEB1F8662E81F",
+      "bytes": 1473,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/94.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/94",
+      "retrieved_at": "2026-10-08T17:02:41+06:00",
+      "sha256": "7EF829F67B312FA5D26041162DC53820461B38DFC5D206963713004B04D55A32",
+      "bytes": 1646,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/95.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/95",
+      "retrieved_at": "2026-10-08T17:02:40+06:00",
+      "sha256": "F6E0F6D5F4FC6BA038AECB948F60A7D51C7AF102787DF63CCC9D1616F43C1B20",
+      "bytes": 1392,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/96.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/96",
+      "retrieved_at": "2026-10-08T17:02:40+06:00",
+      "sha256": "71FB2D25CFCC54E843170CC44121CC2E2CAFCC6DE42E20637E06CA16A72856D0",
+      "bytes": 1577,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/97.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/97",
+      "retrieved_at": "2026-10-08T17:02:39+06:00",
+      "sha256": "71F09EA1C830DDF4841F97F22D69A30E4DF515FB8B38F1BD4BF0F5405DC7B769",
+      "bytes": 1363,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/98.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/98",
+      "retrieved_at": "2026-10-08T17:02:38+06:00",
+      "sha256": "33A8F78A2D739F0B160E92AFE2AFE309113E8B0C8E33715ABEBB126063B00792",
+      "bytes": 1363,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety/99.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-by-id/99",
+      "retrieved_at": "2026-10-08T17:02:37+06:00",
+      "sha256": "636C178F05CCB88BC1C58987364D175E170159FAC14505EDE0E64254F462ED3F",
+      "bytes": 1363,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety_names_2.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-names-by-crop/2",
+      "retrieved_at": "2026-10-08T17:02:51+06:00",
+      "sha256": "3FCB63589AEA001E2F6972CAD6CF503AB72400615F926C3242A37B512B2E0D78",
+      "bytes": 6503,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety_names_3.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-names-by-crop/3",
+      "retrieved_at": "2026-10-08T17:02:50+06:00",
+      "sha256": "E0065DD52C6FCA751DC5BA4BAA9C0E76048397700FB9FEB17099BF8F48F16523",
+      "bytes": 7030,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety_names_36.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-names-by-crop/36",
+      "retrieved_at": "2026-10-08T17:01:03+06:00",
+      "sha256": "0E3966643BF33BFA7C186EEB0638F004CFF7FEE09A23DFAEDE6BF78A4AB3D881",
+      "bytes": 8804,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety_names_4.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-names-by-crop/4",
+      "retrieved_at": "2026-10-08T17:02:09+06:00",
+      "sha256": "A4289C3546D70FBBAD7D5CB5AB3E5F4A3844DD2F453EE0E7B365F58B1059AF4C",
+      "bytes": 2464,
+      "content_type": "application/json"
+    },
+    {
+      "path": "portal/variety_names_5.json",
+      "url": "https://portal.cropzoning.gov.bd/api/get-variety-names-by-crop/5",
+      "retrieved_at": "2026-10-08T17:02:28+06:00",
+      "sha256": "9F7E10C2338171689215C67BBD8B58520F5BC346D6411948D673096B1E579ACF",
+      "bytes": 3570,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/districts.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-districts",
+      "retrieved_at": "2026-10-08T17:02:52+06:00",
+      "sha256": "DA476ADF8EF436FAAE96AB042E9B0ADDFC96DCE839DDC975E70C269F23F58B89",
+      "bytes": 6968,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201909.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201909",
+      "retrieved_at": "2026-10-08T17:03:16+06:00",
+      "sha256": "20B3DA15ADC8F26ABA6508B49187D093BE3F28A67BEA1AB68834172243CDB84B",
+      "bytes": 30298,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201915.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201915",
+      "retrieved_at": "2026-10-08T17:03:21+06:00",
+      "sha256": "D9E85278B2D35863FE20A149A08BCAF907288CC400A71C65A9BBD6448E607BB1",
+      "bytes": 30401,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201918.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201918",
+      "retrieved_at": "2026-10-08T17:03:18+06:00",
+      "sha256": "2493389F769A97CABE3488A9C06C587A508D4FEA433E6A3A9194B7FDE940C3EE",
+      "bytes": 30512,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201927.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201927",
+      "retrieved_at": "2026-10-08T17:02:59+06:00",
+      "sha256": "A70F9E808CB39EBE8C0AF2D684DB1956C6511250EE0280AACF2D9EB5C397618B",
+      "bytes": 30267,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201931.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201931",
+      "retrieved_at": "2026-10-08T17:03:04+06:00",
+      "sha256": "A9A6C152BC38435214DD85CC358C6B4597CAA94767402ECFD52451E2B90052F4",
+      "bytes": 40486,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201933.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201933",
+      "retrieved_at": "2026-10-08T17:03:32+06:00",
+      "sha256": "1B55DA0520892D1BB9E04ED069BDE43A4C382776FA2F0E9572EA4D51D8BA638E",
+      "bytes": 30507,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201936.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201936",
+      "retrieved_at": "2026-10-08T17:03:08+06:00",
+      "sha256": "52700E18C5709E7B682D5CE0B29A39C3B1BB3FC95ECC421A53DA0D0F5C7D9179",
+      "bytes": 30319,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201940.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201940",
+      "retrieved_at": "2026-10-08T17:03:11+06:00",
+      "sha256": "7181AE726A09CCBAD7A2146A7D26F71185348E3A2093F379E6D8C5F0E3159E71",
+      "bytes": 30319,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201954.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201954",
+      "retrieved_at": "2026-10-08T17:03:34+06:00",
+      "sha256": "B34BA07A13C6D35FD4C158FC768CF5F180BF061BB6BA2040CBD29D98AB1BB009",
+      "bytes": 30258,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201967.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201967",
+      "retrieved_at": "2026-10-08T17:02:57+06:00",
+      "sha256": "B3850BE3AA057FA9F52A3844F59AAE6F36A83AE157DBD63FC345E6294CDA8CCD",
+      "bytes": 30278,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201972.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201972",
+      "retrieved_at": "2026-10-08T17:03:27+06:00",
+      "sha256": "501A667FCE9D5781FAC71AD7C7F80741897A969ABC8C515DD8C491BA5A949FAD",
+      "bytes": 30091,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201973.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201973",
+      "retrieved_at": "2026-10-08T17:03:29+06:00",
+      "sha256": "E1C5E110C1BC78626518627CD185F5E736D9C9F1F36CAC361C3E6F0B40E1DBC2",
+      "bytes": 39867,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201974.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201974",
+      "retrieved_at": "2026-10-08T17:03:22+06:00",
+      "sha256": "FC971F92C6C66BEDA9C807649C100E824D29087FD2C2B10EB72800143AEBD57D",
+      "bytes": 33779,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201975.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201975",
+      "retrieved_at": "2026-10-08T17:03:25+06:00",
+      "sha256": "A7EB9A2123C7A2FCA64CDF8D189E0C71F7E6006244A6FBDB96DEF9D71480F11F",
+      "bytes": 39914,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201987.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201987",
+      "retrieved_at": "2026-10-08T17:03:13+06:00",
+      "sha256": "7D8E8BF6625F45D55B4893E712CA56D628B9391B3026E14062CE829E28703089",
+      "bytes": 30379,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/201994.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/201994",
+      "retrieved_at": "2026-10-08T17:03:06+06:00",
+      "sha256": "F80D5C55A8B11DB56906B7E30DB90CDC5504144870417C5A261FD142503A86F6",
+      "bytes": 40236,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/302614.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/302614",
+      "retrieved_at": "2026-10-08T17:04:13+06:00",
+      "sha256": "ABF46B2ED8A8DB1571E0B5F7871E807DA3F8E449741CC3565B6A668716B090F0",
+      "bytes": 31094,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/302618.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/302618",
+      "retrieved_at": "2026-10-08T17:04:11+06:00",
+      "sha256": "E1B859D3D868C014110F4F8EE4D41B197C50550083FD81DC0E61A8A5AC9D685B",
+      "bytes": 39999,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/302638.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/302638",
+      "retrieved_at": "2026-10-08T17:04:09+06:00",
+      "sha256": "91FB6652A43AE7D3AD9B0FE89120D185D2C043641E50572328D1530CA3B67F5A",
+      "bytes": 40062,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/302662.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/302662",
+      "retrieved_at": "2026-10-08T17:04:17+06:00",
+      "sha256": "450969E4BB8ADB01000F3F09641691D16AF99A8C9D0916E80304C64CA27BD5D4",
+      "bytes": 40142,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/302672.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/302672",
+      "retrieved_at": "2026-10-08T17:04:20+06:00",
+      "sha256": "3D76639F126E5CA693C695A94B905C8158091CFC60153B03225C1AD9C3AE0785",
+      "bytes": 40274,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303330.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303330",
+      "retrieved_at": "2026-10-08T17:03:50+06:00",
+      "sha256": "5CB5E360532F7110C11B37509186BB817E17C7AA16F461A3AE690E893A351C5E",
+      "bytes": 30423,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303331.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303331",
+      "retrieved_at": "2026-10-08T17:03:54+06:00",
+      "sha256": "B8D40CA9641AF01725405AFA141C8D9BF2671368E05C6B19923ED37C4D6BB6AD",
+      "bytes": 40425,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303332.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303332",
+      "retrieved_at": "2026-10-08T17:03:45+06:00",
+      "sha256": "C7A36F14268E3AE861D303F586639BF8E5DA332ADBF2D2B1BC4571BF5DE9725D",
+      "bytes": 30581,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303334.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303334",
+      "retrieved_at": "2026-10-08T17:03:48+06:00",
+      "sha256": "C99083F2BD084923D3BC7406B1BD7471A57CC56E6650DAA3872339C31EFFC07D",
+      "bytes": 40294,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303336.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303336",
+      "retrieved_at": "2026-10-08T17:03:43+06:00",
+      "sha256": "C10B8C43262494DA115611B9E527A95DBA0937D225F4F167B5B3FB46BE645733",
+      "bytes": 40354,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/303386.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/303386",
+      "retrieved_at": "2026-10-08T17:03:56+06:00",
+      "sha256": "E98949D129AD9FF11B3E3EA95336998E50207E5607F5AA192FB9EC66644C41D0",
+      "bytes": 30700,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456113.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456113",
+      "retrieved_at": "2026-10-08T17:05:19+06:00",
+      "sha256": "08A309622BF834954FABC76320240C20000726CE8F54E836B4569BE25BCEED9F",
+      "bytes": 40503,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456116.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456116",
+      "retrieved_at": "2026-10-08T17:05:00+06:00",
+      "sha256": "A3E16CD8A58615D1C9047F0F2FFA09CC8E7C225F23A42AF12FBFAAEDB434DFC3",
+      "bytes": 30486,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456120.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456120",
+      "retrieved_at": "2026-10-08T17:05:12+06:00",
+      "sha256": "41727CC27B1F05FDE9C51C210C0FCE4473F46838E5D0AD8B96DDD1EE163197F6",
+      "bytes": 30652,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456122.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456122",
+      "retrieved_at": "2026-10-08T17:04:49+06:00",
+      "sha256": "4EF0A4318E6C419268EFA6EDD9C1F0BDE26E5D8457C4737428D75A352C0F0088",
+      "bytes": 40480,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456123.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456123",
+      "retrieved_at": "2026-10-08T17:04:51+06:00",
+      "sha256": "A9DB1EA3E76589AABAB77B87E4ACF43EA47CA3A98002616EC423E1E8F252E9CA",
+      "bytes": 30683,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456131.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456131",
+      "retrieved_at": "2026-10-08T17:04:42+06:00",
+      "sha256": "A901E21C61FE90F816F5E0AA519E57B9D6EB9E5986C7371D53A5C9D8FC510A83",
+      "bytes": 30724,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456152.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456152",
+      "retrieved_at": "2026-10-08T17:05:21+06:00",
+      "sha256": "B444E616F37BEC8CE2C4D47F16B812ED6878FA5C3FAB2D247B3F468D9D39B578",
+      "bytes": 30700,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456165.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456165",
+      "retrieved_at": "2026-10-08T17:05:27+06:00",
+      "sha256": "11671F73C5CC44E0FC391535EAB7D6BA7E53B45C0ACA0F4DEDDD136BAFED6421",
+      "bytes": 30566,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456172.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456172",
+      "retrieved_at": "2026-10-08T17:05:04+06:00",
+      "sha256": "801C068038F181EDAAAE1EC0CDADC69C94609F8ABC4032E9BFC64D6AB798460C",
+      "bytes": 40300,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456181.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456181",
+      "retrieved_at": "2026-10-08T17:05:06+06:00",
+      "sha256": "70E595DA39B7BFC8CEDBFB19153EE6B7E7984AEA9B59BD28DCCDDD125DE0E9D3",
+      "bytes": 30559,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456188.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456188",
+      "retrieved_at": "2026-10-08T17:04:53+06:00",
+      "sha256": "960BFA5D264729DBAB3A31D97BA7BD700A5CF2497922ACA7E8473B15C4B84F96",
+      "bytes": 30517,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/456194.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/456194",
+      "retrieved_at": "2026-10-08T17:04:58+06:00",
+      "sha256": "92DF441063A24EA32C95BA938AB4B9765ECC4DABE69290049E8EA0B9CDF3D1C9",
+      "bytes": 30515,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508110.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508110",
+      "retrieved_at": "2026-10-08T17:05:57+06:00",
+      "sha256": "CFBE10145D722FA996BF85AE7B68D4F18B7A51868E4F0C5ED3C4FBE671D561FD",
+      "bytes": 40183,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508112.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508112",
+      "retrieved_at": "2026-10-08T17:05:54+06:00",
+      "sha256": "8B35F85324011077B3B8CE20E4B7BE8889BBE5160A524E90879365BF59D640DB",
+      "bytes": 30615,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508125.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508125",
+      "retrieved_at": "2026-10-08T17:05:43+06:00",
+      "sha256": "011390A680035FD702B1FB5FEFE9D19AF8EC8EB590302B60141902CCDA7B0C4D",
+      "bytes": 30485,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508131.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508131",
+      "retrieved_at": "2026-10-08T17:05:48+06:00",
+      "sha256": "F1ADB71D34597777B1D0F2E15073EA937B42F9EC60B01AFD774719E9FC472F96",
+      "bytes": 41025,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508134.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508134",
+      "retrieved_at": "2026-10-08T17:05:40+06:00",
+      "sha256": "C91C3C6020E764E28D9124D14532DAB17EAA971BEC062593DAD4C531E6AF483B",
+      "bytes": 30814,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508153.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508153",
+      "retrieved_at": "2026-10-08T17:06:00+06:00",
+      "sha256": "99FA7247AC737EB7D9C5A22747109749B8E23F2B0BBDB813E88233E098BD5AA2",
+      "bytes": 42632,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508172.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508172",
+      "retrieved_at": "2026-10-08T17:05:50+06:00",
+      "sha256": "95CF8B01331C1BE6E4B1CA7EBC95B792C6B5242E6D54D3AAFFCFA181B8CDD3E4",
+      "bytes": 30712,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508182.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508182",
+      "retrieved_at": "2026-10-08T17:05:52+06:00",
+      "sha256": "FB0103B4EA162FC2BFFA8B46DA2FE613484980952163543DBDEE08D6641A1194",
+      "bytes": 30471,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazila/508194.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability/508194",
+      "retrieved_at": "2026-10-08T17:05:45+06:00",
+      "sha256": "AC48ECBFF175F1FD8603D4EA9EAE29195E2C47D8BF3EAB06AF56B5ACC216D3B7",
+      "bytes": 41174,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1004.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1004",
+      "retrieved_at": "2026-10-08T17:04:35+06:00",
+      "sha256": "8195598AD998B96F93AD74D7A68A1BAF739524B8A165A3FCDC7E4FBD1AD5065B",
+      "bytes": 626,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1006.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1006",
+      "retrieved_at": "2026-10-08T17:04:36+06:00",
+      "sha256": "A1FB7295ED99077547DEB47A2692CBA0599EF6E7CCBA4ED1FFB2EB67E4A91585",
+      "bytes": 1151,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1009.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1009",
+      "retrieved_at": "2026-10-08T17:04:39+06:00",
+      "sha256": "866E93A9C05851436927E37378ECF4B64138ABAF4A154E3E2BF5D06EFEFFD634",
+      "bytes": 804,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1042.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1042",
+      "retrieved_at": "2026-10-08T17:04:03+06:00",
+      "sha256": "E8F4F6224D6D84493C9678914FF9B3C91610A0C9B4A12483179CB83E9E9028F1",
+      "bytes": 457,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1078.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1078",
+      "retrieved_at": "2026-10-08T17:04:30+06:00",
+      "sha256": "F09B11053142357D2D0E444AF64BE159D31DF27845162E6BBADABE6C66EEA7D0",
+      "bytes": 901,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_1079.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/1079",
+      "retrieved_at": "2026-10-08T17:04:31+06:00",
+      "sha256": "E269FE16C3D79A3E64443484D73933D256B160380B207BC13EF205B77F652819",
+      "bytes": 921,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2003.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2003",
+      "retrieved_at": "2026-10-08T17:04:37+06:00",
+      "sha256": "D41DF324DAE75077EBD690303B4C0D87F77945687DA6F543A2EE61EF4CCC7314",
+      "bytes": 777,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2012.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2012",
+      "retrieved_at": "2026-10-08T17:04:38+06:00",
+      "sha256": "9673E14E7E477CB48510D28214CB1964D8DF9FE87C6172BA52891469D5BEED37",
+      "bytes": 1033,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2013.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2013",
+      "retrieved_at": "2026-10-08T17:03:59+06:00",
+      "sha256": "151A3587E56AF4758B7B86F0548B9B894CF1C4A4277E81EF145F60DD796836B6",
+      "bytes": 806,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2015.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2015",
+      "retrieved_at": "2026-10-08T17:03:58+06:00",
+      "sha256": "6EBABC103902853598394322961F28F961D572F7881D8299788005A5BF158DF2",
+      "bytes": 1691,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2019.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2019",
+      "retrieved_at": "2026-10-08T17:02:55+06:00",
+      "sha256": "74CB50AC6DF12534DCF8487E4DF5D9DB0029A092D587FDB2F6F02E4187660FAB",
+      "bytes": 1783,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2022.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2022",
+      "retrieved_at": "2026-10-08T17:02:53+06:00",
+      "sha256": "EAB4EA2F2AC59C965033BE975FC99B50CC98D7F6AC64F1FC01772F7212B3C0F3",
+      "bytes": 856,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2030.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2030",
+      "retrieved_at": "2026-10-08T17:04:33+06:00",
+      "sha256": "9EFC1B35B1CB8DDF558DB5A87C5E817757D9BEE829DC3F03C9D4BC6580D1B17D",
+      "bytes": 678,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2046.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2046",
+      "retrieved_at": "2026-10-08T17:03:36+06:00",
+      "sha256": "5B81DA683BFBA94FFE39924631217F6CAE610E8F410877AA237A9FBE24D546A0",
+      "bytes": 1029,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2051.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2051",
+      "retrieved_at": "2026-10-08T17:06:01+06:00",
+      "sha256": "131153CA0BCD49931D96DB72510D3349D85944F6E69C22FED29545DD6CF0AFE9",
+      "bytes": 561,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2075.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2075",
+      "retrieved_at": "2026-10-08T17:04:28+06:00",
+      "sha256": "7FE5E48C25241BA201E148BA49ED2BB0F3FAC589112402F9C8A6004B822C145C",
+      "bytes": 1036,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_2084.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/2084",
+      "retrieved_at": "2026-10-08T17:05:35+06:00",
+      "sha256": "DA7B1068C08FBCDBAE17F6A51C82998BB701B3D7CE85248088D57ACC5D7F9465",
+      "bytes": 1124,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3026.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3026",
+      "retrieved_at": "2026-10-08T17:04:07+06:00",
+      "sha256": "DABBD33114C5C771BCCCBE4D2B93FE73A2642A63D109A4A016DAA20E836B82B6",
+      "bytes": 526,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3029.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3029",
+      "retrieved_at": "2026-10-08T17:04:32+06:00",
+      "sha256": "6E9271CAA33C7C1070346E0A497F4C0EF6732CBD866E4B443EEFA6898F4720C8",
+      "bytes": 1025,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3033.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3033",
+      "retrieved_at": "2026-10-08T17:03:38+06:00",
+      "sha256": "70EDF613C8574D7727FAB043AAE330FCD034FF44CB2467E0C5D7C443D740B6CC",
+      "bytes": 786,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3035.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3035",
+      "retrieved_at": "2026-10-08T17:03:57+06:00",
+      "sha256": "0B205AC70036BDE29301556CAAE28AE5D944B890DF0E246481ECC1738C447238",
+      "bytes": 632,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3048.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3048",
+      "retrieved_at": "2026-10-08T17:02:53+06:00",
+      "sha256": "EB9FE6B7739546FAFD1E1767CE7397547E5F3AFD8D1FA49E8D1ED28A925D67E1",
+      "bytes": 1105,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3054.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3054",
+      "retrieved_at": "2026-10-08T17:05:28+06:00",
+      "sha256": "194B6FE53613C8E37E2EE5440DE67FBAEA043EE9A702380895D56C09853A10C4",
+      "bytes": 532,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3056.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3056",
+      "retrieved_at": "2026-10-08T17:05:29+06:00",
+      "sha256": "67649FB89CD60389D4D86FB5FAFA66EE084E8E9C81C1D9BFAAB8F3CFEC01FAC5",
+      "bytes": 695,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3059.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3059",
+      "retrieved_at": "2026-10-08T17:05:30+06:00",
+      "sha256": "072C572E8E9A57F56DADCAB2E939380061B7CE521CDE9DFF12272AE7C1636607",
+      "bytes": 704,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3067.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3067",
+      "retrieved_at": "2026-10-08T17:04:25+06:00",
+      "sha256": "C74381D721B39439006A7D883EBF7E8FDAF4A7FF1EC50E0379EC0FF0E0284E75",
+      "bytes": 434,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3068.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3068",
+      "retrieved_at": "2026-10-08T17:04:24+06:00",
+      "sha256": "DDCDEE2512EAFBCD621A9CBCDC70B263F86983497FC0B281AF89FFEB6E6A436B",
+      "bytes": 634,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3082.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3082",
+      "retrieved_at": "2026-10-08T17:05:35+06:00",
+      "sha256": "7E9E7DE05A6E6BB3F4F0E4A59C7B544446E122985BCF55D87DB7CCE1290416F1",
+      "bytes": 479,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3086.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3086",
+      "retrieved_at": "2026-10-08T17:06:03+06:00",
+      "sha256": "9CCBD2E375190C73BEB34BECB243968D84DC87E1E07CF1FFDFA2374410E52E71",
+      "bytes": 680,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_3093.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/3093",
+      "retrieved_at": "2026-10-08T17:04:05+06:00",
+      "sha256": "B7A8F80896303E77F51F115EE6C593C2EB5D3F67E27F4B627A015F5DB3852EBF",
+      "bytes": 1310,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4001.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4001",
+      "retrieved_at": "2026-10-08T17:04:37+06:00",
+      "sha256": "D599C8BB241F7D341AA68F633CF602CB97E3375822366ACBCEB8709966B44B63",
+      "bytes": 995,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4018.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4018",
+      "retrieved_at": "2026-10-08T17:04:01+06:00",
+      "sha256": "68281047CFBB91CFF1C9050A84D22C47280D705F2FE6B414E5D9CCF550DF7B4E",
+      "bytes": 501,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4041.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4041",
+      "retrieved_at": "2026-10-08T17:05:33+06:00",
+      "sha256": "B3550A66C5A768DA2D1C902AF5A139B4DF1B9FA359331D13BE76C99DDCA444BE",
+      "bytes": 887,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4044.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4044",
+      "retrieved_at": "2026-10-08T17:04:04+06:00",
+      "sha256": "FA6199208D7A3F4E7093B82D40F4374AA685D017460A8FED5F39E520F52DE2F3",
+      "bytes": 725,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4047.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4047",
+      "retrieved_at": "2026-10-08T17:03:37+06:00",
+      "sha256": "CB468595FBB6E9E40119226039844A9AC9C4E524852F855490B4E6B80B0F65F5",
+      "bytes": 936,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4050.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4050",
+      "retrieved_at": "2026-10-08T17:03:35+06:00",
+      "sha256": "D7131F832E469DA7C1DF349B65A4E17092FBE21FBFB5A3BF6BC2DA5551F1BDB3",
+      "bytes": 673,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4055.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4055",
+      "retrieved_at": "2026-10-08T17:05:28+06:00",
+      "sha256": "10F13A8271401E43467312B782323154AF22BACB0B280591E0E2D7EAABDAAA27",
+      "bytes": 454,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4057.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4057",
+      "retrieved_at": "2026-10-08T17:05:31+06:00",
+      "sha256": "C61B2E92CB44645A649255CABEC98FF8A316D3CB90C2E46B1ACD125A20FC99D7",
+      "bytes": 347,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4065.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4065",
+      "retrieved_at": "2026-10-08T17:04:23+06:00",
+      "sha256": "28927CD8D6BB3F19C7200EBDB35DB7BC8C18255D76D8A814F32910FEB140A34A",
+      "bytes": 324,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4087.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4087",
+      "retrieved_at": "2026-10-08T17:06:05+06:00",
+      "sha256": "79B43F8540053755C4E344322755D71D46E8286C8D664D6C7A65B2EEF0CADACA",
+      "bytes": 777,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4539.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4539",
+      "retrieved_at": "2026-10-08T17:04:02+06:00",
+      "sha256": "FE9EA9E7860DE6C1AA721F62C0639435643F8FAF0A43E3248833C3820067CE65",
+      "bytes": 614,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4561.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4561",
+      "retrieved_at": "2026-10-08T17:04:40+06:00",
+      "sha256": "D81A4580194FAACDC051707B88D7DEBE9604981AE4D81A8F84516054041A9D64",
+      "bytes": 1376,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4572.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4572",
+      "retrieved_at": "2026-10-08T17:04:27+06:00",
+      "sha256": "62917F27FCCA88C51245F15E45295808F79A7CFFAFD4A9781A2DC26F9432C061",
+      "bytes": 1157,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_4589.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/4589",
+      "retrieved_at": "2026-10-08T17:06:04+06:00",
+      "sha256": "F86A2EC8F504F527B290D2D63327709563EDD607F9DD676309D47EE610E1366C",
+      "bytes": 460,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5010.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5010",
+      "retrieved_at": "2026-10-08T17:04:34+06:00",
+      "sha256": "4299EC65EFAD4D52C65F0508ACC8EB7D9A5E9E6B1F4AA0EB6EDF7795BACC7314",
+      "bytes": 1350,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5038.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5038",
+      "retrieved_at": "2026-10-08T17:04:02+06:00",
+      "sha256": "A9904A9AD2646DDCF7B86E700A30CBC25D0B335102C492C73ED94A39DFC43D25",
+      "bytes": 577,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5064.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5064",
+      "retrieved_at": "2026-10-08T17:04:22+06:00",
+      "sha256": "7FC9FC7519AB2EFEC558DB3C4CEE374074660DC1DD599C2CB3C34A7776805E9A",
+      "bytes": 1203,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5069.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5069",
+      "retrieved_at": "2026-10-08T17:04:24+06:00",
+      "sha256": "8E4C0003995EE237242A41A355098BE959BEB80AC9D19960C4BD6F0ED9F220D3",
+      "bytes": 798,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5070.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5070",
+      "retrieved_at": "2026-10-08T17:04:00+06:00",
+      "sha256": "682214570D2857B29F4D4E8B04D1615C5D45E7788826265AEA24679698503037",
+      "bytes": 617,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5076.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5076",
+      "retrieved_at": "2026-10-08T17:04:31+06:00",
+      "sha256": "D1224CC9771BABDADD08BA741062BB5F1E4A1795B8930A020E302327760C9023",
+      "bytes": 959,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5081.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5081",
+      "retrieved_at": "2026-10-08T17:05:36+06:00",
+      "sha256": "AF6CC20F189A048F8ED09AFF9D08EAA7B5727FDDA92320C8A79670A252A6140C",
+      "bytes": 905,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5088.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5088",
+      "retrieved_at": "2026-10-08T17:06:06+06:00",
+      "sha256": "3A14D1E07AD94C366404F67DCDA9BDFBCD14E24E59360BF984A651D82EF825AF",
+      "bytes": 1022,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5527.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5527",
+      "retrieved_at": "2026-10-08T17:04:21+06:00",
+      "sha256": "16D7DC7C613D8890180ECA1113F08BF763BD014AC3C3E5B60E52D33BA69DB2B0",
+      "bytes": 1469,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5532.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5532",
+      "retrieved_at": "2026-10-08T17:03:38+06:00",
+      "sha256": "737033AEE41B2F42DBAC00ABBB3644BAD7928C50A9FA786522DDD639D3171130",
+      "bytes": 857,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5549.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5549",
+      "retrieved_at": "2026-10-08T17:02:54+06:00",
+      "sha256": "419BEBEAF9725900749F81AED68E4E9FCC309887F710FFD370DAB932270ACFAC",
+      "bytes": 1064,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5552.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5552",
+      "retrieved_at": "2026-10-08T17:06:02+06:00",
+      "sha256": "8B6653BDB28050B5633EA6404C703EA4912DB0C0C51568C97D0D24426FEE1B48",
+      "bytes": 619,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5573.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5573",
+      "retrieved_at": "2026-10-08T17:04:26+06:00",
+      "sha256": "4A0C86624CFF4602AE3294A7A1092C973E778C60DCD7818235A36563ECA26178",
+      "bytes": 660,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5577.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5577",
+      "retrieved_at": "2026-10-08T17:04:29+06:00",
+      "sha256": "91834B4C969821C0276523B6D973D9470CDF4B203407D8503C681BD976775CEF",
+      "bytes": 551,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5585.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5585",
+      "retrieved_at": "2026-10-08T17:05:34+06:00",
+      "sha256": "F8D607E396A3C00FDEB673D16657EFD944441EDC05132355CA5B385873EF8970",
+      "bytes": 1081,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_5594.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/5594",
+      "retrieved_at": "2026-10-08T17:04:06+06:00",
+      "sha256": "90B74F936E6BD7D22A1F2D7A2F61BDD397DBA7E4E8A36A1DCD8E637A32DD69CB",
+      "bytes": 614,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_6036.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/6036",
+      "retrieved_at": "2026-10-08T17:06:08+06:00",
+      "sha256": "FB1EBDE877B52BD894651856D63A070E7120EB3B3913EBB942874389AF9F76DE",
+      "bytes": 1046,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_6058.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/6058",
+      "retrieved_at": "2026-10-08T17:05:32+06:00",
+      "sha256": "3E94F519D97E55B83BA1CDF3E0715243E23DB342B5AA227F8946C470392B1B72",
+      "bytes": 776,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_6090.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/6090",
+      "retrieved_at": "2026-10-08T17:06:08+06:00",
+      "sha256": "2BCB58F938D266CBEA0C0BF60803B8A6BA26143C70EBBBCEC7994A06F9F9E204",
+      "bytes": 1324,
+      "content_type": "application/json"
+    },
+    {
+      "path": "suitability/upazilas_6091.json",
+      "url": "https://api1.cropzoning.gov.bd/api/crop-suitability-upazilas/6091",
+      "retrieved_at": "2026-10-08T17:06:07+06:00",
+      "sha256": "94B4AEDB47E4E182AC22CBDA1720FC3F3A45971379CA2BCA074406D40F629F94",
+      "bytes": 1476,
+      "content_type": "application/json"
+    }
+  ]
+}

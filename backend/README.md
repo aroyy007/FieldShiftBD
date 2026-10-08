@@ -201,3 +201,7 @@ The importer uses deterministic IDs, preserves an unchanged review decision,
 returns edited seed records to `in_review`, and never deletes records omitted
 from the file. It writes to the existing `agricultural_knowledge` table, so no
 schema migration is needed.
+
+`python -m scripts.import_reference_data` runs this seed import together with
+the M1 crop catalog and the policy-accepted BARC knowledge used by Module 2;
+see `M2_GUIDE.md` → "Current knowledge coverage".
