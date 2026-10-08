@@ -110,6 +110,7 @@ longitude               numeric(9,6)
 land_area_sqm           numeric(14,3) not null check (land_area_sqm > 0)
 land_area_display_unit  text not null
 soil_type               text
+land_type               text check (land_type in ('high','medium_high','medium_low','low','very_low'))
 irrigation_available    boolean
 water_source            text
 farming_method          text
@@ -117,7 +118,7 @@ created_at              timestamptz not null
 updated_at              timestamptz not null
 ```
 
-Convert user-entered area to canonical square metres on input; retain the display unit (`square_metre`, `decimal`, `acre`, or `hectare`) for presentation. Do not include `bigha` until the team agrees on a region-specific conversion because its size is not uniform. Use `CHECK` constraints for latitude/longitude ranges and the approved display-unit values. `latitude` and `longitude` must either both be null or both be present. Keep administrative location names as text initially; introduce reference tables only when the team has a reliable, maintained Bangladesh location dataset. Use the coordinates for weather queries when available.
+Convert user-entered area to canonical square metres on input; retain the display unit (`square_metre`, `decimal`, `acre`, or `hectare`) for presentation. Do not include `bigha` until the team agrees on a region-specific conversion because its size is not uniform. Use `CHECK` constraints for latitude/longitude ranges and the approved display-unit values. `latitude` and `longitude` must either both be null or both be present. Keep administrative location names as text initially; introduce reference tables only when the team has a reliable, maintained Bangladesh location dataset. Use the coordinates for weather queries when available. Module 1 now canonicalizes division/district/upazila names and spelling aliases (for example Comilla to Cumilla) against the pinned BARC crop-zoning location list with BBS geocodes (`backend/app/services/m1_reference.py`); the stored values stay text and no reference table was added. Recognized soil textures are stored by their canonical English label. `land_type` (added in migration `a7c4e2d91b30`) records the Bangladesh land-type class that BARC's crop land-and-soil conditions use.
 
 This allows a farmer to have multiple independent farming contexts:
 

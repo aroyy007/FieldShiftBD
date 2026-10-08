@@ -69,3 +69,28 @@ which the demo does not provide.
 Other inspected BARC pages are recorded in the existing source register. This
 package does not modify that register, database rows, migrations, models, M2
 services, or any other module.
+
+## Update — 2026-10-08
+
+The original package stays as research. Production knowledge is now created by
+`python -m scripts.import_reference_data` from pinned captures of BARC's
+Agri-Advisory Portal and crop-zoning API (see `source_register.json` and
+`barc_portal_claims.json`):
+
+- **Accepted:** potato is suitable on high land with loam soil (POTATO-002,
+  narrowed). The portal's English and Bangla text both state this; values
+  stated in only one language are excluded.
+- **Rejected because the portal's two language versions disagree:** sowing
+  window (POTATO-004), irrigation timing (POTATO-005), and the crop-wide
+  harvest interval (POTATO-006).
+- **Variety durations:** 68 potato varieties have a published duration, which
+  M2 uses for a harvest window when the season has a variety and planting
+  date. Four varieties publish no duration and are not used.
+- **Comilla / Cumilla:** upazila suitability distributions for all 16 current
+  Cumilla upazilas are regional context only. The legacy "Comilla" upazila
+  snapshot is kept but no longer matches current upazila names.
+- **Still missing:** growth-stage definitions, initial tasks, and
+  disease-independent harvest maturity indicators for potato. BARI's 10th
+  edition handbook (December 2024) could not be machine-verified (SutonnyMJ
+  encoding), so season plans remain unavailable.
+

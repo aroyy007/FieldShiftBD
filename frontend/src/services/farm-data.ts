@@ -10,10 +10,14 @@ export type FarmlandProfileDto = {
   land_area_sqm: number | string;
   land_area_display_unit: string;
   soil_type: string | null;
+  land_type?: string | null;
   irrigation_available: boolean | null;
   water_source: string | null;
   budget_amount?: number | string | null;
   budget_currency?: string | null;
+  division_code?: string | null;
+  district_code?: string | null;
+  upazila_code?: string | null;
 };
 
 export type GrowthStageDto = {
@@ -80,6 +84,7 @@ export type FarmlandCreateInput = {
   latitude?: number | null;
   longitude?: number | null;
   soil_type?: string | null;
+  land_type?: string | null;
   irrigation_available?: boolean | null;
   water_source?: string | null;
 };
@@ -192,9 +197,14 @@ export function mapFarmlandData(
       recentIssues: [],
     },
     location: locationLabel(profile) || 'Location not set',
+    division: profile.division,
     district: profile.district,
+    upazila: profile.upazila,
+    districtCode: profile.district_code ?? null,
+    upazilaCode: profile.upazila_code ?? null,
     landAreaUnit: profile.land_area_display_unit,
     soilType: profile.soil_type,
+    landType: profile.land_type ?? null,
     irrigationAvailable: profile.irrigation_available,
     waterSource: profile.water_source,
     budgetAmount: profile.budget_amount == null ? null : numberOrZero(profile.budget_amount),

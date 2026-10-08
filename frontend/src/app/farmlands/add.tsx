@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FarmBottomNavigation, FarmChromeIcon, FarmPageHeader } from '../../components/farmland-mobile-ui';
 import { FarmProfileIcon, FarmProfileIconName } from '../../components/farm-profile-icons';
 import { useAppContext } from '../../context/AppProvider';
+import OptionPickerModal, { PickerOption } from '../../components/OptionPickerModal';
+import { DivisionRef, ProfileVocabulary, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
 
 const PAPER = '#fffdf7';
 const GREEN = '#07543a';
@@ -14,12 +16,12 @@ const BORDER = '#e5e2d8';
 const MAX_LAND_AREA_SQM = 99_999_999_999.999;
 const SQUARE_METRES_PER_ACRE = 4046.8564224;
 const MAX_ACREAGE = 24_710_538.14;
-type FieldKey = 'location' | 'soil' | 'irrigation' | 'waterSource';
+type FieldKey = 'irrigation' | 'waterSource';
 type FormValues = Record<FieldKey, string>;
 
+type ReferenceKey = 'division' | 'district' | 'upazila' | 'soil' | 'landType';
+
 const fieldOptions: Record<FieldKey, string[]> = {
-  location: ['Gazipur, Dhaka Division', 'Dhaka, Dhaka Division', 'Mymensingh, Mymensingh Division', 'Rajshahi, Rajshahi Division'],
-  soil: ['Clay loam', 'Sandy loam', 'Silt', 'Clay'],
   irrigation: ['Available', 'Not available'],
   waterSource: ['Tube well', 'Canal', 'River', 'Rain-fed'],
 };
@@ -33,19 +35,70 @@ export default function AddFarmland() {
   const readParam = (value: string | string[] | undefined, fallback: string) => Array.isArray(value) ? value[0] ?? fallback : value ?? fallback;
   const [name, setName] = useState(() => readParam(params.name, ''));
   const [acreage, setAcreage] = useState(() => readParam(params.acreage, ''));
-  const [values, setValues] = useState<FormValues>(() => ({
-    location: '', soil: '', irrigation: '', waterSource: '',
-  }));
+  const [values, setValues] = useState<FormValues>(() => ({ irrigation: '', waterSource: '' }));
   const [picker, setPicker] = useState<FieldKey | null>(null);
+  const [referencePicker, setReferencePicker] = useState<ReferenceKey | null>(null);
+  const [divisions, setDivisions] = useState<DivisionRef[] | null>(null);
+  const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
+  const [referenceError, setReferenceError] = useState('');
+  const [divisionCode, setDivisionCode] = useState<string | null>(null);
+  const [districtCode, setDistrictCode] = useState<string | null>(null);
+  const [upazilaCode, setUpazilaCode] = useState<string | null>(null);
+  const [soilCode, setSoilCode] = useState<string | null>(null);
+  const [landType, setLandType] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [locationNotice, setLocationNotice] = useState('');
   const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const selectedOptions = useMemo(() => picker ? fieldOptions[picker] : [], [picker]);
 
+  const fetchReference = useCallback(() => Promise.all([loadLocations(), loadProfileVocabulary()])
+    .then(([locationTree, profileVocabulary]) => {
+      setDivisions(locationTree);
+      setVocabulary(profileVocabulary);
+      setReferenceError('');
+    })
+    .catch(requestError => setReferenceError(requestError instanceof Error ? requestError.message : 'Could not load location and soil lists.')), []);
+  useEffect(() => { void fetchReference(); }, [fetchReference]);
+  const loadReference = () => {
+    setReferenceError('');
+    void fetchReference();
+  };
+
+  const division = divisions?.find(item => item.code === divisionCode);
+  const district = division?.districts.find(item => item.code === districtCode);
+  const upazila = district?.upazilas.find(item => item.code === upazilaCode);
+  const soil = vocabulary?.soil_textures.find(item => item.code === soilCode);
+  const land = vocabulary?.land_types.find(item => item.code === landType);
+  const referenceOptions: PickerOption[] = useMemo(() => {
+    if (referencePicker === 'division') return (divisions ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'district') return (division?.districts ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'upazila') return (district?.upazilas ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'soil') return (vocabulary?.soil_textures ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
+    if (referencePicker === 'landType') return (vocabulary?.land_types ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
+    return [];
+  }, [referencePicker, divisions, division, district, vocabulary]);
+  const referenceTitles: Record<ReferenceKey, string> = {
+    division: 'Division', district: 'District', upazila: 'Upazila', soil: 'Soil type', landType: 'Land type',
+  };
+  const selectReference = (value: string | null) => {
+    if (referencePicker === 'division') { setDivisionCode(value); setDistrictCode(null); setUpazilaCode(null); }
+    if (referencePicker === 'district') { setDistrictCode(value); setUpazilaCode(null); }
+    if (referencePicker === 'upazila') setUpazilaCode(value);
+    if (referencePicker === 'soil') setSoilCode(value);
+    if (referencePicker === 'landType') setLandType(value);
+    setReferencePicker(null);
+    setError('');
+  };
+  const openReference = (key: ReferenceKey) => {
+    if (!divisions || !vocabulary) { loadReference(); return; }
+    if (key === 'district' && !division) { setError('Choose a division first.'); return; }
+    if (key === 'upazila' && !district) { setError('Choose a district first.'); return; }
+    setReferencePicker(key);
+  };
+
   const updateValue = (key: FieldKey, value: string) => {
     setValues(current => ({ ...current, [key]: value }));
-    if (key === 'location') setCoordinates(null);
     setError('');
   };
 
@@ -79,22 +132,23 @@ export default function AddFarmland() {
       setError('This land area is larger than the maximum the system can save.');
       return;
     }
-    if (!values.location.trim() && !coordinates) {
-      setError('Choose a district or add your current location.');
+    if (!district) {
+      setError('Choose the division and district of this farmland.');
       return;
     }
-    const [district, division] = values.location.split(',').map(part => part.trim());
     setSaving(true);
     try {
       await createFarmland({
         name: name.trim(),
         land_area_sqm: parsedAcreage * SQUARE_METRES_PER_ACRE,
         land_area_display_unit: 'acre',
-        division: coordinates ? undefined : division,
-        district: coordinates ? undefined : district,
+        division: division?.name,
+        district: district.name,
+        upazila: upazila?.name,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
-        soil_type: values.soil || undefined,
+        soil_type: soil?.label_en,
+        land_type: land?.code,
         irrigation_available: values.irrigation ? values.irrigation !== 'Not available' : undefined,
         water_source: values.waterSource || undefined,
       });
@@ -125,6 +179,19 @@ export default function AddFarmland() {
     </View>
   );
 
+  const renderReferenceRow = (icon: FarmProfileIconName, label: string, key: ReferenceKey, value: string | undefined) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value ?? 'not chosen'}`}
+      onPress={() => openReference(key)}
+      style={styles.formRow}
+    >
+      <View style={styles.rowIcon}><FarmProfileIcon name={icon} size={20} color={GREEN} /></View>
+      <Text style={[styles.rowLabel, { width: labelWidth }]} numberOfLines={1}>{label}</Text>
+      <View style={styles.rowValue}><Text numberOfLines={1} style={[styles.valueText, !value && styles.placeholderText]}>{value ?? 'Choose'}</Text><FarmChromeIcon name="chevron" size={16} color={MUTED} /></View>
+    </Pressable>
+  );
+
   const renderSelectRow = (icon: FarmProfileIconName, label: string, key: FieldKey) => (
     <Pressable
       accessibilityRole="button"
@@ -153,13 +220,16 @@ export default function AddFarmland() {
           <View style={styles.groupCard}>
             <Text style={styles.groupTitle}>Land details</Text>
             {renderTextRow('leaf', 'Farmland name', name, value => { setName(value); setError(''); })}
-            {renderSelectRow('location', 'District / division', 'location')}
+            {renderReferenceRow('location', 'Division', 'division', division?.name)}
+            {renderReferenceRow('location', 'District', 'district', district?.name)}
+            {renderReferenceRow('location', 'Upazila', 'upazila', upazila?.name)}
             {renderTextRow('field', 'Land area', acreage, value => { setAcreage(value); setError(''); }, true)}
           </View>
 
           <View style={styles.groupCard}>
             <Text style={styles.groupTitle}>Farm profile</Text>
-            {renderSelectRow('soil', 'Soil type', 'soil')}
+            {renderReferenceRow('soil', 'Soil type', 'soil', soil?.label_en)}
+            {renderReferenceRow('field', 'Land type', 'landType', land?.label_en)}
             {renderSelectRow('drop', 'Irrigation', 'irrigation')}
             {renderSelectRow('water', 'Water source', 'waterSource')}
           </View>
@@ -168,6 +238,12 @@ export default function AddFarmland() {
             <View style={styles.adviceIcon}><FarmProfileIcon name="leaf" size={27} color={GREEN} /></View>
             <Text style={styles.adviceText}>This profile is saved to your account. Choose a crop later in Crop Advisor to start a season.</Text>
           </View>
+          <Text style={styles.helpText}>Land type and soil type are used to check published crop conditions. Leave them empty if you are not sure.</Text>
+          {referenceError ? (
+            <Pressable accessibilityRole="button" onPress={loadReference}>
+              <Text accessibilityRole="alert" style={styles.error}>{referenceError} Tap to retry.</Text>
+            </Pressable>
+          ) : null}
           {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         </ScrollView>
 
@@ -184,6 +260,15 @@ export default function AddFarmland() {
         {locationNotice ? <Text accessibilityLiveRegion="polite" style={styles.locationNotice}>{locationNotice}</Text> : null}
         <FarmBottomNavigation active="Home" />
 
+        <OptionPickerModal
+          visible={referencePicker !== null}
+          title={referencePicker ? referenceTitles[referencePicker] : ''}
+          options={referenceOptions}
+          selected={referencePicker === 'division' ? divisionCode : referencePicker === 'district' ? districtCode : referencePicker === 'upazila' ? upazilaCode : referencePicker === 'soil' ? soilCode : landType}
+          allowClear={referencePicker === 'upazila' || referencePicker === 'soil' || referencePicker === 'landType'}
+          onSelect={selectReference}
+          onClose={() => setReferencePicker(null)}
+        />
         <Modal visible={picker !== null} transparent animationType="fade" onRequestClose={() => setPicker(null)}>
           <Pressable style={styles.modalBackdrop} onPress={() => setPicker(null)}>
             <View style={styles.optionSheet}>
@@ -228,6 +313,8 @@ const styles = StyleSheet.create({
   adviceBanner: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, borderRadius: 13, overflow: 'hidden', backgroundColor: '#eef3e8' },
   adviceIcon: { width: 38, height: 38, flexShrink: 0, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dfead7' },
   adviceText: { flex: 1, color: INK, fontFamily: 'Georgia', fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  placeholderText: { color: '#82909a' },
+  helpText: { color: MUTED, fontSize: 11, lineHeight: 15, paddingHorizontal: 5 },
   error: { color: '#bb2e19', fontSize: 12, lineHeight: 16, paddingHorizontal: 5 },
   actionBar: { flexDirection: 'row', gap: 7, paddingHorizontal: 10, paddingTop: 7, paddingBottom: 6, backgroundColor: PAPER, borderTopWidth: 1, borderTopColor: '#efede5' },
   locationButton: { flex: 1, minHeight: 43, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 6, borderWidth: 1.4, borderColor: GREEN, borderRadius: 10, backgroundColor: PAPER },

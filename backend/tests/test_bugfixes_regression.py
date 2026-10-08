@@ -228,6 +228,8 @@ def test_onboarding_status_stamps_completed_at_on_first_full_pass(client_and_far
         json={
             "division": "Dhaka",
             "district": "Gazipur",
+            "upazila": "Kaliakair",
+            "land_type": "medium_high",
             "latitude": 24.0,
             "longitude": 90.4,
             "soil_type": "loam",

@@ -112,3 +112,27 @@ test('farmland mapping uses persisted M1, M3, and M6-compatible values only', ()
   assert.equal(farm.seasonPlan[1].status, 'current');
   assert.equal(farm.alerts.length, 0);
 });
+
+test('mapFarmlandData keeps canonical M1 location codes and land type', () => {
+  const farm = mapFarmlandData({
+    id: 'farm-1',
+    name: 'TEST ONLY field',
+    division: null,
+    district: 'Cumilla',
+    upazila: 'Adarsha Sadar',
+    village_or_locality: null,
+    land_area_sqm: 4046.8564224,
+    land_area_display_unit: 'acre',
+    soil_type: 'Loam',
+    land_type: 'high',
+    irrigation_available: true,
+    water_source: null,
+    district_code: '2019',
+    upazila_code: '201967',
+  }, null);
+  assert.equal(farm.landType, 'high');
+  assert.equal(farm.districtCode, '2019');
+  assert.equal(farm.upazilaCode, '201967');
+  assert.equal(farm.location, 'Adarsha Sadar, Cumilla');
+  assert.equal(farm.crop, 'No active crop');
+});

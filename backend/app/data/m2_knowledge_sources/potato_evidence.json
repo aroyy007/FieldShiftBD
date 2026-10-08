@@ -1,9 +1,15 @@
 {
-  "package_version": 1,
+  "package_version": 2,
   "research_date": "2026-10-06",
   "crop": "Potato",
   "purpose": "Source-verified evidence candidates for M2 review; not production knowledge and not an agronomic recommendation.",
-  "production_knowledge_records": 0,
+  "production_knowledge_records": {
+    "note": "Records are created by scripts.import_reference_data from the BARC Agri-Advisory Portal captures, not from this research package directly.",
+    "m2-barc-portal-bilingual-v1": 1,
+    "m2-barc-portal-variety-duration-v1": 68,
+    "m2-barc-czs-upazila-suitability-v1": 48,
+    "m2-barc-upazila-zoning-v1": 1
+  },
   "verified_evidence": [
     {
       "fact_id": "POTATO-001",
@@ -22,7 +28,8 @@
         "The handbook is dated 2013; continued validity has not been independently verified.",
         "Rabi season context is not a crop-specific sowing date or a locality-specific recommendation."
       ],
-      "recommended_m2_use": "After review, use only as broad season context. Do not derive planting or harvest dates from this fact."
+      "recommended_m2_use": "After review, use only as broad season context. Do not derive planting or harvest dates from this fact.",
+      "m2_outcome_2026_10_08": "Not imported. Season context is shown from the BARC crop-zoning data (Rabi) as regional context only."
     },
     {
       "fact_id": "POTATO-002",
@@ -41,7 +48,8 @@
         "The statement requires both land-type and soil-texture context; the Golden Farm example supplies only demo soil text and no verified land type.",
         "The handbook is dated 2013, and currentness/locality have not been independently verified."
       ],
-      "recommended_m2_use": "Candidate context only after review; do not infer that the Golden Farm field is suitable from the demo value 'loamy'."
+      "recommended_m2_use": "Candidate context only after review; do not infer that the Golden Farm field is suitable from the demo value 'loamy'.",
+      "m2_outcome_2026_10_08": "Superseded and narrowed. The BARC Agri-Advisory Portal republishes this English text (record updated 2024-01-28); its Bangla text names high land, medium-high land only where water drains early (within Kartik), and loam or clay loam. Accepted only where both agree and the profile can check it: high land + loam (claim potato-land-soil-v1)."
     },
     {
       "fact_id": "POTATO-003",
@@ -60,7 +68,8 @@
         "The source does not establish Comilla-specific climate suitability or define the temperature measurement period.",
         "The handbook is dated 2013; currentness has not been independently verified."
       ],
-      "recommended_m2_use": "After review, treat as general source context only; do not compare it to NASA/weather observations or infer farm suitability in this phase."
+      "recommended_m2_use": "After review, treat as general source context only; do not compare it to NASA/weather observations or infer farm suitability in this phase.",
+      "m2_outcome_2026_10_08": "Not imported. No corroborated, checkable condition."
     },
     {
       "fact_id": "POTATO-004",
@@ -79,7 +88,8 @@
         "The handbook does not give a Comilla-specific window or a variety-specific window at this location.",
         "The handbook is dated 2013; currentness has not been independently verified."
       ],
-      "recommended_m2_use": "Candidate only; require current locality and variety review before using for a season plan."
+      "recommended_m2_use": "Candidate only; require current locality and variety review before using for a season plan.",
+      "m2_outcome_2026_10_08": "Rejected. The portal's English (15-30 November optimum; October-December) and Bangla (region-specific November windows) sowing texts disagree."
     },
     {
       "fact_id": "POTATO-005",
@@ -99,7 +109,8 @@
         "It does not establish a schedule for Comilla or for an identified variety.",
         "The handbook is dated 2013; currentness has not been independently verified."
       ],
-      "recommended_m2_use": "Candidate only; never turn this into an automatic schedule without reviewing soil, variety, locality, and current source validity."
+      "recommended_m2_use": "Candidate only; never turn this into an automatic schedule without reviewing soil, variety, locality, and current source validity.",
+      "m2_outcome_2026_10_08": "Rejected. Handbook (8-10, 40-45, 60-65 DAS), portal English (20-25, 35-45, 60-65), and portal Bangla (20-25, 30-35, 60-65) disagree."
     },
     {
       "fact_id": "POTATO-006",
@@ -119,7 +130,8 @@
         "No observable maturity indicator is provided by this sentence.",
         "The handbook is dated 2013; currentness has not been independently verified."
       ],
-      "recommended_m2_use": "Candidate interval only after variety-specific review; do not issue as a fixed harvest date or maturity indicator."
+      "recommended_m2_use": "Candidate interval only after variety-specific review; do not issue as a fixed harvest date or maturity indicator.",
+      "m2_outcome_2026_10_08": "Rejected as a crop-wide interval. Portal English says 80-90 days after sowing; portal Bangla says 100-120 days after planting. Variety-specific published durations (for example BARI Alu-7: 90-95 days) are used instead."
     },
     {
       "fact_id": "POTATO-007",
@@ -139,7 +151,8 @@
         "The map's upazila coverage must not be interpreted as suitability of every field or a particular 2-acre farm.",
         "The online page does not provide a date/version for the displayed map data."
       ],
-      "recommended_m2_use": "Use only to interpret a verified locality-level map result; never infer a field-level suitability class from an upazila aggregate."
+      "recommended_m2_use": "Use only to interpret a verified locality-level map result; never infer a field-level suitability class from an upazila aggregate.",
+      "m2_outcome_2026_10_08": "Used to explain suitability classes in the regional-context records; never converted into a field-level class."
     }
   ],
   "rejected_or_insufficient_evidence": [
@@ -196,7 +209,9 @@
   "comilla_coverage": {
     "verified_comilla_potato_suitability_result": false,
     "enough_evidence_for_comilla_specific_recommendation": false,
-    "explanation": "The BARC methodology supports upazila-scale zoning in principle, but the Comilla district/upazila potato class and versioned underlying data were not verified. The 2013 handbook provides general Bangladesh-context candidates, not a Comilla-specific suitability result."
+    "explanation": "The BARC methodology supports upazila-scale zoning in principle, but the Comilla district/upazila potato class and versioned underlying data were not verified. The 2013 handbook provides general Bangladesh-context candidates, not a Comilla-specific suitability result.",
+    "update_2026_10_08": "BARC's current suitability API lists Cumilla district upazilas (Adarsha Sadar, Sadar Dakshin, Lalmai, and others). Upazila-level class distributions for all 16 Cumilla upazilas are imported as regional context. They describe area shares, not any individual field, and cannot create a recommendation."
   },
-  "not_production_ready": "Every item above is a research candidate. No record is approved, ingested, or eligible for a real recommendation without currentness and context review."
+  "not_production_ready": "Items in verified_evidence remain research candidates. Production rows come only from the policy-checked portal captures; see source_register.json and barc_portal_claims.json.",
+  "updated_on": "2026-10-08"
 }

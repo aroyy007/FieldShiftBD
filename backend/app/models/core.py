@@ -52,6 +52,11 @@ class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
             "previous_yield_amount IS NULL OR previous_yield_amount >= 0",
             name="ck_farmlands_yield_nonnegative",
         ),
+        CheckConstraint(
+            "land_type IS NULL OR land_type IN "
+            "('high', 'medium_high', 'medium_low', 'low', 'very_low')",
+            name="ck_farmlands_land_type",
+        ),
         Index("ix_farmlands_farmer_id", "farmer_id"),
     )
 
@@ -71,6 +76,7 @@ class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
     land_area_sqm: Mapped[Decimal] = mapped_column(Numeric(14, 3), nullable=False)
     land_area_display_unit: Mapped[str] = mapped_column(String(24), nullable=False)
     soil_type: Mapped[str | None] = mapped_column(String(120))
+    land_type: Mapped[str | None] = mapped_column(String(24))
     irrigation_available: Mapped[bool | None] = mapped_column(Boolean)
     water_source: Mapped[str | None] = mapped_column(String(120))
     farming_method: Mapped[str | None] = mapped_column(String(120))

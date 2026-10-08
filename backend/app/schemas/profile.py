@@ -5,6 +5,13 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 import re
 
+from app.services.m1_reference import (
+    ReferenceDataError,
+    canonical_land_type,
+    canonical_soil_label,
+    resolve_location,
+)
+
 # Allow common visual separators when farmers type their number, but always
 # normalize to digits-only after the leading +. Keeps the storage format
 # predictable for lookup while being forgiving about input.
@@ -71,6 +78,15 @@ class FarmerRead(BaseModel):
 # ── Farmland schemas ──────────────────────────────────────────────────────────
 AreaUnit = Literal["square_metre", "decimal", "acre", "hectare"]
 FarmingMethod = Literal["organic", "conventional", "mixed"]
+LandType = Literal["high", "medium_high", "medium_low", "low", "very_low"]
+
+
+def _land_type(value: object) -> str | None:
+    """Accept canonical codes, English labels, or Bangla labels for land type."""
+    try:
+        return canonical_land_type(value if value is None else str(value))
+    except ReferenceDataError as error:
+        raise ValueError(str(error)) from error
 # PostgreSQL NUMERIC(14, 3) can store values up to 99,999,999,999.999.
 MAX_LAND_AREA_SQM = Decimal("99999999999.999")
 MAX_BUDGET_AMOUNT = Decimal("999999999999.99")
@@ -96,6 +112,7 @@ class FarmlandCreate(BaseModel):
     longitude: Decimal | None = Field(default=None, ge=-180, le=180)
     # Farm characteristics — filled in during onboarding
     soil_type: str | None = Field(default=None, max_length=120)
+    land_type: LandType | None = None
     irrigation_available: bool | None = None
     water_source: str | None = Field(default=None, max_length=120)
     farming_method: FarmingMethod | None = None
@@ -113,6 +130,16 @@ class FarmlandCreate(BaseModel):
             raise ValueError("latitude and longitude must be provided together")
         return self
 
+    @field_validator("soil_type")
+    @classmethod
+    def normalize_soil_type(cls, v: str | None) -> str | None:
+        return canonical_soil_label(v)
+
+    @field_validator("land_type", mode="before")
+    @classmethod
+    def normalize_land_type(cls, v: object) -> str | None:
+        return _land_type(v)
+
 
 class FarmlandUpdate(BaseModel):
     """Every field is optional — PATCH updates only what you send.
@@ -129,6 +156,7 @@ class FarmlandUpdate(BaseModel):
     land_area_sqm: Decimal | None = Field(default=None, gt=0, le=MAX_LAND_AREA_SQM)
     land_area_display_unit: AreaUnit | None = None
     soil_type: str | None = Field(default=None, max_length=120)
+    land_type: LandType | None = None
     irrigation_available: bool | None = None
     water_source: str | None = Field(default=None, max_length=120)
     farming_method: FarmingMethod | None = None
@@ -137,6 +165,18 @@ class FarmlandUpdate(BaseModel):
     previous_crop: str | None = Field(default=None, max_length=160)
     previous_yield_amount: Decimal | None = Field(default=None, ge=0, le=MAX_YIELD_AMOUNT)
     previous_yield_unit: str | None = Field(default=None, max_length=32)
+
+    @field_validator("soil_type")
+    @classmethod
+    def normalize_soil_type(cls, v: str | None) -> str | None:
+        return canonical_soil_label(v)
+
+    @field_validator("land_type", mode="before")
+    @classmethod
+    def normalize_land_type(cls, v: object) -> str | None:
+        return _land_type(v)
+
+
 class FarmlandRead(BaseModel):
     """Full farmland response — everything the client needs to display the profile."""
     model_config = ConfigDict(from_attributes=True)
@@ -153,6 +193,7 @@ class FarmlandRead(BaseModel):
     land_area_sqm: Decimal
     land_area_display_unit: str
     soil_type: str | None
+    land_type: str | None = None
     irrigation_available: bool | None
     water_source: str | None
     farming_method: str | None
@@ -163,6 +204,21 @@ class FarmlandRead(BaseModel):
     previous_yield_unit: str | None
     created_at: datetime
     updated_at: datetime
+    # Canonical BBS geocodes resolved from the stored names (read-only).
+    division_code: str | None = None
+    district_code: str | None = None
+    upazila_code: str | None = None
+
+    @model_validator(mode="after")
+    def resolve_location_codes(self) -> Self:
+        try:
+            resolved = resolve_location(self.division, self.district, self.upazila, self.country_code)
+        except ReferenceDataError:
+            return self
+        self.division_code = resolved.division_code
+        self.district_code = resolved.district_code
+        self.upazila_code = resolved.upazila_code
+        return self
 # ── Farmer profile schemas ────────────────────────────────────────────────────
 class FarmerProfileUpdate(BaseModel):
     """Update farming experience, equipment, livestock, and language preference."""

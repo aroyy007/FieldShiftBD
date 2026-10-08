@@ -16,6 +16,11 @@ from urllib.parse import urlparse
 from uuid import UUID, uuid4
 
 from app.models.core import AgriculturalKnowledge
+from app.services.m2_portal_policy import (
+    PORTAL_POLICY_IDS,
+    is_valid_portal_acceptance,
+    portal_acceptance_method,
+)
 
 
 BARC_POLICY_ID = "m2-barc-upazila-zoning-v1"
@@ -339,6 +344,8 @@ def is_valid_automated_acceptance(
 ) -> bool:
     """Validate the auditable source-policy markers before allowing reviewerless rows."""
     policy = content.get("acceptance_policy")
+    if isinstance(policy, Mapping) and policy.get("id") in PORTAL_POLICY_IDS:
+        return is_valid_portal_acceptance(row, content, crop_name=crop_name)
     evidence = content.get("evidence")
     context = content.get("context")
     snapshot = evidence.get("source_snapshot") if isinstance(evidence, Mapping) else None
@@ -437,7 +444,7 @@ def acceptance_method_for(
     row: Any, content: Mapping[str, Any], *, crop_name: str | None = None
 ) -> str | None:
     if is_valid_automated_acceptance(row, content, crop_name=crop_name):
-        return f"automated_source_policy:{BARC_POLICY_ID}:v1"
+        return portal_acceptance_method(content) or f"automated_source_policy:{BARC_POLICY_ID}:v1"
     if row.review_status == "approved" and row.reviewed_by is not None:
         return "human_review"
     return None

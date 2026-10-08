@@ -7,7 +7,10 @@ from typing import Any
 from uuid import UUID
 
 import httpx
-from sqlalchemy import func, select
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -17,6 +20,8 @@ from app.models.profile import FarmerProfile
 from app.models.season import GrowthStage, Season, SeasonPlan
 from app.models.state import Problem, Task
 from app.models.weather import WeatherAlert
+from app.services.m1_reference import ReferenceDataError, resolve_location
+from app.services.m2_source_policy import is_valid_automated_acceptance
 from app.schemas.chat import (
     ChatIntent,
     ChatMessageRead,
@@ -123,14 +128,40 @@ def aggregate_farmland_context(
     # Agricultural Knowledge
     knowledge_snippets: list[str] = []
     if active_crop:
-        records = db.scalars(
+        # Only currently effective rows, and reviewerless rows only when their
+        # automated source policy still validates (same gate M2 applies).
+        today = datetime.now(ZoneInfo("Asia/Dhaka")).date()
+        candidates = db.scalars(
             select(AgriculturalKnowledge)
             .where(
                 AgriculturalKnowledge.crop_id == active_crop.id,
                 AgriculturalKnowledge.review_status == "approved",
+                or_(AgriculturalKnowledge.effective_from.is_(None), AgriculturalKnowledge.effective_from <= today),
+                or_(AgriculturalKnowledge.effective_to.is_(None), AgriculturalKnowledge.effective_to >= today),
+                or_(
+                    AgriculturalKnowledge.crop_variety_id.is_(None),
+                    AgriculturalKnowledge.crop_variety_id == active_season.crop_variety_id,
+                ),
             )
-            .limit(5)
+            .order_by(AgriculturalKnowledge.crop_variety_id.is_(None), AgriculturalKnowledge.category)
         ).all()
+        try:
+            farm_regions = resolve_location(
+                farmland.division, farmland.district, farmland.upazila, farmland.country_code
+            ).region_codes()
+        except ReferenceDataError:
+            farm_regions = set()
+        farm_regions |= {
+            value.casefold() for value in (farmland.division, farmland.district, farmland.upazila) if value
+        }
+        farm_regions = {value.casefold() for value in farm_regions}
+        records = [
+            r for r in candidates
+            if (r.region_code is None or r.region_code.casefold() in farm_regions)
+            and (r.reviewed_by is not None or is_valid_automated_acceptance(
+                r, r.content if isinstance(r.content, dict) else {}, crop_name=active_crop.name
+            ))
+        ][:5]
         for r in records:
             content_dict = r.content if isinstance(r.content, dict) else {}
             factor = content_dict.get("factor") or r.category

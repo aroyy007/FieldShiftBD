@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Href,
   useRouter,
@@ -23,6 +23,8 @@ import { DashboardIcon, DashboardIconName } from '../../components/dashboard-ico
 import { FarmProfileIcon, FarmProfileIconName } from '../../components/farm-profile-icons';
 import { useAppContext } from '../../context/AppProvider';
 import { apiRequest } from '../../services/api-client';
+import OptionPickerModal, { PickerOption } from '../../components/OptionPickerModal';
+import { DivisionRef, ProfileVocabulary, divisionForDistrict, landTypeLabel, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
 
 const PAPER = '#fffdf7';
 const INK = '#083a33';
@@ -35,6 +37,7 @@ type FarmProfileValues = {
   location: string;
   size: string;
   soil: string;
+  landType: string;
   irrigation: string;
   water: string;
   experience: string;
@@ -54,16 +57,23 @@ const INITIAL_VALUES: FarmProfileValues = {
   location: 'Not set',
   size: 'Not set',
   soil: 'Not set',
+  landType: 'Not set',
   irrigation: 'Not set',
   water: 'Not set',
   experience: 'Not set',
   budget: 'Not set',
 };
 
+type ReferenceKey = 'division' | 'district' | 'upazila' | 'soil' | 'landType';
+type ReferenceDraft = Record<ReferenceKey, string | null>;
+const EMPTY_REFERENCE_DRAFT: ReferenceDraft = { division: null, district: null, upazila: null, soil: null, landType: null };
+const REFERENCE_TITLES: Record<ReferenceKey, string> = {
+  division: 'Division', district: 'District', upazila: 'Upazila', soil: 'Soil type', landType: 'Land type',
+};
+
+// Location, soil, and land type are chosen from the M1 reference lists below.
 const PROFILE_FIELDS: { key: keyof FarmProfileValues; label: string }[] = [
-  { key: 'location', label: 'Location' },
   { key: 'size', label: 'Farm size' },
-  { key: 'soil', label: 'Soil type' },
   { key: 'irrigation', label: 'Irrigation' },
   { key: 'water', label: 'Water source' },
   { key: 'experience', label: 'Experience' },
@@ -82,10 +92,15 @@ export default function FarmProfileSetup() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [onboardingStatus, setOnboardingStatus] = useState<{ farmId: string; percent: number } | null>(null);
+  const [divisions, setDivisions] = useState<DivisionRef[] | null>(null);
+  const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
+  const [referenceDraft, setReferenceDraft] = useState<ReferenceDraft>(EMPTY_REFERENCE_DRAFT);
+  const [referencePicker, setReferencePicker] = useState<ReferenceKey | null>(null);
   const profileValues: FarmProfileValues = farm ? {
     location: farm.location ?? 'Location not set',
     size: `${farm.acreage.toLocaleString(undefined, { maximumFractionDigits: 2 })} acres`,
     soil: farm.soilType ?? 'Not set',
+    landType: landTypeLabel(vocabulary, farm.landType),
     irrigation: farm.irrigationAvailable == null ? 'Not set' : farm.irrigationAvailable ? 'Available' : 'Not available',
     water: farm.waterSource ?? 'Not set',
     experience: profile?.farming_experience_years == null ? 'Not set' : `${profile.farming_experience_years} years`,
@@ -102,6 +117,8 @@ export default function FarmProfileSetup() {
     if (!user) router.replace('/auth/login' as Href);
   }, [router, user]);
 
+  // Re-read after saved answers change the farm, so the percentage stays current.
+  const farmVersion = farm ? `${farm.location}|${farm.soilType}|${farm.landType}|${farm.irrigationAvailable}|${farm.waterSource}|${farm.budgetAmount}|${profile?.farming_experience_years}` : '';
   useEffect(() => {
     if (!farmlandId) return;
     let active = true;
@@ -109,7 +126,7 @@ export default function FarmProfileSetup() {
       .then(status => { if (active) setOnboardingStatus({ farmId: farmlandId, percent: status.percent_complete }); })
       .catch(() => { if (active) setOnboardingStatus({ farmId: farmlandId, percent: 0 }); });
     return () => { active = false; };
-  }, [farmlandId]);
+  }, [farmlandId, farmVersion]);
 
   const openFarmSection = (section: string) => {
     if (!farm) {
@@ -134,8 +151,49 @@ export default function FarmProfileSetup() {
     else router.push('/farmlands/add' as Href);
   };
 
+  useEffect(() => {
+    Promise.all([loadLocations(), loadProfileVocabulary()])
+      .then(([locationTree, profileVocabulary]) => { setDivisions(locationTree); setVocabulary(profileVocabulary); })
+      .catch(() => undefined);
+  }, []);
+
+  const draftDivision = divisions?.find(item => item.code === referenceDraft.division);
+  const draftDistrict = draftDivision?.districts.find(item => item.code === referenceDraft.district);
+  const draftUpazila = draftDistrict?.upazilas.find(item => item.code === referenceDraft.upazila);
+  const draftSoil = vocabulary?.soil_textures.find(item => item.code === referenceDraft.soil);
+  const draftLand = vocabulary?.land_types.find(item => item.code === referenceDraft.landType);
+  const referenceOptions: PickerOption[] = useMemo(() => {
+    if (referencePicker === 'division') return (divisions ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'district') return (draftDivision?.districts ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'upazila') return (draftDistrict?.upazilas ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
+    if (referencePicker === 'soil') return (vocabulary?.soil_textures ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
+    if (referencePicker === 'landType') return (vocabulary?.land_types ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
+    return [];
+  }, [referencePicker, divisions, draftDivision, draftDistrict, vocabulary]);
+
+  const selectReference = (value: string | null) => {
+    setReferenceDraft(current => {
+      if (referencePicker === 'division') return { ...current, division: value, district: null, upazila: null };
+      if (referencePicker === 'district') return { ...current, district: value, upazila: null };
+      return referencePicker ? { ...current, [referencePicker]: value } : current;
+    });
+    setReferencePicker(null);
+  };
+
   const openEditAnswers = () => {
     setProfileDraft(profileValues);
+    const districtRef = divisions?.flatMap(item => item.districts).find(item => item.code === farm?.districtCode);
+    const soilRef = vocabulary?.soil_textures.find(item =>
+      item.label_en.toLowerCase() === farm?.soilType?.toLowerCase());
+    setReferenceDraft({
+      division: divisionForDistrict(divisions ?? [], districtRef)?.code
+        ?? divisions?.find(item => item.name === farm?.division)?.code ?? null,
+      district: districtRef?.code ?? null,
+      upazila: farm?.upazilaCode ?? null,
+      soil: soilRef?.code ?? null,
+      landType: farm?.landType ?? null,
+    });
+    setSaveError('');
     setProfileModalOpen(true);
   };
 
@@ -176,13 +234,19 @@ export default function FarmProfileSetup() {
       setSaveError('Enter a valid farm budget in BDT.');
       return;
     }
-    const locationParts = profileDraft.location.split(',').map(part => part.trim()).filter(Boolean);
+    // A saved soil description that is not in the list (for example from chat)
+    // is kept unless the farmer picks a listed soil type.
+    const savedSoilIsUnlisted = Boolean(farm.soilType)
+      && !vocabulary?.soil_textures.some(item => item.label_en === farm.soilType);
+    const soilToSave = draftSoil?.label_en ?? (savedSoilIsUnlisted ? farm.soilType : null);
     const farmlandPatch: Record<string, unknown> = {
       land_area_sqm: parsedAcres * 4046.8564224,
       land_area_display_unit: 'acre',
-      district: locationParts[0] || null,
-      division: locationParts[1] || null,
-      soil_type: profileDraft.soil === 'Not set' ? null : profileDraft.soil.trim(),
+      division: draftDivision?.name ?? null,
+      district: draftDistrict?.name ?? null,
+      upazila: draftUpazila?.name ?? null,
+      soil_type: soilToSave,
+      land_type: draftLand?.code ?? null,
       irrigation_available: profileDraft.irrigation === 'Not set' ? null : profileDraft.irrigation !== 'Not available',
       water_source: profileDraft.water === 'Not set' ? null : profileDraft.water.trim(),
       budget_amount: parsedBudget,
@@ -308,6 +372,7 @@ export default function FarmProfileSetup() {
               <InfoCard icon="person" label="Experience" value={profileValues.experience} />
             </View>
             <View style={styles.summaryRow}>
+              <InfoCard icon="field" label="Land type" value={profileValues.landType} />
               <InfoCard icon="coins" label="Budget" value={profileValues.budget} wide />
             </View>
           </View>
@@ -388,6 +453,26 @@ export default function FarmProfileSetup() {
             <Text style={styles.modalTitle}>Edit previous answers</Text>
             <Text style={styles.modalSubtitle}>Update the details we use to personalize your advice.</Text>
             <ScrollView style={styles.editFields} keyboardShouldPersistTaps="handled">
+              {([
+                ['division', 'Division', draftDivision?.name],
+                ['district', 'District', draftDistrict?.name],
+                ['upazila', 'Upazila', draftUpazila?.name],
+                ['soil', 'Soil type', draftSoil?.label_en],
+                ['landType', 'Land type', draftLand?.label_en],
+              ] as const).map(([key, label, value]) => (
+                <View key={key} style={styles.editField}>
+                  <Text style={styles.editFieldLabel}>{label}</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${label}: ${value ?? 'not set'}`}
+                    disabled={!divisions || !vocabulary || (key === 'district' && !draftDivision) || (key === 'upazila' && !draftDistrict)}
+                    onPress={() => setReferencePicker(key)}
+                    style={styles.editFieldInput}
+                  >
+                    <Text style={styles.pickerValue}>{value ?? (divisions && vocabulary ? 'Choose' : 'Loading…')}</Text>
+                  </Pressable>
+                </View>
+              ))}
               {PROFILE_FIELDS.map((field) => (
                 <View key={field.key} style={styles.editField}>
                   <Text style={styles.editFieldLabel}>{field.label}</Text>
@@ -411,6 +496,16 @@ export default function FarmProfileSetup() {
               </Pressable>
             </View>
           </View>
+          {/* Rendered inside the edit modal so it stacks above it on web. */}
+          <OptionPickerModal
+            visible={referencePicker !== null}
+            title={referencePicker ? REFERENCE_TITLES[referencePicker] : ''}
+            options={referenceOptions}
+            selected={referencePicker ? referenceDraft[referencePicker] : null}
+            allowClear={referencePicker !== 'division'}
+            onSelect={selectReference}
+            onClose={() => setReferencePicker(null)}
+          />
         </View>
       </Modal>
 
@@ -555,6 +650,7 @@ const styles = StyleSheet.create({
   editFields: { flexGrow: 0 },
   editField: { marginBottom: 9 },
   editFieldLabel: { color: INK, fontFamily: SANS, fontSize: 13, fontWeight: '600', marginBottom: 4 },
+  pickerValue: { color: INK, fontFamily: SANS, fontSize: 14, lineHeight: 40 },
   editFieldInput: { minHeight: 42, paddingHorizontal: 11, borderRadius: 11, borderWidth: 1, borderColor: '#dfe5d8', color: INK, backgroundColor: '#fffefa', fontFamily: SANS, fontSize: 14 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 9, marginTop: 9 },
   modalCancel: { minHeight: 42, minWidth: 84, alignItems: 'center', justifyContent: 'center', borderRadius: 22, borderWidth: 1, borderColor: '#cbd4c8' },

@@ -33,6 +33,7 @@ from app.core.database import get_db
 from app.core.security import create_access_token
 from app.models.core import Farmland, Farmer
 from app.models.profile import FarmerProfile
+from app.services.m1_reference import ReferenceDataError, resolve_location
 from app.schemas.profile import (
     FarmlandCreate,
     FarmlandRead,
@@ -77,6 +78,11 @@ def _farmland_onboarding_fields(farmland: Farmland) -> list[tuple[str, str, bool
             bool(farmland.district),
         ),
         (
+            "upazila",
+            "Which upazila is your farm in?",
+            bool(farmland.upazila),
+        ),
+        (
             "latitude",
             "Can we use your GPS location to get accurate weather for your farm?",
             farmland.latitude is not None,
@@ -85,6 +91,11 @@ def _farmland_onboarding_fields(farmland: Farmland) -> list[tuple[str, str, bool
             "soil_type",
             "What type of soil does your farmland have? (e.g. clay, loam, sandy)",
             bool(farmland.soil_type),
+        ),
+        (
+            "land_type",
+            "Is your land high, medium high, medium low, low, or very low land?",
+            bool(farmland.land_type),
         ),
         (
             "irrigation_available",
@@ -179,6 +190,31 @@ def _compute_onboarding_status(
         next_question_label=next_field.label if next_field else None,
         fields=fields,
     )
+
+
+def _canonical_location(values: dict, current: Farmland | None = None) -> dict:
+    """Replace typed division/district/upazila names with canonical BBS names.
+
+    Unknown names are stored as typed. A division/district conflict is a 422.
+    Only location fields present in ``values`` are written; a missing division
+    is not filled in (M2 derives its code from the district when reading).
+    """
+    location_fields = ("division", "district", "upazila")
+    if not any(field in values for field in location_fields):
+        return values
+    merged = {
+        field: values.get(field, getattr(current, field, None) if current else None)
+        for field in location_fields
+    }
+    try:
+        resolved = resolve_location(merged["division"], merged["district"], merged["upazila"])
+    except ReferenceDataError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from error
+    normalized = dict(values)
+    for field in location_fields:
+        if field in values:
+            normalized[field] = getattr(resolved, field)
+    return normalized
 
 
 def _get_owned_farmland(db: Session, farmland_id: UUID, farmer_id: UUID) -> Farmland:
@@ -372,7 +408,7 @@ def create_farmland(
     """
     farmland = Farmland(
         farmer_id=farmer_id,
-        **payload.model_dump(),
+        **_canonical_location(payload.model_dump()),
     )
     db.add(farmland)
     db.commit()
@@ -423,7 +459,7 @@ def update_farmland(
 
     # exclude_unset=True means only fields explicitly sent in the request are updated.
     # Fields omitted from the request body are left unchanged in the DB.
-    update_data = payload.model_dump(exclude_unset=True)
+    update_data = _canonical_location(payload.model_dump(exclude_unset=True), farmland)
     latitude = update_data.get("latitude", farmland.latitude)
     longitude = update_data.get("longitude", farmland.longitude)
     if (latitude is None) != (longitude is None):
