@@ -82,7 +82,7 @@ def test_register_returns_409_for_duplicate_phone(client_and_farm):
     # Test farmer already exists with +8801700000000 from the fixture
     res = client.post(
         "/auth/register",
-        json={"name": "Dup", "phone_e164": "+8801700000000"},
+        json={"name": "Dup", "phone_e164": "+8801700000000", "password": "correct horse battery"},
     )
     assert res.status_code == 409
 
@@ -94,7 +94,7 @@ def test_register_creates_farmer_with_normalized_phone(client_and_farm):
     unique_phone = "+8801712345000"
     res = client.post(
         "/auth/register",
-        json={"name": "Fresh Farmer", "phone_e164": "+880 1712-345 000"},
+        json={"name": "Fresh Farmer", "phone_e164": "+880 1712-345 000", "password": "correct horse battery"},
     )
     assert res.status_code == 201, res.text
     body = res.json()
@@ -106,16 +106,16 @@ def test_register_normalizes_phone_with_spaces_and_dashes():
     """Bug 11 — phone validator now strips visual separators and accepts common formats."""
     from app.schemas.profile import FarmerRegisterRequest
 
-    req = FarmerRegisterRequest(name="x", phone_e164="+880 1712-345 678")
+    req = FarmerRegisterRequest(name="x", phone_e164="+880 1712-345 678", password="correct horse battery")
     assert req.phone_e164 == "+8801712345678"
 
-    req = FarmerRegisterRequest(name="x", phone_e164="  +8801712345678  ")
+    req = FarmerRegisterRequest(name="x", phone_e164="  +8801712345678  ", password="correct horse battery")
     assert req.phone_e164 == "+8801712345678"
 
     # Too short still rejected
     import pydantic
     with pytest.raises(pydantic.ValidationError):
-        FarmerRegisterRequest(name="x", phone_e164="+880")
+        FarmerRegisterRequest(name="x", phone_e164="+880", password="correct horse battery")
 
 
 # ── Bug 4: select_crop refuses to pile up planned seasons ────────────────────
@@ -265,15 +265,15 @@ def test_phone_validator_accepts_international_lengths():
     from app.schemas.profile import FarmerRegisterRequest
 
     # Standard E.164
-    req = FarmerRegisterRequest(name="x", phone_e164="+8801712345678")
+    req = FarmerRegisterRequest(name="x", phone_e164="+8801712345678", password="correct horse battery")
     assert req.phone_e164 == "+8801712345678"
 
     # US 11-digit
-    req = FarmerRegisterRequest(name="x", phone_e164="+14155552671")
+    req = FarmerRegisterRequest(name="x", phone_e164="+14155552671", password="correct horse battery")
     assert req.phone_e164 == "+14155552671"
 
     # With parentheses around area code
-    req = FarmerRegisterRequest(name="x", phone_e164="+1(415)555-2671")
+    req = FarmerRegisterRequest(name="x", phone_e164="+1(415)555-2671", password="correct horse battery")
     assert req.phone_e164 == "+14155552671"
 
 
@@ -283,11 +283,11 @@ def test_phone_validator_rejects_bad_inputs():
 
     # No plus prefix
     with pytest.raises(pydantic.ValidationError):
-        FarmerRegisterRequest(name="x", phone_e164="8801712345678")
+        FarmerRegisterRequest(name="x", phone_e164="8801712345678", password="correct horse battery")
 
     # Non-digit
     with pytest.raises(pydantic.ValidationError):
-        FarmerRegisterRequest(name="x", phone_e164="+88abc")
+        FarmerRegisterRequest(name="x", phone_e164="+88abc", password="correct horse battery")
 
 
 # ── Bug 12: chat_engine rolls back on failure so next request is clean ───────

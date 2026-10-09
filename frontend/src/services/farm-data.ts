@@ -7,12 +7,15 @@ export type FarmlandProfileDto = {
   district: string | null;
   upazila: string | null;
   village_or_locality: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   land_area_sqm: number | string;
   land_area_display_unit: string;
   soil_type: string | null;
   land_type?: string | null;
   irrigation_available: boolean | null;
   water_source: string | null;
+  equipment: string[];
   budget_amount?: number | string | null;
   budget_currency?: string | null;
   division_code?: string | null;
@@ -87,6 +90,9 @@ export type FarmlandCreateInput = {
   land_type?: string | null;
   irrigation_available?: boolean | null;
   water_source?: string | null;
+  equipment?: string[];
+  budget_amount?: number | null;
+  budget_currency?: string;
 };
 
 export function normalizeBangladeshPhone(input: string): string {
@@ -197,7 +203,11 @@ export function mapFarmlandData(
       recentIssues: [],
     },
     location: locationLabel(profile) || 'Location not set',
+    villageOrLocality: profile.village_or_locality,
+    latitude: profile.latitude == null ? null : numberOrZero(profile.latitude),
+    longitude: profile.longitude == null ? null : numberOrZero(profile.longitude),
     division: profile.division,
+    divisionCode: profile.division_code ?? null,
     district: profile.district,
     upazila: profile.upazila,
     districtCode: profile.district_code ?? null,
@@ -207,6 +217,7 @@ export function mapFarmlandData(
     landType: profile.land_type ?? null,
     irrigationAvailable: profile.irrigation_available,
     waterSource: profile.water_source,
+    equipment: profile.equipment ?? [],
     budgetAmount: profile.budget_amount == null ? null : numberOrZero(profile.budget_amount),
     budgetCurrency: profile.budget_currency ?? 'BDT',
     activeSeasonId: state?.active_season?.id ?? null,

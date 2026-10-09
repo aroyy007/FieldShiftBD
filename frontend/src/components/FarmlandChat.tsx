@@ -287,6 +287,16 @@ export function FarmlandChat() {
               accessibilityRole="button"
               onPress={() => {
                 setProfileOpen(false);
+                router.push(`/farmlands/${farmId}/resources` as Href);
+              }}
+              style={styles.profileAction}
+            >
+              <Text style={styles.profileActionText}>Farm profile & resources</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setProfileOpen(false);
                 router.push('/farmlands/profile-setup' as Href);
               }}
               style={styles.profileAction}

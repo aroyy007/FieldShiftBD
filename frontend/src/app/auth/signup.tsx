@@ -35,6 +35,8 @@ const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 's
 export default function Signup() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,6 +52,14 @@ export default function Signup() {
       setError('Enter your name and a valid Bangladesh phone number.');
       return;
     }
+    if (password.length < 12 || password.length > 128) {
+      setError('Password must be between 12 and 128 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     if (!agreed) {
       setError('Please agree to the Terms of Service and Privacy Policy.');
       return;
@@ -57,7 +67,7 @@ export default function Signup() {
 
     setIsSubmitting(true);
     try {
-      await register(normalizedName, normalizedPhone);
+      await register(normalizedName, normalizedPhone, password);
       setError('');
       router.replace('/farmlands' as Href);
     } catch (requestError) {
@@ -159,14 +169,46 @@ export default function Signup() {
               </View>
             </View>
           </View>
-
-        </View>
-
-        <View style={styles.securityNote}>
-          <ShieldLeafIcon size={43} />
-          <Text style={styles.securityText}>
-            The current account API registers with your name and phone number. Password and OTP verification are not configured yet.
-          </Text>
+          <View style={styles.fieldCard}>
+            <View style={[styles.fieldIcon, width < 340 && styles.compactFieldIcon]}><ShieldLeafIcon size={24} /></View>
+            <View style={styles.fieldContent}>
+              <Text style={styles.fieldLabel}>Password</Text>
+              <View style={styles.inputShell}>
+                <TextInput
+                  accessibilityLabel="Password"
+                  autoCapitalize="none"
+                  autoComplete="new-password"
+                  autoCorrect={false}
+                  onChangeText={(value) => { setPassword(value); setError(''); }}
+                  placeholder="At least 12 characters"
+                  placeholderTextColor="#87919c"
+                  secureTextEntry
+                  style={[styles.input, width < 340 && styles.compactInput]}
+                  value={password}
+                />
+              </View>
+            </View>
+          </View>
+          <View style={styles.fieldCard}>
+            <View style={[styles.fieldIcon, width < 340 && styles.compactFieldIcon]}><CheckIcon size={23} /></View>
+            <View style={styles.fieldContent}>
+              <Text style={styles.fieldLabel}>Confirm password</Text>
+              <View style={styles.inputShell}>
+                <TextInput
+                  accessibilityLabel="Confirm password"
+                  autoCapitalize="none"
+                  autoComplete="new-password"
+                  autoCorrect={false}
+                  onChangeText={(value) => { setConfirmPassword(value); setError(''); }}
+                  placeholder="Re-enter your password"
+                  placeholderTextColor="#87919c"
+                  secureTextEntry
+                  style={[styles.input, width < 340 && styles.compactInput]}
+                  value={confirmPassword}
+                />
+              </View>
+            </View>
+          </View>
         </View>
 
         <Pressable
@@ -226,6 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: PAPER,
   },
   scrollContent: {
+    width: '100%',
     flexGrow: 1,
     alignItems: 'center',
   },
@@ -422,25 +465,6 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  securityNote: {
-    minHeight: 64,
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderRadius: 19,
-    backgroundColor: '#eef4e6',
-  },
-  securityText: {
-    flex: 1,
-    color: INK,
-    fontFamily: SANS_FONT,
-    fontSize: 13,
-    lineHeight: 17,
-    letterSpacing: -0.08,
   },
   termsRow: {
     minHeight: 39,

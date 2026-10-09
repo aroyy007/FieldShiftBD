@@ -20,7 +20,11 @@ from app.models.profile import FarmerProfile
 from app.models.season import GrowthStage, Season, SeasonPlan
 from app.models.state import Problem, Task
 from app.models.weather import WeatherAlert
-from app.services.m1_reference import ReferenceDataError, resolve_location
+from app.services.m1_reference import (
+    ReferenceDataError,
+    land_type as resolve_land_type,
+    resolve_location,
+)
 from app.services.m2_source_policy import is_valid_automated_acceptance
 from app.schemas.chat import (
     ChatIntent,
@@ -234,6 +238,27 @@ def classify_intent(message_text: str) -> ChatIntent:
     if any(
         w in text
         for w in [
+            "soil",
+            "land type",
+            "irrigation",
+            "water source",
+            "equipment",
+            "farm budget",
+            "budget",
+            "farm resource",
+            "resources",
+            "মাটি",
+            "জমির ধরন",
+            "সেচ",
+            "পানির উৎস",
+            "সরঞ্জাম",
+            "বাজেট",
+        ]
+    ):
+        return "resource_inquiry"
+    if any(
+        w in text
+        for w in [
             "task",
             "todo",
             "schedule",
@@ -287,14 +312,17 @@ def build_system_prompt(ctx: AggregatedFarmContext) -> str:
 
     tasks_str = (
         "; ".join(
-            f"{t.title} (due {t.due_at.strftime('%Y-%m-%d') if t.due_at else 'unspecified'})"
+        f"{t.title} ({t.priority}, due {t.due_at.strftime('%Y-%m-%d') if t.due_at else 'unspecified'})"
             for t in ctx.pending_tasks
         )
         or "None pending"
     )
 
     problems_str = (
-        "; ".join(f"{p.category}: {p.description}" for p in ctx.open_problems)
+        "; ".join(
+            f"{p.category} ({p.severity}, {p.status}): {p.description}"
+            for p in ctx.open_problems
+        )
         or "None"
     )
 
@@ -313,14 +341,24 @@ You speak clearly, respectfully, and practically in the farmer's language (Benga
 
 FARM PROFILE & OPERATIONAL CONTEXT:
 - Farmer: {ctx.farmer.name if ctx.farmer else 'Farmer'}
+- Farming Experience: {ctx.profile.farming_experience_years if ctx.profile and ctx.profile.farming_experience_years is not None else 'Not specified'} years
+- Livestock: {', '.join(ctx.profile.livestock or []) if ctx.profile and ctx.profile.livestock else 'Not specified'}
 - Farmland: {ctx.farmland.name} ({location})
+- Village/locality: {ctx.farmland.village_or_locality or 'Not specified'}
 - Land Area: {ctx.farmland.land_area_sqm} sqm ({ctx.farmland.land_area_display_unit})
 - Soil Type: {ctx.farmland.soil_type or 'Not specified'}
-- Irrigation: {'Available' if ctx.farmland.irrigation_available else 'Not available'} (Source: {ctx.farmland.water_source or 'Unspecified'})
+- Land Type: {ctx.farmland.land_type or 'Not specified'}
+- Irrigation: {'Available' if ctx.farmland.irrigation_available is True else 'Not available' if ctx.farmland.irrigation_available is False else 'Not specified'} (Source: {ctx.farmland.water_source or 'Unspecified'})
+- Available Equipment: {', '.join(ctx.farmland.equipment or []) or 'Not specified'}
+- Farm Budget: {ctx.farmland.budget_amount} {ctx.farmland.budget_currency if ctx.farmland.budget_amount is not None else ''}
+- Previous Crop: {ctx.farmland.previous_crop or 'Not specified'}
+- Previous Yield: {ctx.farmland.previous_yield_amount if ctx.farmland.previous_yield_amount is not None else 'Not specified'} {ctx.farmland.previous_yield_unit or ''}
 - Farming Method: {ctx.farmland.farming_method or 'Conventional/Mixed'}
 - Active Crop: {crop_name} (Variety: {ctx.active_season.variety_name if ctx.active_season else 'N/A'})
+- Season Status: {ctx.active_season.status if ctx.active_season else 'No active season'}
+- Season Dates: {ctx.active_season.planting_date if ctx.active_season else 'No active season'} to {ctx.active_season.expected_harvest_date if ctx.active_season else 'N/A'}
 - Current Growth Stage: {stage_name}
-- Pending Tasks: {tasks_str}
+- Pending Tasks (with due dates): {tasks_str}
 - Open Farm Problems: {problems_str}
 - Active Weather Alerts: {alerts_str}
 
@@ -401,6 +439,35 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
         return (
             f"For issues with {crop_context}, please upload a photo in the Crop Health & Disease tab. "
             "Our AI will analyze the visible symptoms and record the diagnosis directly in your farm problems list."
+        )
+    elif intent == "resource_inquiry":
+        farmland = ctx.farmland
+        irrigation = (
+            "Available"
+            if farmland.irrigation_available is True
+            else "Not available"
+            if farmland.irrigation_available is False
+            else "Not specified"
+        )
+        land_type_record = resolve_land_type(farmland.land_type)
+        land_type_label = (
+            land_type_record["label_en"]
+            if land_type_record
+            else farmland.land_type or "not specified"
+        )
+        if farmland.budget_amount is None:
+            budget = "Not specified"
+        else:
+            budget_amount = format(farmland.budget_amount, "f")
+            if "." in budget_amount:
+                budget_amount = budget_amount.rstrip("0").rstrip(".")
+            budget = f"{budget_amount} {farmland.budget_currency or 'BDT'}"
+        equipment = ", ".join(farmland.equipment or []) or "Not specified"
+        return (
+            f"Saved resources for {farmland.name}: soil type {farmland.soil_type or 'not specified'}; "
+            f"land type {land_type_label}; irrigation {irrigation}; "
+            f"water source {farmland.water_source or 'not specified'}; budget {budget}; "
+            f"equipment {equipment}."
         )
     elif intent == "weather_inquiry":
         if ctx.recent_weather_alerts:
@@ -519,6 +586,7 @@ def handle_farmer_message(
             if existing_farmer_message is not None and existing_assistant_message is not None:
                 saved_intent = (existing_farmer_message.metadata_json or {}).get("intent")
                 if saved_intent in {
+                    "resource_inquiry",
                     "task_inquiry",
                     "weather_inquiry",
                     "disease_inquiry",

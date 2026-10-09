@@ -1,11 +1,16 @@
 """Tests for Module 5 — Conversational Layer API."""
 
+from decimal import Decimal
 from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
 from app.models.chat import ChatMessage, Conversation
-from app.services.chat_engine import AggregatedFarmContext, generate_fallback_reply
+from app.services.chat_engine import (
+    AggregatedFarmContext,
+    classify_intent,
+    generate_fallback_reply,
+)
 
 
 def _context_without_active_season():
@@ -43,6 +48,31 @@ def test_task_fallback_explains_that_no_season_tasks_exist_when_no_season_is_act
 
     assert "no active season" in reply.lower()
     assert "your crop" not in reply.lower()
+
+
+def test_resource_question_fallback_answers_from_saved_farm_resources():
+    context = _context_without_active_season()
+    context.farmland = SimpleNamespace(
+        name="Test Field",
+        soil_type="Clay loam",
+        land_type="medium_high",
+        irrigation_available=True,
+        water_source="Pond",
+        budget_amount=Decimal("25000.00"),
+        budget_currency="BDT",
+        equipment=["Water pump", "tractor"],
+    )
+    message = "What soil type, water source, irrigation, budget, and equipment are saved for this farm?"
+
+    intent = classify_intent(message)
+    reply = generate_fallback_reply(intent, context, message).lower()
+
+    assert intent == "resource_inquiry"
+    assert "clay loam" in reply
+    assert "medium high land" in reply
+    assert "pond" in reply
+    assert "water pump" in reply and "tractor" in reply
+    assert "25000 bdt" in reply
 
 
 def test_create_and_list_conversations(client_and_farm):
