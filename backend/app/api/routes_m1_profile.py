@@ -9,8 +9,8 @@ progress tracking lives here. This module feeds every other module:
   - Full profile          → unblocks Module 2 (needs soil/water/location for crop advice)
 
 Endpoints:
-  POST   /auth/register                           Register a new farmer, get a token
-  POST   /auth/login                              Login with phone, get a token
+  POST   /auth/register                           Register a new farmer with phone + password
+  POST   /auth/login                              Authenticate with phone + password
   GET    /profile                                 My full profile (farmer + farmlands)
   PATCH  /profile/farmer-profile                  Update experience, equipment, livestock
   GET    /farmlands                               List my farmlands
@@ -30,7 +30,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
-from app.core.security import create_access_token
+from app.core.security import create_access_token, hash_password, verify_password
 from app.models.core import Farmland, Farmer
 from app.models.profile import FarmerProfile
 from app.services.m1_reference import ReferenceDataError, resolve_location
@@ -261,7 +261,11 @@ def register_farmer(payload: FarmerRegisterRequest, db: DbSession) -> TokenRespo
             detail="A farmer with this phone number is already registered. Use /auth/login.",
         )
 
-    farmer = Farmer(name=payload.name, phone_e164=payload.phone_e164)
+    farmer = Farmer(
+        name=payload.name,
+        phone_e164=payload.phone_e164,
+        password_hash=hash_password(payload.password.get_secret_value()),
+    )
     db.add(farmer)
 
     # flush() assigns farmer.id so the FarmerProfile FK resolves.
@@ -290,18 +294,16 @@ def register_farmer(payload: FarmerRegisterRequest, db: DbSession) -> TokenRespo
     summary="Login with phone number",
 )
 def login_farmer(payload: FarmerLoginRequest, db: DbSession) -> TokenResponse:
-    """Login an existing farmer using their phone number.
-
-    Returns a fresh JWT token valid for 90 days.
-    Returns 404 if the phone number is not registered.
-    """
+    """Login an existing farmer using their phone number and password."""
     farmer = db.scalar(
         select(Farmer).where(Farmer.phone_e164 == payload.phone_e164)
     )
-    if farmer is None:
+    if farmer is None or not verify_password(
+        payload.password.get_secret_value(), farmer.password_hash
+    ):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No farmer found with this phone number. Please register first.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid phone number or password.",
         )
 
     token = create_access_token(farmer.id)

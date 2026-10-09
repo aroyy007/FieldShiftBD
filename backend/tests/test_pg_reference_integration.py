@@ -98,7 +98,7 @@ def client(pg_session_factory):
 
 def _register(client):
     phone = f"+88017{random.randint(10_000_000, 99_999_999)}"
-    response = client.post("/auth/register", json={"name": "TEST ONLY PG farmer", "phone_e164": phone})
+    response = client.post("/auth/register", json={"name": "TEST ONLY PG farmer", "phone_e164": phone, "password": "correct horse battery"})
     assert response.status_code == 201, response.text
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 

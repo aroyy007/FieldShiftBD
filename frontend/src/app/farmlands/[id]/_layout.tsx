@@ -22,8 +22,9 @@ export default function FarmlandDetailLayout() {
   const isProblems = pathname.endsWith('/problems');
   const isAlerts = pathname.endsWith('/alerts');
   const isSeasonPlan = pathname.endsWith('/season-plan');
+  const isResources = pathname.endsWith('/resources');
   const isOverview = Boolean(farmId && pathname === `/farmlands/${farmId}`);
-  const usesMobileChrome = isTasks || isCheckIns || isProblems || isAlerts || isSeasonPlan || isOverview;
+  const usesMobileChrome = isTasks || isCheckIns || isProblems || isAlerts || isSeasonPlan || isOverview || isResources;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const {
     farmlands,

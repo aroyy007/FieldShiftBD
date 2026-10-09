@@ -115,8 +115,8 @@ export default function FarmOverview() {
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeading}>
               <View style={styles.headingLead}><FarmProfileIcon name="chart" size={21} color={GREEN} /><Text style={[styles.sectionTitle, compact && styles.sectionTitleCompact]}>Farm details</Text></View>
-              <Pressable accessibilityRole="button" onPress={() => router.push('/farmlands/manage' as Href)} style={styles.viewDetails}>
-                <Text numberOfLines={1} style={styles.viewDetailsText}>View and edit details</Text><DashboardIcon name="chevron" size={16} color={MUTED} />
+              <Pressable accessibilityRole="button" onPress={() => go('resources')} style={styles.viewDetails}>
+                <Text numberOfLines={1} style={styles.viewDetailsText}>Edit farm profile</Text><DashboardIcon name="chevron" size={16} color={MUTED} />
               </Pressable>
             </View>
             <View style={[styles.detailsGrid, smallGrid && styles.detailsGridCompact]}>
@@ -125,6 +125,18 @@ export default function FarmOverview() {
               <DetailTile icon="water" title="Water source" value={farm.waterSource ?? 'Not set'} compact={compact} />
               <DetailTile icon="clipboard" title="Active tasks" value={`${activeTasks.length} pending`} compact={compact} />
             </View>
+          </View>
+
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeading}>
+              <View style={styles.headingLead}><FarmProfileIcon name="field" size={21} color={GREEN} /><Text style={[styles.sectionTitle, compact && styles.sectionTitleCompact]}>Resources</Text></View>
+              <Pressable accessibilityRole="button" onPress={() => go('resources')} style={styles.viewDetails}>
+                <Text style={styles.viewDetailsText}>Edit</Text><DashboardIcon name="chevron" size={16} color={MUTED} />
+              </Pressable>
+            </View>
+            <Text style={styles.resourceSummary}>Equipment: {farm.equipment?.length ? farm.equipment.join(', ') : 'Not set'}</Text>
+            <Text style={styles.resourceSummary}>Village/locality: {farm.villageOrLocality || 'Not set'} · Land type: {farm.landType || 'Not set'}</Text>
+            <Text style={styles.resourceSummary}>Budget: {farm.budgetAmount == null ? 'Not set' : `${farm.budgetAmount.toLocaleString()} ${farm.budgetCurrency ?? 'BDT'}`}</Text>
           </View>
 
           <View style={styles.sectionCard}>
@@ -269,6 +281,7 @@ const styles = StyleSheet.create({
   sectionTitleCompact: { fontSize: 15, lineHeight: 19 },
   viewDetails: { flexDirection: 'row', alignItems: 'center', gap: 2, minWidth: 0 },
   viewDetailsText: { color: '#627b9b', fontFamily: 'Arial', fontSize: 9.7, lineHeight: 12 },
+  resourceSummary: { marginTop: 5, color: '#52677a', fontFamily: 'Arial', fontSize: 11, lineHeight: 15 },
   detailsGrid: { marginTop: 4, flexDirection: 'row', gap: 4 },
   detailsGridCompact: { flexWrap: 'wrap' },
   detailTile: { flex: 1, minWidth: 0, height: 42, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#f0eee6', borderRadius: 11, backgroundColor: '#fffefa' },

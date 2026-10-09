@@ -58,7 +58,11 @@ export type Farmland = {
   checkIns: FarmCheckIn[];
   cropHealth: CropHealth;
   location?: string;
+  villageOrLocality?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   division?: string | null;
+  divisionCode?: string | null;
   district?: string | null;
   upazila?: string | null;
   districtCode?: string | null;
@@ -68,6 +72,7 @@ export type Farmland = {
   landType?: string | null;
   irrigationAvailable?: boolean | null;
   waterSource?: string | null;
+  equipment?: string[];
   budgetAmount?: number | null;
   budgetCurrency?: string | null;
   activeSeasonId?: string | null;

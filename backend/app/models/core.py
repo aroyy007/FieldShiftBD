@@ -27,6 +27,9 @@ class Farmer(UUIDPrimaryKey, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     phone_e164: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
+    # Nullable only for accounts created before password authentication. They
+    # must establish a password through an explicit account recovery flow.
+    password_hash: Mapped[str | None] = mapped_column(String(255))
 
 
 class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
@@ -79,6 +82,9 @@ class Farmland(UUIDPrimaryKey, TimestampMixin, Base):
     land_type: Mapped[str | None] = mapped_column(String(24))
     irrigation_available: Mapped[bool | None] = mapped_column(Boolean)
     water_source: Mapped[str | None] = mapped_column(String(120))
+    equipment: Mapped[list] = mapped_column(
+        JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb")
+    )
     farming_method: Mapped[str | None] = mapped_column(String(120))
     budget_amount: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))
     budget_currency: Mapped[str] = mapped_column(

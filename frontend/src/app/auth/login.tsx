@@ -35,6 +35,7 @@ const FOOTER_IMAGE = require('../../../assets/images/verification-rice-field.png
 
 export default function Login() {
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { width, height } = useWindowDimensions();
@@ -48,13 +49,13 @@ export default function Login() {
   const normalizedPhone = normalizeBangladeshPhone(phone);
 
   const handleLogin = async () => {
-    if (normalizedPhone.length < 12 || normalizedPhone.length > 16) {
-      setMessage('Enter a valid Bangladesh phone number.');
+    if (normalizedPhone.length < 12 || normalizedPhone.length > 16 || password.length < 12) {
+      setMessage(password.length < 12 ? 'Password must be at least 12 characters.' : 'Enter a valid Bangladesh phone number.');
       return;
     }
     setIsSubmitting(true);
     try {
-      await login(normalizedPhone);
+      await login(normalizedPhone, password);
       setMessage('');
       router.replace('/farmlands' as Href);
     } catch (error) {
@@ -178,14 +179,30 @@ export default function Login() {
                 </View>
               </View>
             </View>
-
-          </View>
-
-          <View style={styles.authContractNote}>
-            <LockOutlineIcon size={18} />
-            <Text style={styles.authContractText}>
-              The current backend accepts a registered phone number only. Password and OTP verification are not configured yet.
-            </Text>
+            <View style={[styles.fieldCard, compact && styles.compactFieldCard, tiny && styles.tinyFieldCard]}>
+              <View style={[styles.fieldIcon, compact && styles.compactFieldIcon, tiny && styles.tinyFieldIcon]}>
+                <LockOutlineIcon size={22} />
+              </View>
+              <View style={styles.fieldContent}>
+                <Text style={[styles.fieldLabel, compact && styles.compactFieldLabel]}>Password</Text>
+                <View style={[styles.inputShell, compact && styles.compactInputShell]}>
+                  <TextInput
+                    accessibilityLabel="Password"
+                    autoCapitalize="none"
+                    autoComplete="current-password"
+                    autoCorrect={false}
+                    onChangeText={(value) => { setPassword(value); setMessage(''); }}
+                    onSubmitEditing={() => void handleLogin()}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#87919c"
+                    returnKeyType="go"
+                    secureTextEntry
+                    style={[styles.input, compact && styles.compactInput]}
+                    value={password}
+                  />
+                </View>
+              </View>
+            </View>
           </View>
 
           {message || loadError ? <Text accessibilityRole="alert" style={styles.message}>{message || loadError}</Text> : null}
@@ -206,7 +223,7 @@ export default function Login() {
               </Defs>
               <Rect width="400" height="60" rx="30" fill="url(#login-button-gradient)" />
             </Svg>
-            <Text style={styles.primaryButtonText}>{isSubmitting ? 'Signing in…' : 'Continue with phone'}</Text>
+            <Text style={styles.primaryButtonText}>{isSubmitting ? 'Signing in…' : 'Sign in'}</Text>
             <View style={[styles.arrowBubble, compact && styles.compactArrowBubble]}>
               <ArrowRightIcon size={23} color={INK} />
             </View>
@@ -240,7 +257,7 @@ const styles = StyleSheet.create({
   footerImage: { position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%' },
   footerFade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   foregroundScroll: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  scrollContent: { flexGrow: 1, alignItems: 'center' },
+  scrollContent: { width: '100%', flexGrow: 1, alignItems: 'center' },
   page: { width: '100%', maxWidth: 440, paddingTop: 28, paddingBottom: 10 },
   compactPage: { paddingTop: 26 },
   tinyPage: { paddingTop: 12, paddingBottom: 18 },
@@ -304,8 +321,6 @@ const styles = StyleSheet.create({
   forgotText: { color: '#07583f', fontFamily: SERIF_FONT, fontSize: 15.5, fontWeight: '700', lineHeight: 22 },
   compactForgotText: { fontSize: 14.5, lineHeight: 21 },
   message: { marginTop: 1, marginBottom: 4, color: '#a1372d', fontFamily: SANS_FONT, fontSize: 12.5, lineHeight: 17 },
-  authContractNote: { marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: PALE_GREEN, flexDirection: 'row', alignItems: 'flex-start', gap: 9 },
-  authContractText: { flex: 1, color: MUTED, fontFamily: SANS_FONT, fontSize: 12, lineHeight: 17 },
   submittingButton: { opacity: 0.72 },
   primaryButton: { height: 50, marginTop: 10, borderRadius: 29, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' },
   compactPrimaryButton: { height: 48, marginTop: 9 },

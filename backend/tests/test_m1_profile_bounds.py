@@ -114,7 +114,7 @@ def test_farmer_profile_rejects_experience_above_numeric_column_limit(client_and
     client, _, _, _ = client_and_farm
     registered = client.post(
         "/auth/register",
-        json={"name": "Bounds test farmer", "phone_e164": "+8801700000002"},
+        json={"name": "Bounds test farmer", "phone_e164": "+8801700000002", "password": "correct horse battery"},
     )
     assert registered.status_code == 201
     farmer_id = UUID(registered.json()["farmer_id"])

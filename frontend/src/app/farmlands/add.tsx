@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FarmBottomNavigation, FarmChromeIcon, FarmPageHeader } from '../../components/farmland-mobile-ui';
@@ -7,6 +7,7 @@ import { FarmProfileIcon, FarmProfileIconName } from '../../components/farm-prof
 import { useAppContext } from '../../context/AppProvider';
 import OptionPickerModal, { PickerOption } from '../../components/OptionPickerModal';
 import { DivisionRef, ProfileVocabulary, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
+import { captureCurrentFarmLocation } from '../../services/farm-location';
 
 const PAPER = '#fffdf7';
 const GREEN = '#07543a';
@@ -23,7 +24,7 @@ type ReferenceKey = 'division' | 'district' | 'upazila' | 'soil' | 'landType';
 
 const fieldOptions: Record<FieldKey, string[]> = {
   irrigation: ['Available', 'Not available'],
-  waterSource: ['Tube well', 'Canal', 'River', 'Rain-fed'],
+  waterSource: ['Tube well', 'Canal', 'River', 'Pond', 'Rain-fed', 'Other'],
 };
 
 export default function AddFarmland() {
@@ -35,6 +36,9 @@ export default function AddFarmland() {
   const readParam = (value: string | string[] | undefined, fallback: string) => Array.isArray(value) ? value[0] ?? fallback : value ?? fallback;
   const [name, setName] = useState(() => readParam(params.name, ''));
   const [acreage, setAcreage] = useState(() => readParam(params.acreage, ''));
+  const [village, setVillage] = useState('');
+  const [equipmentText, setEquipmentText] = useState('');
+  const [budgetText, setBudgetText] = useState('');
   const [values, setValues] = useState<FormValues>(() => ({ irrigation: '', waterSource: '' }));
   const [picker, setPicker] = useState<FieldKey | null>(null);
   const [referencePicker, setReferencePicker] = useState<ReferenceKey | null>(null);
@@ -49,6 +53,7 @@ export default function AddFarmland() {
   const [error, setError] = useState('');
   const [locationNotice, setLocationNotice] = useState('');
   const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const selectedOptions = useMemo(() => picker ? fieldOptions[picker] : [], [picker]);
 
@@ -102,24 +107,30 @@ export default function AddFarmland() {
     setError('');
   };
 
-  const useCurrentLocation = () => {
+  const requestCurrentLocation = async () => {
     setLocationNotice('');
-    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: current }) => {
-          setCoordinates({ latitude: current.latitude, longitude: current.longitude });
-          setLocationNotice('Current coordinates added.');
-        },
-        () => setLocationNotice('Location is unavailable. Choose a location above or enter it manually.'),
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
-      );
-      return;
+    setLocationLoading(true);
+    try {
+      const result = await captureCurrentFarmLocation();
+      setCoordinates({ latitude: result.latitude, longitude: result.longitude });
+      if (result.divisionCode) setDivisionCode(result.divisionCode);
+      if (result.districtCode) setDistrictCode(result.districtCode);
+      if (result.upazilaCode) setUpazilaCode(result.upazilaCode);
+      setLocationNotice(result.notice);
+    } catch (locationError) {
+      setLocationNotice(locationError instanceof Error ? locationError.message : 'Could not get your current location. Enter it manually.');
+    } finally {
+      setLocationLoading(false);
     }
-    setLocationNotice('Choose a location above or enter it manually on this device.');
   };
 
   const saveFarmland = async () => {
+    if (locationLoading) {
+      setError('Wait for the location request to finish before saving.');
+      return;
+    }
     const parsedAcreage = Number(acreage.trim());
+    const parsedBudget = budgetText.trim() ? Number(budgetText.trim()) : undefined;
     if (!name.trim()) {
       setError('Enter a farmland name.');
       return;
@@ -136,6 +147,10 @@ export default function AddFarmland() {
       setError('Choose the division and district of this farmland.');
       return;
     }
+    if (parsedBudget !== undefined && (!Number.isFinite(parsedBudget) || parsedBudget < 0)) {
+      setError('Enter a valid non-negative farm budget.');
+      return;
+    }
     setSaving(true);
     try {
       await createFarmland({
@@ -145,12 +160,16 @@ export default function AddFarmland() {
         division: division?.name,
         district: district.name,
         upazila: upazila?.name,
+        village_or_locality: village.trim() || undefined,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
         soil_type: soil?.label_en,
         land_type: land?.code,
         irrigation_available: values.irrigation ? values.irrigation !== 'Not available' : undefined,
         water_source: values.waterSource || undefined,
+        equipment: equipmentText.split(/[\n,]/).map(item => item.trim()).filter(Boolean),
+        budget_amount: parsedBudget,
+        budget_currency: 'BDT',
       });
       setError('');
       if (router.canGoBack()) router.back();
@@ -223,6 +242,7 @@ export default function AddFarmland() {
             {renderReferenceRow('location', 'Division', 'division', division?.name)}
             {renderReferenceRow('location', 'District', 'district', district?.name)}
             {renderReferenceRow('location', 'Upazila', 'upazila', upazila?.name)}
+            {renderTextRow('location', 'Village/locality', village, value => { setVillage(value); setError(''); })}
             {renderTextRow('field', 'Land area', acreage, value => { setAcreage(value); setError(''); }, true)}
           </View>
 
@@ -232,6 +252,20 @@ export default function AddFarmland() {
             {renderReferenceRow('field', 'Land type', 'landType', land?.label_en)}
             {renderSelectRow('drop', 'Irrigation', 'irrigation')}
             {renderSelectRow('water', 'Water source', 'waterSource')}
+            {renderTextRow('coins', 'Budget (BDT)', budgetText, value => { setBudgetText(value); setError(''); }, true)}
+            <View style={styles.multilineRow}>
+              <View style={styles.rowIcon}><FarmProfileIcon name="field" size={20} color={GREEN} /></View>
+              <Text style={[styles.rowLabel, { width: labelWidth }]}>Equipment</Text>
+              <TextInput
+                accessibilityLabel="Available equipment"
+                value={equipmentText}
+                onChangeText={setEquipmentText}
+                placeholder="Pump, tractor, tools…"
+                placeholderTextColor="#82909a"
+                style={styles.multilineInput}
+                multiline
+              />
+            </View>
           </View>
 
           <View style={styles.adviceBanner}>
@@ -248,9 +282,9 @@ export default function AddFarmland() {
         </ScrollView>
 
         <View style={styles.actionBar}>
-          <Pressable accessibilityRole="button" onPress={useCurrentLocation} style={styles.locationButton}>
+          <Pressable accessibilityRole="button" disabled={locationLoading} onPress={() => void requestCurrentLocation()} style={[styles.locationButton, locationLoading && styles.savingButton]}>
             <FarmProfileIcon name="location" size={21} color={GREEN} />
-            <Text style={styles.locationButtonText}>Use current location</Text>
+            <Text style={styles.locationButtonText}>{locationLoading ? 'Getting location…' : 'Use current location'}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" disabled={saving} onPress={() => void saveFarmland()} style={[styles.saveButton, saving && styles.savingButton]}>
             <View style={styles.saveCheck}><FarmProfileIcon name="check" size={17} color={GREEN} /></View>
@@ -303,9 +337,11 @@ const styles = StyleSheet.create({
   groupCard: { paddingHorizontal: 9, paddingTop: 6, paddingBottom: 5, borderRadius: 14, backgroundColor: '#fffefa', borderWidth: 1, borderColor: '#eeece3' },
   groupTitle: { marginBottom: 2, color: INK, fontFamily: 'Georgia', fontSize: 18, lineHeight: 23, fontWeight: '700' },
   formRow: { minHeight: 31, flexDirection: 'row', alignItems: 'center', gap: 6, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
+  multilineRow: { minHeight: 51, flexDirection: 'row', alignItems: 'center', gap: 6, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
   rowIcon: { width: 28, height: 28, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#e9f1e3' },
   rowLabel: { flexShrink: 0, color: '#182941', fontSize: 11, lineHeight: 14 },
   rowInput: { flex: 1, minWidth: 0, height: 27, paddingHorizontal: 8, paddingVertical: 0, color: '#182941', fontSize: 11, lineHeight: 15, borderWidth: 1, borderColor: '#e2e0d8', borderRadius: 7, backgroundColor: '#f8f7f2' },
+  multilineInput: { flex: 1, minWidth: 0, minHeight: 40, maxHeight: 76, paddingHorizontal: 8, paddingVertical: 5, color: '#182941', fontSize: 11, lineHeight: 15, borderWidth: 1, borderColor: '#e2e0d8', borderRadius: 7, backgroundColor: '#f8f7f2' },
   rowValue: { flex: 1, minWidth: 0, height: 27, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4, paddingHorizontal: 8, borderWidth: 1, borderColor: '#e2e0d8', borderRadius: 7, backgroundColor: '#f8f7f2' },
   valueText: { flex: 1, minWidth: 0, color: '#182941', fontSize: 11, lineHeight: 15 },
   infoBanner: { minHeight: 30, flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 8, marginTop: 4, borderRadius: 9, backgroundColor: '#eef3e8' },

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 SenderType = Literal["farmer", "assistant", "system"]
 MessageType = Literal["text", "image", "system"]
 ChatIntent = Literal[
+    "resource_inquiry",
     "task_inquiry",
     "weather_inquiry",
     "disease_inquiry",

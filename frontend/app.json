@@ -42,6 +42,12 @@
           "microphonePermission": false
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "FieldShift uses your location to save farm coordinates and improve local advice."
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {

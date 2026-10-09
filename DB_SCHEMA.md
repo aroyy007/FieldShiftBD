@@ -86,11 +86,12 @@ Represents the person.
 id                  uuid primary key
 name                text not null
 phone_e164          text not null unique
+password_hash       text null -- Argon2id hash only; NULL for legacy accounts pending recovery
 created_at          timestamptz not null
 updated_at          timestamptz not null
 ```
 
-Authentication credentials should be implemented only after the authentication approach is agreed. If the backend owns password authentication, store an Argon2id password hash in a separate credential field/table—never a plaintext password. Do not treat a phone number alone as proof of identity.
+The backend requires a password at registration and sign-in and stores only an Argon2id hash. Legacy accounts without a hash cannot authenticate until a safe recovery flow is available; phone number alone is never treated as proof of identity.
 
 ## `farmlands`
 
@@ -113,6 +114,9 @@ soil_type               text
 land_type               text check (land_type in ('high','medium_high','medium_low','low','very_low'))
 irrigation_available    boolean
 water_source            text
+budget_amount           numeric(14,2) check (budget_amount is null or budget_amount >= 0)
+budget_currency         char(3) not null default 'BDT'
+equipment               jsonb not null default '[]' -- equipment available to this farmland
 farming_method          text
 created_at              timestamptz not null
 updated_at              timestamptz not null
@@ -193,7 +197,7 @@ primary key (farmland_id, crop_id)
 unique (farmland_id, preference_rank)
 ```
 
-The budget is season-specific and belongs on `seasons` as `budget_amount` plus `budget_currency`, rather than on the farmland profile.
+The farmland profile stores an optional baseline budget for resource-aware advice. The active season may also have its own budget; season values take precedence for that crop cycle.
 
 ---
 

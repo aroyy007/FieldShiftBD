@@ -72,7 +72,7 @@ export default function ManageFarmlands() {
   };
 
   const openFarm = (farmId: string | null, name: string, acreage: string) => {
-    if (farmId) router.push(`/farmlands/${farmId}` as Href);
+    if (farmId) router.push(`/farmlands/${farmId}/chat` as Href);
     else addFarm(name, acreage.replace(' acres', ''));
   };
 

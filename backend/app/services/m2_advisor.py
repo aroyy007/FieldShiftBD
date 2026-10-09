@@ -191,7 +191,7 @@ def profile_from_farmland(
         budget_currency=farmland.budget_currency,
         previous_yield=farmland.previous_yield_amount,
         farming_experience_years=farmer_profile.farming_experience_years if farmer_profile else None,
-        equipment=list(farmer_profile.equipment or []) if farmer_profile else [],
+        equipment=list(farmland.equipment or []),
         livestock=list(farmer_profile.livestock or []) if farmer_profile else [],
         crop_preferences=list(crop_preferences or []),
     )

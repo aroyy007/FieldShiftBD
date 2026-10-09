@@ -39,8 +39,8 @@ type AppContextType = {
   dataLoading: boolean;
   loadError: string;
   farmlands: Farmland[];
-  login: (phoneE164: string) => Promise<void>;
-  register: (name: string, phoneE164: string) => Promise<void>;
+  login: (phoneE164: string, password: string) => Promise<void>;
+  register: (name: string, phoneE164: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshFarmland: (farmId: string) => Promise<void>;
@@ -189,12 +189,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await refreshProfile();
   }, [refreshProfile]);
 
-  const login = useCallback(async (phoneE164: string) => {
-    await authenticate('/auth/login', { phone_e164: phoneE164 });
+  const login = useCallback(async (phoneE164: string, password: string) => {
+    await authenticate('/auth/login', { phone_e164: phoneE164, password });
   }, [authenticate]);
 
-  const register = useCallback(async (name: string, phoneE164: string) => {
-    await authenticate('/auth/register', { name: name.trim(), phone_e164: phoneE164 });
+  const register = useCallback(async (name: string, phoneE164: string, password: string) => {
+    await authenticate('/auth/register', { name: name.trim(), phone_e164: phoneE164, password });
   }, [authenticate]);
 
   const logout = useCallback(async () => {
