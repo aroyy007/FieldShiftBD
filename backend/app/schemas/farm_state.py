@@ -82,7 +82,7 @@ class ProblemCreate(BaseModel):
     season_id: UUID | None = None
     source: ProblemSource = "farmer"
     category: str = Field(min_length=1, max_length=80)
-    description: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=1000)
     severity: ProblemSeverity = "moderate"
 
 
@@ -109,7 +109,7 @@ class CheckinCreate(BaseModel):
     season_id: UUID | None = None
     checkin_at: AwareDatetime | None = None
     growth_stage_id: UUID | None = None
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=500)
     observations: dict = Field(default_factory=dict)
 
 

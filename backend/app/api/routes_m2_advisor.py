@@ -34,7 +34,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 FarmerId = Annotated[UUID, Depends(get_current_farmer_id)]
 
 
-def _require_owned_farmland(db: Session, farmland_id: UUID, farmer_id: UUID) -> None:
+def _require_owned_farmland(db: Session, farmland_id: UUID, farmer_id: UUID) -> Farmland:
     farmland = db.scalar(
         select(Farmland).where(
             Farmland.id == farmland_id,
@@ -43,6 +43,7 @@ def _require_owned_farmland(db: Session, farmland_id: UUID, farmer_id: UUID) -> 
     )
     if farmland is None:
         raise HTTPException(status_code=404, detail="Farmland not found")
+    return farmland
 
 
 def _require_owned_season(db: Session, season_id: UUID, farmer_id: UUID) -> None:
@@ -80,21 +81,45 @@ def _raise_domain_error(exc: Exception) -> None:
     raise exc
 
 
+def _recommend_for_saved_farmland(
+    db: Session, farmland_id: UUID, farmer_id: UUID, crop_preferences: list[UUID] | None = None
+) -> CropRecommendationSet:
+    farmland = _require_owned_farmland(db, farmland_id, farmer_id)
+    profile = m2_advisor.profile_from_farmland(db, farmland, crop_preferences)
+    try:
+        return m2_advisor.recommend_crops(db, profile, profile_source="m1_saved_farmland")
+    except (m2_advisor.M2NotFoundError, m2_advisor.M2ConflictError, ValueError) as exc:
+        _raise_domain_error(exc)
+
+
 @router.post("/recommendations", response_model=CropRecommendationSet)
 def create_recommendations(
     profile: FarmProfileInput,
     db: DbSession,
     farmer_id: FarmerId,
 ):
-    """Recommend from approved knowledge; accepts an M1 contract-shaped mock profile."""
-    if profile.farmland_id is not None:
-        _require_owned_farmland(db, profile.farmland_id, farmer_id)
+    """Recommend crops for a saved farmland from approved knowledge.
+
+    The saved M1 farmland and farmer profile are authoritative: profile values in
+    the request body are not used, so persisted recommendations always match the
+    saved profile. Only ``farmland_id``, ``farmer_id``, and ``crop_preferences``
+    are read from the body.
+    """
     if profile.farmer_id is not None and profile.farmer_id != farmer_id:
         raise HTTPException(status_code=404, detail="Farmland not found")
-    try:
-        return m2_advisor.recommend_crops(db, profile)
-    except (m2_advisor.M2NotFoundError, m2_advisor.M2ConflictError, ValueError) as exc:
-        _raise_domain_error(exc)
+    if profile.farmland_id is None:
+        _raise_domain_error(ValueError("farmland_id is required to scope and persist recommendations"))
+    return _recommend_for_saved_farmland(db, profile.farmland_id, farmer_id, profile.crop_preferences)
+
+
+@router.post("/farmlands/{farmland_id}/recommendations", response_model=CropRecommendationSet)
+def create_farmland_recommendations(
+    farmland_id: UUID,
+    db: DbSession,
+    farmer_id: FarmerId,
+):
+    """Recommend crops using only the saved M1 profile for this farmland."""
+    return _recommend_for_saved_farmland(db, farmland_id, farmer_id)
 
 
 @router.get("/farmlands/{farmland_id}/recommendations", response_model=list[CropRecommendation])

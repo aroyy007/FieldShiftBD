@@ -86,11 +86,12 @@ Represents the person.
 id                  uuid primary key
 name                text not null
 phone_e164          text not null unique
+password_hash       text null -- Argon2id hash only; NULL for legacy accounts pending recovery
 created_at          timestamptz not null
 updated_at          timestamptz not null
 ```
 
-Authentication credentials should be implemented only after the authentication approach is agreed. If the backend owns password authentication, store an Argon2id password hash in a separate credential field/table—never a plaintext password. Do not treat a phone number alone as proof of identity.
+The backend requires a password at registration and sign-in and stores only an Argon2id hash. Legacy accounts without a hash cannot authenticate until a safe recovery flow is available; phone number alone is never treated as proof of identity.
 
 ## `farmlands`
 
@@ -110,14 +111,18 @@ longitude               numeric(9,6)
 land_area_sqm           numeric(14,3) not null check (land_area_sqm > 0)
 land_area_display_unit  text not null
 soil_type               text
+land_type               text check (land_type in ('high','medium_high','medium_low','low','very_low'))
 irrigation_available    boolean
 water_source            text
+budget_amount           numeric(14,2) check (budget_amount is null or budget_amount >= 0)
+budget_currency         char(3) not null default 'BDT'
+equipment               jsonb not null default '[]' -- equipment available to this farmland
 farming_method          text
 created_at              timestamptz not null
 updated_at              timestamptz not null
 ```
 
-Convert user-entered area to canonical square metres on input; retain the display unit (`square_metre`, `decimal`, `acre`, or `hectare`) for presentation. Do not include `bigha` until the team agrees on a region-specific conversion because its size is not uniform. Use `CHECK` constraints for latitude/longitude ranges and the approved display-unit values. `latitude` and `longitude` must either both be null or both be present. Keep administrative location names as text initially; introduce reference tables only when the team has a reliable, maintained Bangladesh location dataset. Use the coordinates for weather queries when available.
+Convert user-entered area to canonical square metres on input; retain the display unit (`square_metre`, `decimal`, `acre`, or `hectare`) for presentation. Do not include `bigha` until the team agrees on a region-specific conversion because its size is not uniform. Use `CHECK` constraints for latitude/longitude ranges and the approved display-unit values. `latitude` and `longitude` must either both be null or both be present. Keep administrative location names as text initially; introduce reference tables only when the team has a reliable, maintained Bangladesh location dataset. Use the coordinates for weather queries when available. Module 1 now canonicalizes division/district/upazila names and spelling aliases (for example Comilla to Cumilla) against the pinned BARC crop-zoning location list with BBS geocodes (`backend/app/services/m1_reference.py`); the stored values stay text and no reference table was added. Recognized soil textures are stored by their canonical English label. `land_type` (added in migration `a7c4e2d91b30`) records the Bangladesh land-type class that BARC's crop land-and-soil conditions use.
 
 This allows a farmer to have multiple independent farming contexts:
 
@@ -192,7 +197,7 @@ primary key (farmland_id, crop_id)
 unique (farmland_id, preference_rank)
 ```
 
-The budget is season-specific and belongs on `seasons` as `budget_amount` plus `budget_currency`, rather than on the farmland profile.
+The farmland profile stores an optional baseline budget for resource-aware advice. The active season may also have its own budget; season values take precedence for that crop cycle.
 
 ---
 

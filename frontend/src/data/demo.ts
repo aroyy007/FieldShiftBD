@@ -57,6 +57,30 @@ export type Farmland = {
   problems: FarmProblem[];
   checkIns: FarmCheckIn[];
   cropHealth: CropHealth;
+  location?: string;
+  villageOrLocality?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  division?: string | null;
+  divisionCode?: string | null;
+  district?: string | null;
+  upazila?: string | null;
+  districtCode?: string | null;
+  upazilaCode?: string | null;
+  landAreaUnit?: string;
+  soilType?: string | null;
+  landType?: string | null;
+  irrigationAvailable?: boolean | null;
+  waterSource?: string | null;
+  equipment?: string[];
+  budgetAmount?: number | null;
+  budgetCurrency?: string | null;
+  activeSeasonId?: string | null;
+  plantingDate?: string | null;
+  expectedHarvestDate?: string | null;
+  seasonProgressPercent?: number | null;
+  daysSincePlanting?: number | null;
+  dataWarning?: string;
 };
 
 export const DEMO_CREDENTIALS = {

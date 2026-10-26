@@ -1,11 +1,9 @@
-"""Mock Module 3 farm-state read slice for Module 4 development.
+"""Deterministic Module 4 suppression fixtures.
 
-M4 is a leaf that depends only on M3's farm state (schema doc section 17:
-``farmland_id -> season_id -> farm_state -> tasks/...``). M3 is not implemented
-on this branch, so M4 reasons against this *read-only* mock that mirrors the
-exact shape M4 needs — and nothing more. When real M3 lands, this module is the
-single swap point: replace :func:`get_farm_state_slice` with a call into M3's
-read API. M4 must never write farm state (Rule B: suggestions only inside M4).
+The live weather routes now use the authenticated Module 3 projection in
+``farm_state_read_slice``. This module keeps the Golden Farm fixture for the
+offline demo endpoint and deterministic suppression examples. M4 remains
+read-only with respect to farm state.
 
 The slice is deliberately minimal: location (to query weather), current crop +
 growth stage (to judge impact), and current/upcoming tasks (what the farmer is
@@ -53,8 +51,8 @@ class FarmStateSlice:
     farmland_id: uuid.UUID
     season_id: uuid.UUID | None
     growth_stage_id: uuid.UUID | None
-    latitude: float
-    longitude: float
+    latitude: float | None
+    longitude: float | None
     crop_name: str
     growth_stage: str
     location_name: str
@@ -65,7 +63,8 @@ class FarmStateSlice:
         return [
             t
             for t in self.tasks
-            if t.category in categories and t.status not in {"completed", "skipped"}
+            if t.category in categories
+            and t.status not in {"completed", "skipped", "cancelled"}
         ]
 
 
@@ -102,10 +101,7 @@ _FIXTURES: dict[uuid.UUID, FarmStateSlice] = {
 
 
 def get_farm_state_slice(farmland_id: uuid.UUID) -> FarmStateSlice | None:
-    """Return the mock farm-state slice for ``farmland_id`` (None if unknown).
-
-    Swap point for real M3: replace the dict lookup with an M3 read call.
-    """
+    """Return the demo fixture for ``farmland_id`` (None if unknown)."""
     return _FIXTURES.get(farmland_id)
 
 

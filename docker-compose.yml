@@ -29,6 +29,12 @@ services:
     restart: always
     env_file:
       - ./backend/.env
+    environment:
+      # Compose injects env_file values as environment variables, and those
+      # take precedence over the .env file the app reads. Re-declaring the key
+      # here (sourced from the root .env) keeps a single source of truth and
+      # stops an empty SECRET_KEY from silently overriding the real value.
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in the root .env - see backend/.env.example}
     ports:
       - "8000:8000"
     volumes:

@@ -41,7 +41,14 @@
           "cameraPermission": "FieldShift uses your camera to check crop photos.",
           "microphonePermission": false
         }
-      ]
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "FieldShift uses your location to save farm coordinates and improve local advice."
+        }
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

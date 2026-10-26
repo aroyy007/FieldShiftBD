@@ -1,0 +1,32 @@
+{
+  "vocabulary_version": 1,
+  "owner": "M1 farm profile",
+  "purpose": "Canonical farm-profile values shared by M1 storage, M2 knowledge conditions, and the frontend pickers. These are classification labels only; they contain no agronomic claims.",
+  "soil_textures": [
+    {"code": "sand", "label_en": "Sand", "label_bn": "বেলে", "aliases": ["sandy", "sandy soil", "বেলে মাটি"]},
+    {"code": "loamy_sand", "label_en": "Loamy sand", "label_bn": "দোআঁশ বেলে", "aliases": []},
+    {"code": "sandy_loam", "label_en": "Sandy loam", "label_bn": "বেলে দোআঁশ", "aliases": ["বেলে দো-আঁশ"]},
+    {"code": "loam", "label_en": "Loam", "label_bn": "দোআঁশ", "aliases": ["loamy", "loamy soil", "loam soil", "দো-আঁশ", "দোআঁশ মাটি"]},
+    {"code": "silt_loam", "label_en": "Silt loam", "label_bn": "পলি দোআঁশ", "aliases": ["silty loam"]},
+    {"code": "silt", "label_en": "Silt", "label_bn": "পলি", "aliases": ["silty", "silty soil", "পলি মাটি"]},
+    {"code": "sandy_clay_loam", "label_en": "Sandy clay loam", "label_bn": "বেলে এঁটেল দোআঁশ", "aliases": []},
+    {"code": "clay_loam", "label_en": "Clay loam", "label_bn": "এঁটেল দোআঁশ", "aliases": ["clayey loam", "এটেল দোআঁশ", "এঁটেল দো-আঁশ"]},
+    {"code": "silty_clay_loam", "label_en": "Silty clay loam", "label_bn": "পলি এঁটেল দোআঁশ", "aliases": []},
+    {"code": "sandy_clay", "label_en": "Sandy clay", "label_bn": "বেলে এঁটেল", "aliases": []},
+    {"code": "silty_clay", "label_en": "Silty clay", "label_bn": "পলি এঁটেল", "aliases": []},
+    {"code": "clay", "label_en": "Clay", "label_bn": "এঁটেল", "aliases": ["clayey", "clay soil", "এটেল", "এঁটেল মাটি"]}
+  ],
+  "land_types": [
+    {"code": "high", "label_en": "High land", "label_bn": "উঁচু জমি", "aliases": ["highland", "high"]},
+    {"code": "medium_high", "label_en": "Medium high land", "label_bn": "মাঝারি উঁচু জমি", "aliases": ["medium highland", "medium high"]},
+    {"code": "medium_low", "label_en": "Medium low land", "label_bn": "মাঝারি নিচু জমি", "aliases": ["medium lowland", "medium low"]},
+    {"code": "low", "label_en": "Low land", "label_bn": "নিচু জমি", "aliases": ["lowland", "low"]},
+    {"code": "very_low", "label_en": "Very low land", "label_bn": "অতি নিচু জমি", "aliases": ["very lowland", "very low"]}
+  ],
+  "area_units": [
+    {"code": "square_metre", "label_en": "Square metre", "label_bn": "বর্গমিটার", "square_metres": "1"},
+    {"code": "decimal", "label_en": "Decimal (shotangsho)", "label_bn": "শতাংশ", "square_metres": "40.468564224"},
+    {"code": "acre", "label_en": "Acre", "label_bn": "একর", "square_metres": "4046.8564224"},
+    {"code": "hectare", "label_en": "Hectare", "label_bn": "হেক্টর", "square_metres": "10000"}
+  ]
+}

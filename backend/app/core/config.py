@@ -1,4 +1,4 @@
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -17,6 +17,23 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: SecretStr | None = None
     GEMINI_MODEL: str = "gemini-3.8-flash"
     GEMINI_TIMEOUT_SECONDS: float = Field(default=20.0, gt=0, le=60)
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def _reject_blank_secret_key(cls, value: str) -> str:
+        """Refuse to start with a blank JWT signing key.
+
+        Without this, the app boots normally and every /auth/register and
+        /auth/login call dies at runtime with
+        ``jwt.exceptions.InvalidKeyError: HMAC key must not be empty``.
+        Failing here makes the misconfiguration obvious at deploy time.
+        """
+        if not value.strip():
+            raise ValueError(
+                "SECRET_KEY must be set to a non-empty random value. "
+                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        return value
 
     class Config:
         env_file = ".env"

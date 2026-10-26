@@ -1,34 +1,62 @@
 {
-  "register_version": 2,
-  "research_date": "2026-10-07",
+  "register_version": 3,
+  "research_date": "2026-10-08",
   "purpose": "Auditable source research and policy-accepted snapshots for M2.",
-  "status": "one_region_only_source_policy_snapshot_pending_m1_catalog_import",
+  "status": "policy_accepted_records_imported_by_scripts.import_reference_data",
   "initial_crop_coverage": {
     "selected": [
       {
         "crop": "Potato",
-        "reason": "The plan.md Golden Farm integration scenario names potato.",
-        "database_crop_id": null,
-        "production_knowledge_records": 0,
-        "policy_accepted_snapshots": 1,
-        "snapshot_scope": "Potato / Comilla upazila regional area distribution only"
-      }
-    ],
-    "future_candidates": [
+        "reason": "Golden Farm scenario crop; BARC portal land/soil text corroborated in both languages.",
+        "catalog_binding": "M1 crop catalog key 'potato' (scripts.import_reference_data)",
+        "production_knowledge_records": {
+          "m2-barc-portal-bilingual-v1": 1,
+          "m2-barc-portal-variety-duration-v1": 68,
+          "m2-barc-czs-upazila-suitability-v1": 48,
+          "m2-barc-upazila-zoning-v1": 1
+        }
+      },
       {
         "crop": "Wheat",
-        "reason": "Appears in frontend demo data, which does not establish Bangladesh agronomic context."
+        "reason": "Frontend demo crop; BARC portal land/soil and maturity-indicator text corroborated in both languages.",
+        "catalog_binding": "M1 crop catalog key 'wheat'",
+        "production_knowledge_records": {
+          "m2-barc-portal-bilingual-v1": 2,
+          "m2-barc-portal-variety-duration-v1": 21,
+          "m2-barc-czs-upazila-suitability-v1": 48
+        }
       },
       {
         "crop": "Maize",
-        "reason": "Appears as Corn in frontend demo data, which does not establish Bangladesh agronomic context."
+        "reason": "Frontend demo crop (Corn) and M6 class label; harvest calendar corroborated; no corroborated soil condition.",
+        "catalog_binding": "M1 crop catalog key 'maize' (alias corn)",
+        "production_knowledge_records": {
+          "m2-barc-portal-bilingual-v1": 1,
+          "m2-barc-portal-variety-duration-v1": 23,
+          "m2-barc-czs-upazila-suitability-v1": 48
+        }
+      },
+      {
+        "crop": "Rice",
+        "reason": "Main Bangladesh crop and M6 class label; only regional context passes the policies.",
+        "catalog_binding": "M1 crop catalog key 'rice'",
+        "production_knowledge_records": {
+          "m2-barc-czs-upazila-suitability-v1": 48
+        }
       }
     ],
-    "coverage_limitation": "The repository contains no crop or crop-variety seed records to bind sources to database identifiers."
+    "regional_context_districts": [
+      "Cumilla (2019)",
+      "Gazipur (3033)",
+      "Dhaka (3026)",
+      "Mymensingh (4561)",
+      "Rajshahi (5081)"
+    ],
+    "coverage_limitation": "Positive farm-level fit is available only for Potato (high land + loam) and Wheat (high or medium-high land + loam or clay loam) anywhere in Bangladesh, as general published conditions. No crop has verified growth-stage definitions, so season plans, initial tasks, and season activation remain unavailable."
   },
   "review_workflow": {
-    "production_approval": "The exact BARC Potato/Comilla upazila snapshot is accepted by m2-barc-upazila-zoning-v1 after deterministic source, hash, area-total, crop/locality, and freshness checks. Other claims remain unapproved until covered by this policy or human review.",
-    "limitation": "No human reviewer is assigned. The accepted map has no published data vintage and supports regional area context only; M1's crop catalog is required before importing the snapshot into agricultural_knowledge."
+    "production_approval": "Four automated source policies accept narrowly defined, machine-checked facts: m2-barc-upazila-zoning-v1 (legacy BARC Potato/Comilla map snapshot), m2-barc-portal-bilingual-v1 (values stated in BOTH the English and Bangla text of the same BARC Agri-Advisory Portal record), m2-barc-portal-variety-duration-v1 (published variety duration within 30-250 days, directly planted crops only), and m2-barc-czs-upazila-suitability-v1 (upazila class distribution, regional context only). Every accepted row expires 180 days after capture. Read-time validation rebuilds each row from the pinned capture and claim manifest; edited rows are ignored.",
+    "limitation": "No human reviewer is assigned; reviewed_by and reviewed_at stay null. Facts that one language version contradicts, or that only one language states, are not accepted."
   },
   "sources": [
     {
@@ -42,7 +70,10 @@
         "The page describes suitability assessment using agro-edaphic and agro-climatic inputs.",
         "The page describes suitability classes and states that crop zoning is generated at upazila level."
       ],
-      "m2_categories": ["crop_suitability_methodology", "regional_suitability_context"],
+      "m2_categories": [
+        "crop_suitability_methodology",
+        "regional_suitability_context"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "Methodology is not itself a potato recommendation for an individual farm.",
@@ -60,7 +91,9 @@
       "facts_supported": [
         "The page displays Bangladesh-wide potato land-area totals by suitability class."
       ],
-      "m2_categories": ["regional_suitability_context"],
+      "m2_categories": [
+        "regional_suitability_context"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "National aggregate area totals do not establish suitability for a specific farm, district, or upazila.",
@@ -78,14 +111,18 @@
         "The page reports mapped area by Potato suitability class for Comilla upazila.",
         "Very suitable 1645 ha; suitable 11020 ha; moderately suitable 2544 ha; marginally suitable 0 ha; not suitable 5364 ha; total 20573 ha."
       ],
-      "m2_categories": ["regional_suitability_context"],
+      "m2_categories": [
+        "regional_suitability_context"
+      ],
       "production_knowledge_eligible_now": true,
       "acceptance_policy": "m2-barc-upazila-zoning-v1",
       "limitations": [
         "The map reports upazila aggregate area, not field-level suitability.",
         "The map data vintage is not stated; accepted snapshots expire after 180 days.",
-        "This evidence does not provide season stages, tasks, or harvest guidance."
-      ]
+        "This evidence does not provide season stages, tasks, or harvest guidance.",
+        "The map's 'Comilla' upazila is the pre-split legacy unit; BARC's current suitability API lists Adarsha Sadar, Sadar Dakshin, and Lalmai instead. Without a source-backed mapping the record matches only a farm whose saved upazila is the legacy name 'Comilla', so current-upazila context records supersede it."
+      ],
+      "import_status": "Imported by scripts.import_reference_data as regional_context_only."
     },
     {
       "organization": "Bangladesh Agricultural Research Council (BARC)",
@@ -97,7 +134,9 @@
       "facts_supported": [
         "The catalogue lists potato, wheat, maize, and other crops as having map/data entries."
       ],
-      "m2_categories": ["source_discovery_only"],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "A catalogue listing does not establish any crop-specific fact.",
@@ -114,7 +153,9 @@
       "facts_supported": [
         "The index lists potato among the tuber-crop production-technology topics."
       ],
-      "m2_categories": ["source_discovery_only"],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "The index listing alone does not support planting, suitability, lifecycle, or harvest facts.",
@@ -131,7 +172,9 @@
       "facts_supported": [
         "BARI lists agricultural technology handbook editions as available resources."
       ],
-      "m2_categories": ["source_discovery_only"],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "The index page alone does not establish crop-specific claims or the handbook's publication/effective date.",
@@ -148,7 +191,9 @@
       "facts_supported": [
         "The page lists crop technology titles, including potato-related resources."
       ],
-      "m2_categories": ["source_discovery_only"],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "An index title does not support a specific agronomic claim.",
@@ -165,14 +210,171 @@
       "facts_supported": [
         "The page is an index of BRRI-recommended rice cultivation methods and field guides."
       ],
-      "m2_categories": ["source_discovery_only"],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
       "production_knowledge_eligible_now": false,
       "limitations": [
         "Rice is not named in the Golden Farm scenario or frontend crop examples selected for initial coverage.",
         "The page is an index; no individual guide was extracted into M2 knowledge."
       ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC) — Agri-Advisory Portal",
+      "document_or_page_title": "Crop Production Technology (public JSON route /api/crop/get-prod-tech/{crop_id})",
+      "url": "https://portal.cropzoning.gov.bd/CropInfo/ProductionTechs?c=36",
+      "publication_or_update_date": "per-record updated_at: potato 2024-01-28, wheat 2025-02-23, maize 2024-01-03, Boro rice 2024-01-01",
+      "date_note": "Each record names its upstream source (for example Hand Book of Agricultural Technology, 2013, BARI).",
+      "retrieval_date": "2026-10-08",
+      "source_type": "government_advisory_portal",
+      "reuse_terms": "Portal copyright policy: free reproduction in any format without specific permission if reproduced accurately, not in a misleading context, and with the source acknowledged (captured at portal/copyright_policy.html).",
+      "facts_supported": [
+        "Potato: high land with loam soil (both languages).",
+        "Wheat: high and medium-high land with loam or clay loam soil (both languages).",
+        "Wheat maturity indicator: golden colour (both languages).",
+        "Maize harvest calendar: Rabi late March to second week of April; Kharif-1 mid to late June (both languages)."
+      ],
+      "m2_categories": [
+        "crop_suitability",
+        "harvest_guidance"
+      ],
+      "production_knowledge_eligible_now": true,
+      "acceptance_policy": "m2-barc-portal-bilingual-v1",
+      "capture": "app/data/source_captures/barc_crop_zoning/portal/prod_tech_{36,4,5,3}.json",
+      "limitations": [
+        "English and Bangla fields often disagree (potato sowing, irrigation, and harvest timing; maize soils); only corroborated values are accepted. See barc_portal_claims.json rejected_claims.",
+        "General Bangladesh advisory, not location- or field-specific."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC) — Agri-Advisory Portal",
+      "document_or_page_title": "Crop Variety Information (public JSON routes /api/get-variety-names-by-crop/{id} and /api/get-variety-by-id/{id})",
+      "url": "https://portal.cropzoning.gov.bd/CropInfo/CropVarieties?c=36",
+      "publication_or_update_date": "per-variety updated_at (mostly 2022)",
+      "retrieval_date": "2026-10-08",
+      "source_type": "government_advisory_portal",
+      "facts_supported": [
+        "Official variety names for the M1 catalog (245 potato, wheat, maize, Boro and T. Aman rice varieties).",
+        "Duration ranges for 112 potato, wheat, and maize varieties."
+      ],
+      "m2_categories": [
+        "crop_catalog",
+        "harvest_guidance"
+      ],
+      "production_knowledge_eligible_now": true,
+      "acceptance_policy": "m2-barc-portal-variety-duration-v1",
+      "limitations": [
+        "The portal does not state the event a duration is counted from; FieldShift counts from the season planting date and says so.",
+        "Five records were rejected: four potato varieties publish no duration, and BARI Hybrid Vutta-10 lists an implausible 10-150 days.",
+        "The publisher's is_active flag is false on every inspected record and its meaning is undocumented; it is recorded but not used.",
+        "Rice durations are not used because the counting basis (seedbed sowing or transplanting) is unstated."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC) — Crop Zoning System, developed by the Institute of Water Modelling",
+      "document_or_page_title": "Crop Suitability by upazila (public JSON routes on api1.cropzoning.gov.bd used by the portal's cropSuitability page)",
+      "url": "https://portal.cropzoning.gov.bd/cropSuitability",
+      "retrieval_date": "2026-10-08",
+      "source_type": "government_research_portal",
+      "facts_supported": [
+        "64 districts and 482 upazilas with BBS geocodes (M1 geography reference).",
+        "Per-upazila distribution across suitability classes (80-100%, 60-80%, 40-60%, 20-40%, below 20% of attainable yield) by season and crop situation."
+      ],
+      "m2_categories": [
+        "geography_reference",
+        "regional_suitability_context"
+      ],
+      "production_knowledge_eligible_now": true,
+      "acceptance_policy": "m2-barc-czs-upazila-suitability-v1",
+      "limitations": [
+        "The API does not state the area unit; only unit-free shares are shown.",
+        "Upazila aggregates never establish farm-level fit.",
+        "Captured for 48 upazilas in 5 districts; other upazilas have no regional context until the capture covers them."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Institute (BARI)",
+      "document_or_page_title": "Krishi Projukti Hatboi (Handbook on Agro-Technology), 10th edition",
+      "url": "https://drive.google.com/file/d/1ErE_Fmhs2v_b9xgLzKEuE_5dPoAVlerF/view",
+      "publication_or_update_date": "2024-12 (Agrahayan 1431)",
+      "date_note": "Linked from the official BARI handbook page (page updated 2025-08-28).",
+      "retrieval_date": "2026-10-08",
+      "source_type": "national_research_institute_publication",
+      "facts_supported": [],
+      "m2_categories": [
+        "not_ingested"
+      ],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "Text uses the legacy SutonnyMJ font encoding; extracted text loses conjuncts, so claims cannot be machine-verified. A Unicode or verified-OCR edition is needed before growth stages or harvest guidance can be extracted."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agricultural Research Council (BARC)",
+      "document_or_page_title": "Khamari information materials (booklets 2024 and 2025, flyer 2026, user manual, two articles)",
+      "url": "https://cropzoning.gov.bd/information-material.php",
+      "retrieval_date": "2026-10-08",
+      "source_type": "government_service_documentation",
+      "facts_supported": [
+        "Khamari provides land-specific crop suitability and fertilizer recommendations from a field location."
+      ],
+      "m2_categories": [
+        "source_discovery_only"
+      ],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "The Bangla booklet and flyer use SutonnyMJ encoding.",
+        "Field-level Khamari and CZIS results come from role-gated CZIS modules and an undocumented GeoServer; FieldShift does not call or scrape them."
+      ]
+    },
+    {
+      "organization": "Bangladesh Agro-Meteorological Information Service (BAMIS), DAE",
+      "document_or_page_title": "Agro-met forecast and BWDB flood warnings",
+      "url": "https://www.bamis.gov.bd/agro-met/forecast/",
+      "retrieval_date": "2026-10-08",
+      "source_type": "time_limited_advisory",
+      "facts_supported": [],
+      "m2_categories": [
+        "not_ingested_m4_owned"
+      ],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "Forecasts and warnings are time-limited and belong to M4 weather intelligence; they are not stored as permanent M2 knowledge."
+      ]
+    },
+    {
+      "organization": "Soil Resource Development Institute (SRDI)",
+      "document_or_page_title": "SRDI portal and upazila land and soil resource guides",
+      "url": "https://srdi.gov.bd/",
+      "retrieval_date": "2026-10-08",
+      "source_type": "government_soil_reference",
+      "facts_supported": [
+        "Bangladesh land-type classes (high, medium high, medium low, low, very low) used as the M1 land-type vocabulary."
+      ],
+      "m2_categories": [
+        "profile_vocabulary"
+      ],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "No upazila soil guide was ingested; plot soil values remain farmer-reported."
+      ]
+    },
+    {
+      "organization": "Crop Intelligence (Canada)",
+      "document_or_page_title": "cropintel.ca",
+      "url": "https://cropintel.ca/",
+      "retrieval_date": "2026-10-08",
+      "source_type": "commercial_product",
+      "facts_supported": [],
+      "m2_categories": [
+        "not_applicable"
+      ],
+      "production_knowledge_eligible_now": false,
+      "limitations": [
+        "Commercial subscription service built on a customer's own field sensors for Canadian farming; it publishes no open Bangladesh data or reuse terms."
+      ]
     }
   ],
-  "candidate_facts": [],
-  "exclusion_reason": "Only the exact Comilla-upazila Potato map snapshot is eligible through the documented automated source policy. It is not imported into the database until M1 provides the Potato crop catalog row, and the record is constrained to regional context."
+  "candidate_facts": "See barc_portal_claims.json for accepted claims, exclusions, and rejected claims.",
+  "exclusion_reason": "Growth stages, initial tasks, sowing windows, irrigation schedules, and fertilizer doses are not imported: no inspected source states them consistently in a machine-verifiable form."
 }

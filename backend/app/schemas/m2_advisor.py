@@ -29,6 +29,10 @@ class M2Schema(BaseModel):
         return float(value) if isinstance(value, Decimal) else value
 
 
+MAX_SEASON_BUDGET = Decimal("999999999999.99")
+MAX_SEASON_YIELD = Decimal("99999999999.999")
+
+
 class LandAreaUnit(StrEnum):
     SQUARE_METRE = "square_metre"
     DECIMAL = "decimal"
@@ -54,6 +58,15 @@ class RecommendationSetStatus(StrEnum):
     AVAILABLE = "available"
     NO_APPROVED_KNOWLEDGE = "no_approved_knowledge"
     NO_SUPPORTED_FIT = "no_supported_fit"
+    PROFILE_INCOMPLETE = "profile_incomplete"
+
+
+class CropAssessmentStatus(StrEnum):
+    SUPPORTED_FIT = "supported_fit"
+    PROFILE_INCOMPLETE = "profile_incomplete"
+    CONDITIONS_NOT_MET = "conditions_not_met"
+    REGIONAL_CONTEXT_ONLY = "regional_context_only"
+    NO_EVIDENCE = "no_evidence"
 
 
 class SeasonPlanStatus(StrEnum):
@@ -109,6 +122,7 @@ class FarmProfileInput(M2Schema):
     land_unit: LandAreaUnit | None = None
     land_area_sqm: Decimal | None = Field(default=None, gt=0)
     soil_type: str | None = None
+    land_type: str | None = None
     irrigation_available: bool | None = None
     water_source: str | None = None
     previous_crop: PreviousCropOutcome | None = None
@@ -191,11 +205,41 @@ class CropRecommendation(M2Schema):
     knowledge_refs: list[KnowledgeReference] = Field(default_factory=list)
 
 
+class CropAssessment(M2Schema):
+    """Why a catalog crop was or was not recommended for the saved profile."""
+
+    crop: CropIdentity
+    status: CropAssessmentStatus
+    message: str
+    missing_profile_fields: list[str] = Field(default_factory=list)
+
+
+class RegionalSuitabilityEntry(M2Schema):
+    source_crop_name: str | None = None
+    season: str | None = None
+    situation: str | None = None
+    class_shares_percent: dict[str, float] = Field(default_factory=dict)
+
+
+class RegionalContext(M2Schema):
+    """Area-level context. It never establishes that a crop suits a field."""
+
+    crop: CropIdentity
+    scope: str
+    explanation: str
+    entries: list[RegionalSuitabilityEntry] = Field(default_factory=list)
+    knowledge_refs: list[KnowledgeReference] = Field(default_factory=list)
+
+
 class CropRecommendationSet(M2Schema):
     farmland_id: UUID
     status: RecommendationSetStatus
     message: str
     recommendations: list[CropRecommendation] = Field(default_factory=list)
+    profile_source: str = "request"
+    missing_profile_fields: list[str] = Field(default_factory=list)
+    crop_assessments: list[CropAssessment] = Field(default_factory=list)
+    regional_context: list[RegionalContext] = Field(default_factory=list)
 
 
 class CropSelectionInput(M2Schema):
@@ -214,7 +258,7 @@ class CropSelectionRequest(CropSelectionInput):
 
     planting_date: date | None = None
     expected_harvest_date: date | None = None
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_BUDGET)
     budget_currency: str = Field(default="BDT", min_length=3, max_length=3)
 
     @model_validator(mode="after")
@@ -236,7 +280,7 @@ class SeasonCreate(M2Schema):
     planting_date: date | None = None
     expected_harvest_date: date | None = None
     status: SeasonStatus = SeasonStatus.PLANNED
-    budget_amount: Decimal | None = Field(default=None, ge=0)
+    budget_amount: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_BUDGET)
     budget_currency: str = Field(default="BDT", min_length=3, max_length=3)
 
     @model_validator(mode="after")
@@ -253,7 +297,7 @@ class SeasonCreate(M2Schema):
 class SeasonResponse(SeasonCreate):
     season_id: UUID
     actual_harvest_date: date | None = None
-    actual_yield: Decimal | None = Field(default=None, ge=0)
+    actual_yield: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_YIELD)
     yield_unit: str | None = None
     outcome_notes: str | None = None
     created_at: datetime | None = None
@@ -330,7 +374,7 @@ class HarvestGuidance(M2Schema):
 class SeasonOutcomeInput(M2Schema):
     season_id: UUID
     outcome_notes: str | None = None
-    actual_yield: Decimal | None = Field(default=None, ge=0)
+    actual_yield: Decimal | None = Field(default=None, ge=0, le=MAX_SEASON_YIELD)
     yield_unit: str | None = None
     actual_harvest_date: date | None = None
     status: SeasonStatus | None = None

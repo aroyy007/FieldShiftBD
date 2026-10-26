@@ -61,6 +61,33 @@ class AgriculturalEvidence:
     acceptance_method: str | None
     effective_from: date | None
     effective_to: date | None
+    # Conditions of every declared positive factor, read before context
+    # filtering, so M2 can say which profile fields a fit would require.
+    declared_conditions: tuple[Mapping[str, Any], ...] = ()
+
+
+def declared_positive_conditions(content: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    conditions: list[Mapping[str, Any]] = []
+    applicability = content.get("applicability")
+    factors = content.get("factors")
+    if isinstance(factors, Mapping):
+        for item in factors.values():
+            if isinstance(item, Mapping) and item.get("kind") == "positive_factors":
+                if isinstance(item.get("when"), Mapping):
+                    conditions.append(item["when"])
+                elif isinstance(applicability, Mapping):
+                    conditions.append(applicability)
+    for key in ("suitable_because", "positive_factors"):
+        entries = content.get(key)
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            when = entry.get("when") if isinstance(entry, Mapping) else None
+            if isinstance(when, Mapping):
+                conditions.append(when)
+            elif isinstance(applicability, Mapping):
+                conditions.append(applicability)
+    return tuple(conditions)
 
 
 @dataclass(frozen=True)
@@ -182,7 +209,11 @@ def _row_matches_query(row: AgriculturalKnowledge, query: KnowledgeQuery) -> boo
 
 
 def _to_evidence(
-    row: AgriculturalKnowledge, content: Mapping[str, Any], *, crop_name: str | None = None
+    row: AgriculturalKnowledge,
+    content: Mapping[str, Any],
+    *,
+    crop_name: str | None = None,
+    raw_content: Mapping[str, Any] | None = None,
 ) -> AgriculturalEvidence:
     source_type = _source_type(row)
     assert source_type is not None  # Enforced by _row_matches_query.
@@ -209,6 +240,7 @@ def _to_evidence(
         acceptance_method=acceptance_method_for(row, content, crop_name=crop_name),
         effective_from=row.effective_from,
         effective_to=row.effective_to,
+        declared_conditions=declared_positive_conditions(raw_content or content),
     )
 
 
@@ -237,7 +269,7 @@ def get_relevant_evidence(db: Session, query: KnowledgeQuery) -> KnowledgeResult
         relevant_content = _filter_content(content, query.context)
         if relevant_content is None:
             continue
-        items.append(_to_evidence(row, relevant_content, crop_name=query.crop_name))
+        items.append(_to_evidence(row, relevant_content, crop_name=query.crop_name, raw_content=content))
     items.sort(key=lambda item: (item.category, str(item.crop_variety_id or ""), str(item.id)))
     return KnowledgeResult(
         status=EvidenceStatus.AVAILABLE if items else EvidenceStatus.MISSING_EVIDENCE,
