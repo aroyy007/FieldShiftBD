@@ -1,9 +1,17 @@
 import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { AppProvider } from "../context/AppProvider";
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    MinaRegular: require("../../assets/fonts/Mina-Regular.ttf"),
+    MinaBold: require("../../assets/fonts/Mina-Bold.ttf"),
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <AppProvider>
       <StatusBar hidden />

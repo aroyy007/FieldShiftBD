@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import React from 'react';
-import { TouchableOpacity, Text, TextInput, View, StyleSheet, TouchableOpacityProps, TextInputProps } from 'react-native';
+import { TouchableOpacity,   View, StyleSheet, TouchableOpacityProps, TextInputProps } from 'react-native';
 import { COLORS, SPACING, BORDER_RADIUS, TYPOGRAPHY, SHADOWS } from '../theme/theme';
 
 interface ButtonProps extends TouchableOpacityProps {

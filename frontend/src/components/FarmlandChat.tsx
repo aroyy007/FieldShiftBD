@@ -1,3 +1,4 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import { useEffect, useRef, useState } from 'react';
 import {
   Image,
@@ -5,8 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';

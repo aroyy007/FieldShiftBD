@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
-from app.models.core import Farmland
+from app.models.core import Crop, CropVariety, Farmland
 from app.models.season import (
     CropRecommendation as CropRecommendationRecord,
     Season,
@@ -27,7 +27,10 @@ from app.schemas.m2_advisor import (
     SeasonPlanResponse,
     SeasonResponse,
 )
+from app.schemas.m2_rotation import RotationComparisonRequest, RotationComparisonResponse
 from app.services import m2_advisor
+from app.services.nasa_power_climate import fetch_rotation_climate
+from app.services.rotation_comparison import compare_rotation_patterns
 
 router = APIRouter(prefix="/advisor", tags=["Crop Advisor & Season Lifecycle"])
 DbSession = Annotated[Session, Depends(get_db)]
@@ -133,6 +136,58 @@ def get_recommendations(
         return m2_advisor.list_recommendations(db, farmland_id)
     except m2_advisor.M2NotFoundError as exc:
         _raise_domain_error(exc)
+
+
+@router.post(
+    "/farmlands/{farmland_id}/rotation-comparisons",
+    response_model=RotationComparisonResponse,
+)
+def create_rotation_comparison(
+    farmland_id: UUID,
+    payload: RotationComparisonRequest,
+    db: DbSession,
+    farmer_id: FarmerId,
+):
+    """Compare BRRI-published crop patterns against this farm's saved context.
+
+    This is read-only. It does not create recommendations, seasons, tasks, or
+    Module 3 farm-state records.
+    """
+    farmland = _require_owned_farmland(db, farmland_id, farmer_id)
+    latest_season = db.scalar(
+        select(Season)
+        .where(Season.farmland_id == farmland_id, Season.status == "completed")
+        .order_by(Season.actual_harvest_date.desc().nullslast(), Season.created_at.desc())
+        .limit(1)
+    )
+    active_season = db.scalar(
+        select(Season)
+        .where(Season.farmland_id == farmland_id, Season.status == "active")
+        .order_by(Season.created_at.desc())
+        .limit(1)
+    )
+    previous_crop = farmland.previous_crop
+    if not previous_crop and latest_season is not None:
+        crop = db.get(Crop, latest_season.crop_id)
+        previous_crop = crop.name if crop is not None else None
+    current_crop = None
+    current_variety = None
+    if active_season is not None:
+        crop = db.get(Crop, active_season.crop_id)
+        current_crop = crop.name if crop is not None else None
+        if active_season.crop_variety_id is not None:
+            variety = db.get(CropVariety, active_season.crop_variety_id)
+            current_variety = variety.name if variety is not None else active_season.variety_name
+        else:
+            current_variety = active_season.variety_name
+    return compare_rotation_patterns(
+        farmland,
+        payload.priorities,
+        previous_crop=previous_crop,
+        current_crop=current_crop,
+        current_variety=current_variety,
+        climate_context=fetch_rotation_climate(farmland.latitude, farmland.longitude),
+    )
 
 
 @router.post("/recommendations/{recommendation_id}/dismiss", response_model=CropRecommendation)

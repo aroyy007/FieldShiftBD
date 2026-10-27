@@ -6,3 +6,4 @@ __pycache__/
 .venv/
 .pytest_cache/
 .expo/
+/backend/data/nasa_power_cache/

@@ -1,15 +1,15 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card } from '../../../components/ui';
 import CropAdvisorPresentation from '../../../components/CropAdvisorPresentation';
+import RotationComparison from '../../../components/RotationComparison';
 import OptionPickerModal from '../../../components/OptionPickerModal';
 import type { CropAdvisorIconName } from '../../../components/crop-advisor-icons';
 import { useAppContext } from '../../../context/AppProvider';
@@ -659,6 +659,7 @@ export default function CropAdvisorScreen() {
             </View>
           </View>
         }
+        rotationContent={<RotationComparison farmlandId={farm.id} />}
       />
       <OptionPickerModal
         visible={picker === 'crop'}

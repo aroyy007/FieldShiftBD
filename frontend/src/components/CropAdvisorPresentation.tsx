@@ -1,3 +1,4 @@
+import { Text } from '@/components/BanglaTypography';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
@@ -5,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -36,6 +36,7 @@ type Props = {
   hasRecommendation: boolean;
   toolsOpen: boolean;
   toolsContent: ReactNode;
+  rotationContent: ReactNode;
   onBack: () => void;
   onStartPlan: () => void;
   onOtherCrops: () => void;
@@ -62,6 +63,7 @@ export default function CropAdvisorPresentation({
   hasRecommendation,
   toolsOpen,
   toolsContent,
+  rotationContent,
   onBack,
   onStartPlan,
   onOtherCrops,
@@ -160,6 +162,8 @@ export default function CropAdvisorPresentation({
             emptyMessage="No crop-specific risks are available until an evidence-backed recommendation is returned."
             rows={visibleWatchOuts.map(item => ({ ...item, tone: 'amber' as const }))}
           />
+
+          {rotationContent}
 
           <SeasonTimeline compact={compact} veryCompact={veryCompact} stages={seasonStages} />
 

@@ -47,6 +47,110 @@ export type RegionalContext = {
   knowledge_refs: KnowledgeReference[];
 };
 
+export type RotationPriority = 'fewer_fallow_slots' | 'include_legume' | 'more_crop_types' | 'match_farm_context';
+
+export type RotationPattern = {
+  pattern_id: string;
+  sequence: string[];
+  crop_slots: number;
+  distinct_crop_types: number;
+  fallow_slots: number;
+  contains_legume: boolean;
+  fit_status: 'matches_published_conditions' | 'not_published_conditions' | 'not_current_source_crop' | 'source_variety_not_confirmed' | 'farm_context_incomplete';
+  fit_notes: string[];
+  priority_matches: RotationPriority[];
+  sequence_notes: string[];
+  source: {
+    source_name: string;
+    source_reference: string;
+    claim: string | null;
+    limitation: string | null;
+  };
+};
+
+export type RotationClimatePeriod = {
+  start_year: number;
+  end_year: number;
+  years_observed: number;
+  years_available: number;
+  mean_annual_rainfall_mm: number | null;
+  mean_annual_temperature_c: number | null;
+  observed_days: number;
+  expected_days: number;
+  coverage_percent: number;
+  annual_values: RotationClimateYear[];
+};
+
+export type RotationClimateYear = {
+  year: number;
+  rainfall_total_mm: number;
+  mean_temperature_c: number;
+  days_observed: number;
+  days_expected: number;
+  coverage_percent: number;
+};
+
+export type RotationClimateMonthPeriod = {
+  years_observed: number;
+  years_available: number;
+  mean_monthly_rainfall_mm: number | null;
+  mean_temperature_c: number | null;
+  observed_days: number;
+  expected_days: number;
+  coverage_percent: number;
+};
+
+export type RotationClimateContext = {
+  dataset: string;
+  source_reference: string;
+  resolution_reference: string;
+  time_standard: string;
+  parameters: { code: string; label: string; unit: string }[];
+  observation_scale: string;
+  retrieved_at: string | null;
+  cache_status: 'live' | 'live_uncached' | 'disk_cache' | 'stale_cache' | 'unavailable';
+  requested_period: { start: string; end: string } | null;
+  observed_period: { start: string | null; end: string | null } | null;
+  annual_values: RotationClimatePeriod['annual_values'];
+  period_comparison: {
+    earlier: RotationClimatePeriod;
+    later: RotationClimatePeriod;
+    difference_later_minus_earlier: { annual_rainfall_mm: number | null; annual_mean_temperature_c: number | null };
+  } | null;
+  monthly_comparison: {
+    month: number;
+    earlier: RotationClimateMonthPeriod;
+    later: RotationClimateMonthPeriod;
+    difference_later_minus_earlier: { rainfall_mm: number | null; temperature_c: number | null };
+  }[];
+  unavailable_reason: string | null;
+  requested_coordinate: { latitude: number; longitude: number } | null;
+  query_coordinate: { latitude: number; longitude: number } | null;
+};
+
+export type RotationComparison = {
+  farmland_id: string;
+  status: 'available' | 'profile_incomplete' | 'no_supported_patterns';
+  priority_order: RotationPriority[];
+  current_crop: string | null;
+  current_variety: string | null;
+  previous_crop: string | null;
+  patterns: RotationPattern[];
+  additional_evidence: { source_name: string; source_reference: string; claim: string | null; limitation: string | null }[];
+  limitations: string[];
+  climate_context: RotationClimateContext;
+};
+
+export async function compareRotations(
+  farmlandId: string,
+  priorities: RotationPriority[],
+): Promise<RotationComparison> {
+  return m2Request<RotationComparison>(`/advisor/farmlands/${farmlandId}/rotation-comparisons`, {
+    method: 'POST',
+    body: JSON.stringify({ priorities }),
+  });
+}
+
 export type RecommendationSet = {
   farmland_id: string;
   status: 'available' | 'no_approved_knowledge' | 'no_supported_fit' | 'profile_incomplete';

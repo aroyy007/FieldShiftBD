@@ -1,11 +1,10 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import React, { useState } from 'react';
 import {
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';

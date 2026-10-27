@@ -1,5 +1,6 @@
+import { Text } from '@/components/BanglaTypography';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { DashboardIcon, DashboardIconName } from './dashboard-icons';

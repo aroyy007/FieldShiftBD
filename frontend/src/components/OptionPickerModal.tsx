@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet,   View } from 'react-native';
 
 export type PickerOption = { value: string; label: string; detail?: string };
 

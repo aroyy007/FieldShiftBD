@@ -1,7 +1,7 @@
+import { Text } from '@/components/BanglaTypography';
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
-  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, router, useLocalSearchParams } from 'expo-router';

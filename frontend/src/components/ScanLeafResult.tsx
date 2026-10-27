@@ -1,3 +1,4 @@
+import { Text } from '@/components/BanglaTypography';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -6,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';

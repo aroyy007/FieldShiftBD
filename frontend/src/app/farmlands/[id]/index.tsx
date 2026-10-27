@@ -1,5 +1,6 @@
+import { Text } from '@/components/BanglaTypography';
 import React, { useEffect, useState } from 'react';
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ImageBackground, Pressable, ScrollView, StyleSheet,  View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { DashboardIcon } from '../../../components/dashboard-icons';

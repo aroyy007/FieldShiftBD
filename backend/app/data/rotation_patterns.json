@@ -1,0 +1,50 @@
+{
+  "version": "2026-10-28",
+  "record_type": "published_source_examples_not_farmer_advice",
+  "curation_note": "These entries transcribe crop-sequence examples from the cited public BRRI page. They are not records approved through the AgriculturalKnowledge recommendation workflow and must not be presented as field-level recommendations.",
+  "source_name": "Bangladesh Rice Research Institute (BRRI) Rice Profile",
+  "source_reference": "https://riceprofile.brri.gov.bd/varieties/26",
+  "source_crop_variety": "BR15",
+  "applicability": {
+    "region": "Bangladesh; source says generally suitable across Bangladesh",
+    "land_types": ["high", "medium_high", "low"],
+    "irrigation": "The source describes BR15 as suitable for irrigated high, medium-high, and low land. This is variety context, not proof that every sequence fits this farm."
+  },
+  "patterns": [
+    {
+      "id": "boro-fallow-aman",
+      "sequence": ["Boro rice", "Fallow", "Transplanted Aman rice"],
+      "crop_groups": ["rice", "fallow", "rice"],
+      "notes": ["One recorded fallow slot; the pattern lists two crop seasons."],
+      "contains_legume": false
+    },
+    {
+      "id": "boro-aus-aman",
+      "sequence": ["Boro rice", "Transplanted Aus rice", "Transplanted Aman rice"],
+      "crop_groups": ["rice", "rice", "rice"],
+      "notes": ["The source lists three rice-season slots. Calendar feasibility depends on local water and turnaround time."],
+      "contains_legume": false
+    },
+    {
+      "id": "mustard-boro-aman",
+      "sequence": ["Mustard", "Boro rice", "Transplanted Aman rice"],
+      "crop_groups": ["mustard", "rice", "rice"],
+      "notes": ["Mustard is not currently in the FieldShift crop catalog."],
+      "contains_legume": false
+    },
+    {
+      "id": "khesari-fallow-aman",
+      "sequence": ["Khesari (grass pea)", "Fallow", "Transplanted Aman rice"],
+      "crop_groups": ["khesari", "fallow", "rice"],
+      "notes": ["The sequence includes a legume and one fallow slot. The source does not quantify a soil-health effect for this farm."],
+      "contains_legume": true
+    }
+  ],
+  "additional_evidence": [],
+  "limitations": [
+    "These are published BR15 crop-pattern examples, not field-level prescriptions.",
+    "The BRRI source does not provide a measured soil-health score for these sequences.",
+    "The current FieldShift catalog contains Rice, Potato, Wheat, and Maize; sequences containing other crops cannot be started directly in the existing season flow.",
+    "Historical NASA POWER climate context is shown beside these patterns but is not used to rank them; it does not establish field soil condition or crop-sequence performance."
+  ]
+}

@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import React, { useState } from 'react';
-import { Image, ImageSourcePropType, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, ImageSourcePropType, Modal, Pressable, RefreshControl, ScrollView, StyleSheet,   View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import { DashboardIcon } from '../../components/dashboard-icons';

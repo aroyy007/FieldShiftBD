@@ -1,5 +1,6 @@
+import { Text } from '@/components/BanglaTypography';
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, StyleSheet,  View, useWindowDimensions } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 

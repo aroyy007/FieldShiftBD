@@ -43,6 +43,7 @@ Who is the farmer? → Where is the farm? → What resources are available?
 |---|---|
 | **Progressive Onboarding** | Conversational profile building — asks only what's missing, allows corrections |
 | **Crop Advisory** | Explainable crop recommendations based on soil, climate, irrigation, budget, and BARC-sourced agricultural knowledge |
+| **Rotation Comparison** | Comparison of BRRI-published crop sequences against saved farm context and farmer priorities, without an unsupported soil-health score |
 | **Season Planning** | Growth-stage definitions, task scheduling, and harvest guidance |
 | **Farm Brain** | Central state engine tracking tasks, problems, check-ins, and growth stages |
 | **Weather Intelligence** | Real-time weather alerts from Open-Meteo & NASA POWER, with smart suppression — alerts only when weather changes what the farmer should do |
@@ -175,6 +176,8 @@ Recommendations are **explainable** — every crop suggestion includes structure
 
 **Key capabilities:**
 - Crop recommendation engine with multi-factor suitability scoring
+- Read-only comparison of source-backed crop sequences using saved farm context and explicit farmer priorities
+- Displays sequence, crop/fallow slots, applicability notes, and source links; it does not estimate soil-health outcomes or create seasons/tasks
 - Support for BARC-sourced knowledge with provenance tracking
 - Season creation with crop selection and variety support
 - Growth stage definitions and season plan generation
@@ -204,6 +207,7 @@ The system does **not** simply notify "rain tomorrow." It determines whether the
 
 **Key capabilities:**
 - Dual weather providers: Open-Meteo (7-day forecast) + NASA POWER (30-day observed data)
+- Rotation comparisons also fetch a separate 25-complete-year NASA POWER daily history (T2M and PRECTOTCORR); it is descriptive context, not a sequence score
 - Parallel upstream fetching with fault tolerance
 - Crop-aware, growth-stage-aware alert generation
 - Smart alert suppression (e.g., rain alert suppressed if no irrigation task is due)
@@ -287,6 +291,7 @@ Uses a custom-trained ResNet-50 model (`Saon110/bd-crop-vegetable-plant-disease-
 | `POST` | `/advisor/recommendations` | Generate crop recommendations | ✅ |
 | `POST` | `/advisor/farmlands/{id}/recommendations` | Recommend crops for a farmland | ✅ |
 | `GET` | `/advisor/farmlands/{id}/recommendations` | List recommendations | ✅ |
+| `POST` | `/advisor/farmlands/{id}/rotation-comparisons` | Compare source-backed crop sequences and include historical NASA POWER climate context (read-only) | ✅ |
 | `POST` | `/advisor/recommendations/{id}/dismiss` | Dismiss a recommendation | ✅ |
 | `POST` | `/advisor/seasons` | Select crop and create season | ✅ |
 | `GET` | `/advisor/farmlands/{id}/seasons` | Season history | ✅ |
@@ -360,6 +365,10 @@ This is the simplest way to run the full stack. See [Quick Start](#-quick-start)
 | Expo Frontend | `fieldshift-frontend-1` | `8082` |
 
 On first boot, the backend container automatically runs `alembic upgrade head` to apply all database migrations.
+The Compose backend mounts the named `fieldshift_nasa_power_cache` volume at `/data/nasa-power`. For deployments outside Compose, mount persistent storage and set `NASA_POWER_CACHE_DIR`; otherwise the default temporary directory will not survive container replacement.
+For an offline demo, run one rotation comparison while connected so the daily history is cached; subsequent requests use the mounted disk cache. `NASA_POWER_REFRESH_CACHE=1` refreshes the current history and should be turned off again after refreshing.
+
+Historical rotation context uses the [NASA POWER Daily API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) for daily mean 2 m temperature (`T2M`) and corrected precipitation (`PRECTOTCORR`). NASA documents daily UTC/LST data from 1981 to near real time; FieldShift requests the latest 25 complete calendar years and splits them into earlier/later comparison periods. A year or year-month contributes to averages only at 90% or higher daily coverage; all observed coverage remains visible. The response reports its requested and observed years, data coverage, retrieval timestamp, and whether values came from a live fetch, live-but-uncached request, disk cache, stale cache, or were unavailable. POWER meteorological data have approximately 0.5° × 0.625° spatial resolution ([NASA POWER resolution guidance](https://power.larc.nasa.gov/docs/tutorials/service-data-request/api/); roughly 50–60 km scale near Bangladesh), not field-level measurement. These summaries are displayed next to BRRI sequence examples and do not change their ordering or establish soil-health, yield, or field-suitability outcomes.
 
 ### Option B: Local Development (Without Docker)
 
@@ -469,6 +478,8 @@ docker compose up db
 | `DISEASE_CONFIDENCE_THRESHOLD` | No | Minimum confidence score for disease detection | `0.70` |
 | `DISEASE_MODEL_WEIGHTS_PATH` | No | Path to disease model checkpoint | `backend/model/crop_veg_plant_disease_model.pth` |
 | `GEMINI_API_KEY` | No | Google Gemini API key (enables AI chat + verification) | — |
+| `NASA_POWER_CACHE_DIR` | No | Directory for historical POWER responses; mount persistent storage in deployments | `/tmp/fieldshift-nasa-power-cache` |
+| `NASA_POWER_REFRESH_CACHE` | No | Set to `1` to refresh an existing complete-year POWER cache | `0` |
 | `GEMINI_MODEL` | No | Gemini model name | `gemini-3.8-flash` |
 | `GEMINI_TIMEOUT_SECONDS` | No | Gemini API timeout | `20` |
 

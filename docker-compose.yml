@@ -35,10 +35,12 @@ services:
       # here (sourced from the root .env) keeps a single source of truth and
       # stops an empty SECRET_KEY from silently overriding the real value.
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in the root .env - see backend/.env.example}
+      NASA_POWER_CACHE_DIR: /data/nasa-power
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - nasa_power_cache:/data/nasa-power
     depends_on:
       db:
         condition: service_healthy
@@ -59,3 +61,5 @@ volumes:
   postgres_data:
     name: backend_postgres_data
   frontend_node_modules:
+  nasa_power_cache:
+    name: fieldshift_nasa_power_cache

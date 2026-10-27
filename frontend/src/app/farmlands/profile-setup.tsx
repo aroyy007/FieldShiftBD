@@ -1,3 +1,4 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Href,
@@ -11,8 +12,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';

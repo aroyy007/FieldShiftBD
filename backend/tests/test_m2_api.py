@@ -27,7 +27,17 @@ os.environ.update(
 from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
 from app.main import app
-from app.models import AgriculturalKnowledge, Base, Crop, Farmer, Farmland, Task
+from app.models import (
+    AgriculturalKnowledge,
+    Base,
+    Crop,
+    CropRecommendation,
+    Farmer,
+    Farmland,
+    Season,
+    SeasonPlan,
+    Task,
+)
 from app.schemas.m2_advisor import FarmProfileInput
 
 
@@ -195,6 +205,42 @@ def test_m2_api_recommendation_selection_lifecycle_and_history(m2_client):
         json={"season_id": season_id, "actual_yield": 5, "yield_unit": "kg"},
     )
     assert closing.status_code == 409
+
+
+def test_rotation_comparison_returns_published_examples_without_writing(m2_client):
+    client, scenario, db = m2_client
+    farmland_id = scenario["farm_profile"]["farmland_id"]
+    tables = (CropRecommendation, Season, SeasonPlan, Task)
+    counts_before = tuple(db.query(table).count() for table in tables)
+
+    response = client.post(
+        f"/advisor/farmlands/{farmland_id}/rotation-comparisons",
+        json={"priorities": ["include_legume"]},
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["farmland_id"] == farmland_id
+    assert result["status"] == "profile_incomplete"
+    assert len(result["patterns"]) == 4
+    assert any(pattern["contains_legume"] for pattern in result["patterns"])
+    assert all(pattern["source"]["source_reference"] for pattern in result["patterns"])
+    assert "soil-health score" in " ".join(result["limitations"])
+    assert result["climate_context"]["cache_status"] == "unavailable"
+    assert tuple(db.query(table).count() for table in tables) == counts_before
+
+
+def test_rotation_comparison_hides_another_farmers_data(m2_client):
+    client, _, _ = m2_client
+    other_farmland_id = client.app.state.other_farmland_id
+
+    response = client.post(
+        f"/advisor/farmlands/{other_farmland_id}/rotation-comparisons",
+        json={"priorities": ["match_farm_context"]},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Farmland not found"
 
 
 def test_m2_synthetic_scenario_matches_contract_and_completes_positive_api_flow(m2_client):

@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text } from '@/components/BanglaTypography';
+import { ScrollView, StyleSheet,  TouchableOpacity, View } from 'react-native';
 import { ChatThread, Farmland } from '../data/demo';
 import { BORDER_RADIUS, COLORS, SPACING, TYPOGRAPHY } from '../theme/theme';
 

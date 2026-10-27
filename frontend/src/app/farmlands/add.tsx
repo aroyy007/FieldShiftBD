@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/BanglaTypography';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet,   View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FarmBottomNavigation, FarmChromeIcon, FarmPageHeader } from '../../components/farmland-mobile-ui';

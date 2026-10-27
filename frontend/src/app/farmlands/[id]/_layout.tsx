@@ -1,5 +1,6 @@
+import { Text } from '@/components/BanglaTypography';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Pressable, StyleSheet,  View, useWindowDimensions } from 'react-native';
 import { Href, Stack, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FarmlandSidebar } from '../../../components/FarmlandSidebar';
