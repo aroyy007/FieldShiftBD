@@ -1,6 +1,10 @@
 # 🌾 AI Farmer Assistant — Project Plan
 
-> **This document is the source of truth for the project.**
+> **Consolidated authority — 2026-10-29:** Read [FINAL_IMPLEMENTATION_PLAN.md](docs/plans/FINAL_IMPLEMENTATION_PLAN.md) first. This document remains a detailed source specification; the final plan reconciles all four plans, foundation readiness and six-person work allocation. Original source snapshots are preserved there from commit `336bf6c`.
+
+> **Authority note:** This is a detailed source specification. Use
+> [FINAL_IMPLEMENTATION_PLAN.md](docs/plans/FINAL_IMPLEMENTATION_PLAN.md) for reconciled scope,
+> delivery order and shared-contract decisions.
 >
 > **2026-10-29 planning amendment, requested by the project owner:** Deliver the organizer's NASA planting-window advisory together with the complete final Field Shift problem statement. Section 20 and [the detailed challenge delivery plan](docs/plans/2026-10-29-nasa-planting-window-and-rotation.md) define this added scope, acceptance gates and requirement traceability. The [Bangla voice plan](docs/plans/2026-10-06-voice-first-bangla.md) is its accessibility delivery plan. Existing six-module ownership remains the baseline; proposed additive interfaces must be recorded with affected owners before implementation. This amendment does not claim those interfaces or features are already implemented.
 >

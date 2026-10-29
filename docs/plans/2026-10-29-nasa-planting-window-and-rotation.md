@@ -1,5 +1,7 @@
 # FieldShift BD — NASA Planting Windows, Rotation Decisions and Bangla Mobile Delivery
 
+> **Consolidated authority — 2026-10-29:** Read [FINAL_IMPLEMENTATION_PLAN.md](FINAL_IMPLEMENTATION_PLAN.md) first. This document remains a detailed source specification; the final plan reconciles all four plans, foundation readiness and six-person work allocation. Original source snapshots are preserved there from commit `336bf6c`.
+
 **Revised:** 2026-10-29, Asia/Dhaka. **Status:** implementation plan; no feature is complete merely because it appears here.
 
 **Authority:** the user's 2026-10-29 request makes the supplied organizer instructions and the complete final problem statement the required product scope. This document specializes [the canonical project plan](../../plan.md) without replacing the six owners or creating a seventh module. The [voice plan](2026-10-06-voice-first-bangla.md) supplies the detailed accessibility channel. Existing runtime contracts remain the compatibility baseline; additive contracts below must be recorded before implementation, rather than silently changing another owner's fields.

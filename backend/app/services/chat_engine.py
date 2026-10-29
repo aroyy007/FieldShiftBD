@@ -378,6 +378,8 @@ def generate_gemini_reply(
     history_messages: list[ChatMessage],
     new_message: str,
 ) -> str | None:
+    if settings.OFFLINE_MODE:
+        return None
     secret = settings.GEMINI_API_KEY
     api_key = secret.get_secret_value().strip() if secret is not None else ""
     if not api_key:

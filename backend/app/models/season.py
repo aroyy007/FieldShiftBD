@@ -55,6 +55,7 @@ class Season(UUIDPrimaryKey, TimestampMixin, Base):
             "farmland_id",
             unique=True,
             postgresql_where="status = 'active'",
+            sqlite_where=text("status = 'active'"),
         ),
     )
 

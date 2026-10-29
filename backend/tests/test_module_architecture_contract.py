@@ -17,6 +17,11 @@ FIXTURES = Path(__file__).parent / "fixtures" / "modules"
 
 def test_all_six_modules_declare_owned_routes_and_models():
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    foundation = manifest["shared_foundation"]
+    assert foundation["contract_version"] == "1.0.0"
+    assert foundation["feature_flags_default"] is False
+    assert foundation["alembic_revision"] == "c6f4e739a2b1"
+    assert "get" in app.openapi()["paths"][foundation["availability_endpoint"]]
     assert set(manifest["modules"]) == {f"M{i}" for i in range(1, 7)}
     openapi = app.openapi()
     seen_operations = set()

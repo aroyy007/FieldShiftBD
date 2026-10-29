@@ -1,5 +1,7 @@
 # FieldShift BD — Adaptive Decisions and Confirmed Plan B
 
+> **Consolidated authority — 2026-10-29:** Read [FINAL_IMPLEMENTATION_PLAN.md](FINAL_IMPLEMENTATION_PLAN.md) first. This document remains a detailed source specification; the final plan reconciles all four plans, foundation readiness and six-person work allocation. Original source snapshots are preserved there from commit `336bf6c`.
+
 **Revision:** 2026-10-29, Asia/Dhaka. **Status:** required planned extension, not an implemented feature. The project owner accepted the three linked additions after the competitor review. This document extends the [challenge delivery plan](2026-10-29-nasa-planting-window-and-rotation.md), [canonical plan](../../plan.md) and [voice plan](2026-10-06-voice-first-bangla.md). All organizer/final-statement requirements remain required. Read the complete plan set through the [index](README.md).
 
 ## 1. Accepted scope and completion order

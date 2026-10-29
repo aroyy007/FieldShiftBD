@@ -1,3 +1,4 @@
 .env
 /backend/model/
 /showcase-video/
+/backend/data/climate/cache/

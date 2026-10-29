@@ -1,0 +1,102 @@
+name: foundation and module checks
+
+on:
+  pull_request:
+  push:
+    branches: [main, Aveshek, frontend]
+
+jobs:
+  backend-contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: python -m pip install -r requirements.txt -r requirements-test.txt
+      - run: python -m pytest tests/test_contract_generation.py tests/test_foundation_contracts.py tests/test_m2_contracts.py tests/test_module_architecture_contract.py -q
+      - run: python scripts/export_challenge_contracts.py --check
+
+  backend-module-unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [foundation, m1, m2, m3, m4, m5, m6]
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: python -m pip install -r requirements.txt -r requirements-test.txt
+      - run: python scripts/test_modules.py ${{ matrix.module }}
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fieldshift_test
+          POSTGRES_PASSWORD: fieldshift_test
+          POSTGRES_DB: fieldshift_ci_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fieldshift_test -d fieldshift_ci_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DB_USER: fieldshift_test
+      DB_PASSWORD: fieldshift_test
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      DB_NAME: fieldshift_ci_test
+      DATABASE_URL: postgresql+psycopg2://fieldshift_test:fieldshift_test@localhost:5432/fieldshift_ci_test
+      FIELDSHIFT_PG_TEST_DATABASE_URL: postgresql+psycopg2://fieldshift_test:fieldshift_test@localhost:5432/fieldshift_ci_test
+      SECRET_KEY: fieldshift-ci-only-secret-key-never-use-in-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: python -m pip install -r requirements.txt -r requirements-test.txt
+      - run: python -m alembic upgrade head
+      - run: python -m alembic check
+      - run: python scripts/verify_foundation_upgrade_compat.py
+      - run: python -m alembic check
+      - run: python -m pytest tests/test_pg_foundation_integration.py tests/test_pg_reference_integration.py -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npx expo export --platform web

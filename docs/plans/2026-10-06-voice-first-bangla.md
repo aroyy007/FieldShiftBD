@@ -1,5 +1,7 @@
 # Voice-First Bangla Experience — Implementation Plan
 
+> **Consolidated authority — 2026-10-29:** Read [FINAL_IMPLEMENTATION_PLAN.md](FINAL_IMPLEMENTATION_PLAN.md) first. This document remains a detailed source specification; the final plan reconciles all four plans, foundation readiness and six-person work allocation. Original source snapshots are preserved there from commit `336bf6c`.
+
 > **Revised 2026-10-29:** This is the voice/accessibility delivery plan for [the organizer and final-challenge implementation plan](2026-10-29-nasa-planting-window-and-rotation.md), under `plan.md` Section 20. All five organizer images and the complete final statement are preserved and mapped there. Voice delivers the planting-window and rotation decisions; it does not substitute for their scientific implementation. Checkboxes are targets, not claims of completed work.
 >
 > **For contributors:** Use the existing Expo/FastAPI app and module contracts. Track implementation and verification evidence for each phase, the parent plan's V01-V15 gates and the accepted adaptive-decision A01-A08 gates. Read the [complete plan index](README.md) and [adaptive-decision specification](2026-10-29-adaptive-decisions-and-confirmed-plan-b.md). F9/CCR-12 below integrate the owner's accepted three-feature follow-up.

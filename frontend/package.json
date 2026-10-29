@@ -45,6 +45,7 @@
     "ios": "expo start --ios --port 8082",
     "web": "expo start --web --port 8082",
     "lint": "expo lint",
+    "test": "node --test src/services/api-client.test.mjs src/modules/shared/foundation.test.mjs",
     "postinstall": "patch-package"
   },
   "private": true

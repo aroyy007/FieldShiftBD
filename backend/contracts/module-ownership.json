@@ -1,6 +1,23 @@
 {
   "version": 1,
-  "source_of_truth": "plan.md and docs/plans/README.md",
+  "source_of_truth": "plan.md, docs/plans/README.md, and docs/plans/FOUNDATION_AND_PARALLEL_WORK.md",
+  "shared_foundation": {
+    "contract_version": "1.0.0",
+    "single_writer": "integration steward",
+    "backend_contract_source": "app.contracts.challenge.v1",
+    "backend_ports": "app.contracts.challenge.ports",
+    "generated_json_schema": "contracts/jsonschema/challenge-v1.schema.json",
+    "generated_typescript": "frontend/src/modules/shared/contracts.generated.ts",
+    "fake_adapters": "tests/fakes/",
+    "action_coordinator": "app.services.actions",
+    "transaction_aware_m3_owner": "app.services.operational_actions",
+    "climate_cache_reader": "app.services.climate",
+    "profile_snapshot_reader": "app.services.profile_intake",
+    "alembic_revision": "c6f4e739a2b1",
+    "frontend_modules": "frontend/src/modules/m1 through m6",
+    "feature_flags_default": false,
+    "availability_endpoint": "/challenge/foundation/availability"
+  },
   "modules": {
     "M1": {
       "name": "Farm Profile & Onboarding",

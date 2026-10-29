@@ -1,6 +1,8 @@
 # FieldShift BD — সম্পূর্ণ updated plan
 
-**আপডেট:** ২৯ অক্টোবর ২০২৬। এই index থেকে পুরো plan পড়া যাবে। Organizer-এর পাঁচটি নির্দেশনার image, final problem statement, বর্তমান M1–M6 foundation, Bangla voice/mobile delivery এবং owner-accepted তিনটি adaptive feature একসঙ্গে এই plan set-এর scope। এখানে বর্ণিত নতুন feature-গুলো planned; documentation update-কে implementation বা test success বলা হচ্ছে না।
+**Active final plan:** [FINAL_IMPLEMENTATION_PLAN.md](FINAL_IMPLEMENTATION_PLAN.md) combines all four source plans with complete source appendices. Before dividing implementation work, use [FOUNDATION_AND_PARALLEL_WORK.md](FOUNDATION_AND_PARALLEL_WORK.md). Give each teammate [TEAMMATE_AI_AGENT_STARTER.md](TEAMMATE_AI_AGENT_STARTER.md) and their module brief. The earlier navigation below remains available for source detail.
+
+**আপডেট:** ২৯ অক্টোবর ২০২৬। এই index থেকে পুরো plan পড়া যাবে। Organizer-এর পাঁচটি নির্দেশনার image, final problem statement, বর্তমান M1–M6 foundation, Bangla voice/mobile delivery এবং owner-accepted তিনটি adaptive feature একসঙ্গে এই plan set-এর scope। Foundation কাজের implementation ও verification status `FOUNDATION_AND_PARALLEL_WORK.md`-এ রাখা হয়; বাকি M1–M6 domain features এখানে planned এবং এই plan file-কে implementation evidence হিসেবে ধরা যাবে না।
 
 ## কোন document কী নির্ধারণ করে
 

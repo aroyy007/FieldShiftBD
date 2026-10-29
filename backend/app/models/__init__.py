@@ -9,6 +9,16 @@ from app.models.core import (
     FarmlandCropPreference,
 )
 from app.models.disease import DiseaseResult
+from app.models.foundation import (
+    ActionReceipt,
+    AdaptivePolicyVersion,
+    AnalysisRecord,
+    AnalysisRecordSource,
+    ConsentRecord,
+    DeliveryOutbox,
+    EvidenceArtifact,
+    ProposedAction,
+)
 from app.models.profile import FarmerProfile
 from app.models.season import (
     CropRecommendation,
@@ -21,13 +31,20 @@ from app.models.weather import WeatherAlert, WeatherEvent
 
 __all__ = [
     "AgriculturalKnowledge",
+    "ActionReceipt",
+    "AdaptivePolicyVersion",
+    "AnalysisRecord",
+    "AnalysisRecordSource",
     "Base",
     "ChatMessage",
     "Conversation",
+    "ConsentRecord",
     "Crop",
     "CropRecommendation",
     "CropVariety",
     "DiseaseResult",
+    "DeliveryOutbox",
+    "EvidenceArtifact",
     "Farmer",
     "FarmerProfile",
     "Farmland",
@@ -35,6 +52,7 @@ __all__ = [
     "FarmCheckin",
     "GrowthStage",
     "Problem",
+    "ProposedAction",
     "Season",
     "SeasonPlan",
     "Task",
