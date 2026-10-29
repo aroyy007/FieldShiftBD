@@ -8,6 +8,7 @@ export type AssistantIconName =
   | 'checks'
   | 'sparkle'
   | 'microphone'
+  | 'volume'
   | 'send'
   | 'tasks'
   | 'leaf'
@@ -58,6 +59,10 @@ export function AssistantIcon({
       {name === 'microphone' ? <>
         <Rect x="9" y="3" width="6" height="12" rx="3" {...outline} strokeWidth="2" />
         <Path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-3 0h6" {...outline} strokeWidth="2" />
+      </> : null}
+      {name === 'volume' ? <>
+        <Path d="M4 9v6h4l5 4V5L8 9H4Z" fill={color} stroke={color} strokeWidth="1.3" strokeLinejoin="round" />
+        <Path d="M16 9a4 4 0 0 1 0 6m2.5-8.5a7.5 7.5 0 0 1 0 11" {...outline} />
       </> : null}
       {name === 'send' ? <Path d="m3 4 18 8-18 8 3.2-7.1L15 12l-8.8-.9L3 4Z" fill={color} stroke={color} strokeWidth="1" strokeLinejoin="round" /> : null}
       {name === 'leaf' ? <>

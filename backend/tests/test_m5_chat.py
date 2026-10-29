@@ -162,3 +162,25 @@ def test_replaying_a_message_request_returns_the_saved_pair_without_duplicates(
     assert first.json()["farmer_message"]["id"] == replay.json()["farmer_message"]["id"]
     assert first.json()["assistant_message"]["id"] == replay.json()["assistant_message"]["id"]
     assert len(detail.json()["messages"]) == 2
+
+
+def test_bangla_chat_classifies_weather_parses_measurements_and_replies_in_bangla(
+    client_and_farm, monkeypatch
+):
+    client, farmland_id, _, _ = client_and_farm
+    monkeypatch.setattr("app.services.chat_engine.generate_gemini_reply", lambda *args: None)
+    conversation = client.post(f"/farmlands/{farmland_id}/conversations", json={}).json()
+
+    response = client.post(
+        f"/farmlands/{farmland_id}/conversations/{conversation['id']}/messages",
+        json={"message": "আগামীকাল বৃষ্টি হলে ২০ মিমি পানি লাগবে কি", "message_type": "text"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["intent"] == "weather_inquiry"
+    assert body["farmer_message"]["metadata_json"]["parsed_measurements"] == [
+        {"value": 20, "unit": "mm"}
+    ]
+    assert body["assistant_message"]["message"].startswith("Test Field খামারের")
+    assert "ট্যাবে" in body["assistant_message"]["message"]
