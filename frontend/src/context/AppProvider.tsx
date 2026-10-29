@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { apiRequest, clearAccessToken, getStoredAccessToken, saveAccessToken, setUnauthorizedHandler } from '../services/api-client';
 import {
   CheckinDto,
@@ -17,6 +17,7 @@ import {
   listConversations,
   sendMessage as sendRemoteMessage,
 } from '../services/m5-chat';
+import { m5Offline } from '../services/m5-offline';
 
 type Farmer = { id: string; name: string; phone: string };
 type FarmerProfile = {
@@ -119,14 +120,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const currentUser = useRef<Farmer | null>(null);
 
   const applyProfile = useCallback(async (response: ProfileResponse) => {
     const loadedFarms = await Promise.all(response.farmlands.map(loadFarm));
-    setUser({
+    const nextUser = {
       id: response.farmer.id,
       name: response.farmer.name,
       phone: response.farmer.phone_e164,
-    });
+    };
+    currentUser.current = nextUser;
+    setUser(nextUser);
     setProfile(response.profile);
     setFarmlands(loadedFarms);
     setLoadError('');
@@ -153,7 +157,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setUnauthorizedHandler(async () => {
+      const accountId = currentUser.current?.id;
+      if (accountId) await m5Offline.clearAccount(accountId).catch(() => undefined);
       await clearAccessToken().catch(() => undefined);
+      currentUser.current = null;
       setUser(null);
       setProfile(null);
       setFarmlands([]);
@@ -198,7 +205,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [authenticate]);
 
   const logout = useCallback(async () => {
+    const accountId = currentUser.current?.id;
+    if (accountId) await m5Offline.clearAccount(accountId).catch(() => undefined);
     await clearAccessToken();
+    currentUser.current = null;
     setUser(null);
     setProfile(null);
     setFarmlands([]);

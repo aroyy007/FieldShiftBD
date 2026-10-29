@@ -48,7 +48,18 @@
           "locationWhenInUsePermission": "FieldShift uses your location to save farm coordinates and improve local advice."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "FieldShift uses the microphone only after you tap Bengali voice input.",
+          "speechRecognitionPermission": "FieldShift transcribes your Bangla question after you tap; text is sent only after you tap Send.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox",
+            "com.google.android.as"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

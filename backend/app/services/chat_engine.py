@@ -4,6 +4,7 @@ import json
 import logging
 from dataclasses import dataclass
 from typing import Any
+from typing import cast
 from uuid import UUID
 
 import httpx
@@ -26,6 +27,12 @@ from app.services.m1_reference import (
     resolve_location,
 )
 from app.services.m2_source_policy import is_valid_automated_acceptance
+from app.services.m5_language import (
+    detect_bangla_intent,
+    extract_measurements,
+    normalize_bengali_digits,
+    parse_bangla_date,
+)
 from app.schemas.chat import (
     ChatIntent,
     ChatMessageRead,
@@ -200,6 +207,10 @@ def aggregate_farmland_context(
 
 
 def classify_intent(message_text: str) -> ChatIntent:
+    bangla_intent = detect_bangla_intent(message_text)
+    if bangla_intent is not None:
+        return cast(ChatIntent, bangla_intent)
+
     text = message_text.lower()
     if any(
         w in text
@@ -435,9 +446,15 @@ def generate_gemini_reply(
 def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, message_text: str) -> str:
     crop_name = ctx.active_crop.name if ctx.active_crop else "your crop"
     stage_name = ctx.growth_stage.name if ctx.growth_stage else "current growth phase"
+    uses_bangla = any("\u0980" <= character <= "\u09ff" for character in message_text)
 
     if intent == "disease_inquiry":
         crop_context = ctx.active_crop.name if ctx.active_crop else "your field"
+        if uses_bangla:
+            return (
+                f"{crop_context} ফসলে সমস্যা দেখলে Crop Health & Disease ট্যাবে পাতার পরিষ্কার ছবি দিন। "
+                "এটি প্রাথমিক স্ক্রিনিং; ফলটি মাঠে মিলিয়ে নিন এবং নিশ্চিত না হয়ে ওষুধ প্রয়োগ করবেন না।"
+            )
         return (
             f"For issues with {crop_context}, please upload a photo in the Crop Health & Disease tab. "
             "Our AI will analyze the visible symptoms and record the diagnosis directly in your farm problems list."
@@ -465,6 +482,16 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
                 budget_amount = budget_amount.rstrip("0").rstrip(".")
             budget = f"{budget_amount} {farmland.budget_currency or 'BDT'}"
         equipment = ", ".join(farmland.equipment or []) or "Not specified"
+        if uses_bangla:
+            saved_land_type = farmland.land_type or "জানা নেই"
+            irrigation_bn = "আছে" if farmland.irrigation_available is True else "নেই" if farmland.irrigation_available is False else "জানা নেই"
+            budget_bn = "জানা নেই" if farmland.budget_amount is None else budget
+            equipment_bn = ", ".join(farmland.equipment or []) or "জানা নেই"
+            return (
+                f"{farmland.name} খামারের সংরক্ষিত তথ্য: মাটি {farmland.soil_type or 'জানা নেই'}; "
+                f"জমির ধরন {saved_land_type}; সেচ {irrigation_bn}; পানির উৎস {farmland.water_source or 'জানা নেই'}; "
+                f"বাজেট {budget_bn}; সরঞ্জাম {equipment_bn}।"
+            )
         return (
             f"Saved resources for {farmland.name}: soil type {farmland.soil_type or 'not specified'}; "
             f"land type {land_type_label}; irrigation {irrigation}; "
@@ -474,11 +501,20 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
     elif intent == "weather_inquiry":
         if ctx.recent_weather_alerts:
             alert = ctx.recent_weather_alerts[0]
+            if uses_bangla:
+                return (
+                    f"{ctx.farmland.name} খামারের আবহাওয়া সতর্কতা: {alert.title} — {alert.message}. "
+                    f"পরামর্শ: {alert.recommended_action or 'ক্ষেতের অবস্থা পর্যবেক্ষণ করুন।'}"
+                )
             return f"Weather Alert for {ctx.farmland.name}: {alert.title} — {alert.message}. Recommended action: {alert.recommended_action or 'Monitor field conditions.'}"
+        if uses_bangla:
+            return f"{ctx.farmland.name} খামারের আপডেটেড পূর্বাভাস Weather & Alerts ট্যাবে দেখুন।"
         return f"Weather conditions for {ctx.farmland.name} are being tracked. Check the Weather & Alerts tab for upcoming rainfall and temperature trends."
     elif intent == "task_inquiry":
         if ctx.pending_tasks:
             tasks_list = ", ".join(t.title for t in ctx.pending_tasks[:3])
+            if uses_bangla:
+                return f"{crop_name} ফসলের জন্য সামনে থাকা কাজ: {tasks_list}। Tasks ট্যাবে এগুলোর অগ্রগতি দেখুন।"
             if ctx.active_crop and ctx.growth_stage:
                 task_context = f"For the {stage_name} stage of {crop_name}"
             elif ctx.active_crop:
@@ -487,27 +523,45 @@ def generate_fallback_reply(intent: ChatIntent, ctx: AggregatedFarmContext, mess
                 task_context = "Your upcoming farm tasks"
             return f"{task_context} include: {tasks_list}. You can mark them completed in the Tasks tab."
         if not ctx.active_season:
+            if uses_bangla:
+                return "এই খামারে এখন কোনো সক্রিয় মৌসুম নেই, তাই মৌসুমভিত্তিক কাজও নির্ধারিত হয়নি। Crop Advisor থেকে মৌসুম শুরু করুন।"
             return (
                 "There is no active season for this farm, so no season tasks are scheduled yet. "
                 "Start a season in Crop Advisor to create its task plan."
             )
         if not ctx.active_crop:
+            if uses_bangla:
+                return "সক্রিয় মৌসুমে এখনো কোনো ফসল যুক্ত নেই। Crop Advisor-এ মৌসুমের তথ্য দেখুন।"
             return (
                 "No crop is linked to this active season yet, so I cannot match tasks to a crop. "
                 "Check the season details in Crop Advisor."
             )
         if not ctx.growth_stage:
+            if uses_bangla:
+                return f"{crop_name} ফসলের বর্তমান ধাপ নির্ধারিত নয়। ধাপটি যোগ করলে পর্যায়ভিত্তিক কাজ দেখাতে পারব।"
             return (
                 f"There are no urgent tasks pending for {crop_name}. "
                 "Select the current growth stage in Crop Advisor to get stage-specific guidance."
             )
+        if uses_bangla:
+            return f"{crop_name} ফসলের {stage_name} পর্যায়ে এখন জরুরি কোনো কাজ নেই। জমির আর্দ্রতা ও আগাছা নিয়মিত দেখুন।"
         return f"No urgent tasks pending for {crop_name} in the {stage_name} stage. Keep monitoring moisture and weed growth."
     elif intent == "crop_advice":
+        if uses_bangla:
+            return f"মাটি ({ctx.farmland.soil_type or 'তথ্য নেই'}) ও সেচের তথ্য ধরে উপযুক্ত ফসল Crop Advisor ট্যাবে দেখুন।"
         return (
             f"Based on your soil ({ctx.farmland.soil_type or 'local conditions'}) and irrigation setup, "
             "explore the Crop Advisor tab to view suitable crops and full seasonal plans."
         )
     else:
+        if uses_bangla:
+            if ctx.active_crop and ctx.growth_stage:
+                farm_context = f"এখন {crop_name} ফসলের {stage_name} পর্যায় চলছে।"
+            elif ctx.active_crop:
+                farm_context = f"এই খামারে {crop_name} ফসল আছে, তবে বর্তমান বৃদ্ধির ধাপ নির্ধারিত হয়নি।"
+            else:
+                farm_context = f"{ctx.farmland.name} খামারে এখনো কোনো সক্রিয় ফসল বা বৃদ্ধির ধাপ নেই।"
+            return f"আমি {ctx.farmland.name} খামারের সহায়ক। {farm_context} সেচ, সার, রোগ বা নির্ধারিত কাজ নিয়ে জিজ্ঞাসা করুন।"
         if ctx.active_crop and ctx.growth_stage:
             farm_context = f"Your active crop is {crop_name} in the {stage_name} stage."
         elif ctx.active_crop:
@@ -606,7 +660,15 @@ def handle_farmer_message(
                     suggested_actions=_suggested_actions(intent),
                 )
 
-        farmer_metadata = {"intent": intent}
+        farmer_metadata = {
+            "intent": intent,
+            "parsed_measurements": extract_measurements(message_text),
+        }
+        parsed_date = parse_bangla_date(message_text)
+        if parsed_date is not None:
+            farmer_metadata["parsed_date"] = parsed_date.isoformat()
+        if normalize_bengali_digits(message_text) != message_text:
+            farmer_metadata["normalized_digits"] = normalize_bengali_digits(message_text)
         if client_request_id is not None:
             farmer_metadata["client_request_id"] = str(client_request_id)
         farmer_msg = ChatMessage(
@@ -628,6 +690,12 @@ def handle_farmer_message(
             ).all()
         )
         system_prompt = build_system_prompt(ctx)
+        if any("\u0980" <= character <= "\u09ff" for character in message_text):
+            system_prompt += (
+                "\n\nThe farmer wrote in Bengali. Reply in concise, natural Bangla. "
+                "Use the parsed date and measurement values only as interpretations of the farmer's words; "
+                "ask a short clarification when a date or unit is ambiguous. Never treat a parsed value as a confirmed farm update."
+            )
         reply_text = generate_gemini_reply(system_prompt, history, message_text)
         if not reply_text:
             reply_text = generate_fallback_reply(intent, ctx, message_text)

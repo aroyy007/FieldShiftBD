@@ -12,6 +12,7 @@ from app.api import (
     routes_m1_profile,
     routes_m2_advisor,
     routes_m4_weather,
+    routes_m5_actions,
     routes_m5_chat,
     routes_system,
 )
@@ -20,9 +21,17 @@ from app.core.config import settings
 from app.core.security import decode_access_token
 from app.contracts.challenge.v1 import ApiError
 from app.services.foundation import ChallengeRuntime, ChallengeUnavailable
+from app.services.m5_actions import create_action_coordinator
 
 app = FastAPI(title="FieldShift API")
 app.state.challenge_runtime = ChallengeRuntime.from_settings(settings)
+# The coordinator is a lazy DB-backed adapter: constructing it performs no I/O.
+# Consent persistence is independently available for explicit data controls.
+# Action endpoints stay safe-off until their feature switch is enabled.
+action_coordinator = create_action_coordinator()
+app.state.challenge_runtime.adapters["consent_records"] = action_coordinator
+if settings.CHALLENGE_ACTION_CONFIRMATION_ENABLED:
+    app.state.challenge_runtime.adapters["action_confirmation"] = action_coordinator
 
 
 @app.exception_handler(ChallengeUnavailable)
@@ -89,3 +98,5 @@ app.include_router(routes_m4_weather.router)   # Module 4 — Weather Intelligen
 app.include_router(routes_farm_state.router)   # Module 3 — Farm Brain
 app.include_router(routes_disease.router)      # Module 6 — Disease Detection
 app.include_router(routes_m5_chat.router)      # Module 5 — Conversational Layer
+app.include_router(routes_m5_actions.router)
+app.include_router(routes_m5_actions.consent_router)
