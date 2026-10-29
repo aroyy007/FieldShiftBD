@@ -1,0 +1,65 @@
+{
+  "contract_version": "1.0.0",
+  "farmland_id": "10000000-0000-4000-8000-000000000001",
+  "farmer_id": "10000000-0000-4000-8000-000000000002",
+  "captured_at": "2026-10-29T03:00:00Z",
+  "profile": {
+    "country_code": "BD",
+    "division": "SYNTHETIC DIVISION",
+    "district": "SYNTHETIC DISTRICT",
+    "district_code": "SYN-81",
+    "upazila": "SYNTHETIC UPAZILA",
+    "village_or_locality": "SYNTHETIC LOCALITY",
+    "latitude": 24.0,
+    "longitude": 89.0,
+    "land_area_sqm": 4000,
+    "area_unit": "square_metre",
+    "soil_type": "synthetic_loam",
+    "land_type": "medium_high",
+    "irrigation_available": true,
+    "water_source": "synthetic_canal",
+    "equipment": ["synthetic_power_tiller"],
+    "budget_amount": 25000,
+    "budget_currency": "BDT"
+  },
+  "active_season": {
+    "season_id": "10000000-0000-4000-8000-000000000003",
+    "crop_id": "10000000-0000-4000-8000-000000000004",
+    "crop_code": "SYNTHETIC AMAN RICE",
+    "variety_id": null,
+    "variety_name": "SYNTHETIC VARIETY",
+    "status": "active",
+    "planting_date": "2026-07-10",
+    "expected_harvest_date": "2026-11-20",
+    "current_growth_stage_id": "10000000-0000-4000-8000-000000000005",
+    "current_growth_stage_name": "SYNTHETIC VEGETATIVE STAGE",
+    "growth_stage_as_of": "2026-10-29"
+  },
+  "crop_priorities": [
+    {"crop_code": "SYNTHETIC AMAN RICE", "rank": 1, "reason": "SYNTHETIC farmer preference"},
+    {"crop_code": "SYNTHETIC LENTIL", "rank": 2, "reason": "SYNTHETIC rotation option"}
+  ],
+  "rotation_history": [
+    {
+      "season_id": "10000000-0000-4000-8000-000000000006",
+      "crop_code": "SYNTHETIC MUSTARD",
+      "planting_date": "2025-11-15",
+      "harvest_date": "2026-02-10",
+      "yield_amount": 1.2,
+      "yield_unit": "SYNTHETIC tonne/hectare",
+      "source": "recorded_plan"
+    }
+  ],
+  "provenance": [
+    {
+      "source_id": "synthetic-golden-farm-profile",
+      "source_name": "SYNTHETIC TEST ONLY — Golden Farm",
+      "dataset_version": "fixture-v1",
+      "retrieved_at": "2026-10-29T03:00:00Z",
+      "recorded_at": "2026-10-29T03:00:00Z",
+      "method": "manual_entry",
+      "license": "Synthetic test data",
+      "quality_status": "synthetic"
+    }
+  ]
+}

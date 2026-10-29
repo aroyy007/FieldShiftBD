@@ -1,6 +1,14 @@
 # 🌾 AI Farmer Assistant — Project Plan
 
-> **This document is the source of truth for the project.**
+> **Consolidated authority — 2026-10-29:** Read [FINAL_IMPLEMENTATION_PLAN.md](docs/plans/FINAL_IMPLEMENTATION_PLAN.md) first. This document remains a detailed source specification; the final plan reconciles all four plans, foundation readiness and six-person work allocation. Original source snapshots are preserved there from commit `336bf6c`.
+
+> **Authority note:** This is a detailed source specification. Use
+> [FINAL_IMPLEMENTATION_PLAN.md](docs/plans/FINAL_IMPLEMENTATION_PLAN.md) for reconciled scope,
+> delivery order and shared-contract decisions.
+>
+> **2026-10-29 planning amendment, requested by the project owner:** Deliver the organizer's NASA planting-window advisory together with the complete final Field Shift problem statement. Section 20 and [the detailed challenge delivery plan](docs/plans/2026-10-29-nasa-planting-window-and-rotation.md) define this added scope, acceptance gates and requirement traceability. The [Bangla voice plan](docs/plans/2026-10-06-voice-first-bangla.md) is its accessibility delivery plan. Existing six-module ownership remains the baseline; proposed additive interfaces must be recorded with affected owners before implementation. This amendment does not claim those interfaces or features are already implemented.
+>
+> **Accepted follow-up, 2026-10-29:** After the required organizer/rotation flow, deliver decision-driven field questions, rotation robustness envelopes and a confirmed conditional Plan B. The [adaptive-decision specification](docs/plans/2026-10-29-adaptive-decisions-and-confirmed-plan-b.md) defines A01-A08 acceptance gates, ownership, proposed schema and safe execution. This is owner-authorized planning scope; implementation contract/migration decisions still need recording. Start with the [complete plan index](docs/plans/README.md).
 >
 > **STRICT RULE:** Always follow this plan. Do not change, restructure, remove, or redefine another module's plan, responsibilities, dependencies, contracts, or workflow without explicit team-level agreement.
 >
@@ -10,7 +18,9 @@
 
 ## 1. Project Goal
 
-Build an AI-based chatbot that acts as a farmer's season-long assistant — from farm onboarding and crop selection through planning, monitoring, weather-aware decisions, disease detection, and harvesting.
+Build FieldShift BD as a farmer-centered decision-support mobile app using NASA Earth observations, historical and predictive climate data, local soil/crop knowledge and farmer priorities. It must explain how usable-rain onset and crop thermal accumulation have changed, recommend supported planting/transplanting windows, and compare at least three multi-season rotation strategies including the farmer's existing rotation. Soil health, water/resource feasibility and uncertainty are part of each comparison.
+
+The existing season-long assistant carries these decisions through farm onboarding, crop selection, season planning, monitoring, weather-aware actions, disease detection, harvest and future rotation history. It supports farmer judgment and local expertise. The organizer's planting-window advisory and the final statement's rotation exploration are both required; one does not replace the other.
 
 The farmer should experience **one unified assistant**, not six separate systems.
 
@@ -70,6 +80,8 @@ The progressive intake conversation and the single source of truth for farmer/fa
 - Organic/conventional preference
 - Budget
 - Crop preferences
+- Current and previous multi-season rotation, farmer priorities and constraints needed for scenario comparison (additive contract; preserve existing profile fields)
+- Source/measurement context for relevant soil information; distinguish farmer report, lab measurement and regional estimate
 - Optional livestock information
 - Farmer corrections/updates
 - Profile completion state
@@ -110,6 +122,9 @@ Crop suitability reasoning, crop selection, season-plan generation, harvest guid
 - Provide harvest guidance
 - Record season outcome information
 - Preserve useful season history for future advisory
+- Compute source-backed usable-rain onset, crop-specific growing degree days, two-period statistical comparison and supported planting/transplanting window shifts
+- Compare current rotation with at least two locally supported alternatives using soil, climate, crop-family, water, resource and farmer-priority factors
+- Return actionable Bangla/English advice, SMS-length summaries, uncertainty, sensitivity results and evidence references for frontend/M5 presentation
 
 ### Key design problem
 
@@ -145,6 +160,8 @@ The owner of this module must prioritize sourcing and structuring the agricultur
 
 Module 1 — Farm Profile.
 
+For the Section 20 advisory extension, consume the read-only district environmental cache/feature interface supplied by M4. This analytical input does not require M3 operational state and must not create a circular dependency: M4 historical-data ingestion is independent of M2/M3.
+
 ### Produces
 
 - Crop Recommendation(s)
@@ -153,6 +170,7 @@ Module 1 — Farm Profile.
 - Growth Stage definitions
 - Harvest guidance
 - Season history data
+- PlantingWindowAdvisory and RotationComparison (additive contracts in Section 20)
 
 ---
 
@@ -227,6 +245,8 @@ Turning weather information into crop-relevant, growth-stage-aware actions and a
 - Identify potential agricultural impact
 - Generate actionable weather alerts
 - Suppress unnecessary alerts
+- Acquire, quality-check, harmonize and pre-cache district NASA POWER, IMERG, SMAP, NDVI and the additional scoped Earth-observation/climate layers defined in Section 20
+- Expose versioned read-only historical/environmental features, provenance and honest availability/resolution for M2; separate observations, forecasts, reanalysis and climate projections
 
 ### Required reasoning pipeline
 
@@ -272,6 +292,8 @@ Send actionable alert
 
 Module 3 — Current Farm State / Growth Stage / Tasks.
 
+This dependency applies to operational alerts. District source ingestion, offline caches and the M4 → M2 historical/environmental interface operate independently of farm/task state; they must not depend on an active season.
+
 ---
 
 ## Module 5 — Open-Ended Conversational Layer
@@ -290,6 +312,8 @@ The main conversational interface and message routing.
 - Generate contextual responses
 - Route disease-related image requests to Module 6
 - Keep responses grounded in the agreed agricultural knowledge
+- Render and speak the M2 planting-window/rotation result in Bangla or English, preserving computed values, uncertainty and citations
+- Route advisory/rotation questions and explicitly confirmed actions through owning modules; do not recalculate scientific claims in the LLM
 
 ### Key design problem
 
@@ -409,6 +433,10 @@ DiseaseResult
 FarmState
 ChatMessage
 ChatResponse
+DistrictClimateBundle
+PlantingWindowAdvisory
+RotationComparison
+FarmerPriorities / RotationHistoryInput
 ```
 
 ### Example: FarmProfile
@@ -729,6 +757,16 @@ DiseaseResult / ProblemUpdate
 
 When a weather event requires a farm-state or task adjustment, the change must be represented through the agreed Module 3 state/task contract rather than a private duplicate state.
 
+### M4 → M2 (2026-10-29 analytical extension)
+
+```text
+DistrictClimateBundle
+Historical/satellite/climate-scenario features
+Source QA, coverage, resolution, method/cache versions and provenance
+```
+
+This is a read-only cache/feature interface; historical acquisition does not read M2 or require M3. M2 owns agronomic interpretation and comparative outputs. The new public read-only district `/advisory` route and authenticated farm scenario/write paths are specified in the detailed Section 20 plan. Record additive field/error contracts before implementation; existing M1-M6 routes remain compatible.
+
 ---
 
 # 9. Ownership Rules
@@ -746,6 +784,9 @@ When a weather event requires a farm-state or task adjustment, the change must b
 | Farm Check-ins | M3 |
 | Weather processing | M4 |
 | Weather Alerts | M4 |
+| District environmental acquisition, QA and caches | M4 |
+| Planting-window science and rotation comparison | M2 |
+| Farmer priorities, soil measurements and reported rotation history | M1 |
 | Conversation | M5 |
 | Disease Analysis | M6 |
 | Disease Result content | M6 |
@@ -1065,7 +1106,7 @@ Until explicitly agreed by the team, do not expand the architecture with unrelat
 - Payments
 - Social network/community system
 - Supplier marketplace
-- Satellite monitoring
+- Satellite features unrelated to the NASA agricultural/environmental analysis explicitly required in Section 20
 - Complex financial products
 - Unrelated farm management systems
 
@@ -1110,6 +1151,8 @@ These may be future ideas, but they are not part of the current six-module plan.
 
 The architecture above describes **runtime relationships**. It does **not** dictate sequential development.
 
+Section 20 adds a separate analytical path: `M4 district source caches → M2 planting-window/rotation compute → advisory UI + M5 explanation`. Confirmed selections continue through `M2 SeasonPlan → M3 tasks/state`; exploration alone never changes the active season.
+
 Development remains parallel through contracts and mocks.
 
 ---
@@ -1138,4 +1181,32 @@ Developers may improve their own module internally and may add implementation-le
 Any proposed cross-module or project-level change must be raised to the full team for agreement before it is applied to `plan.md`.
 
 Until such agreement occurs, **continue following the existing plan exactly as written.**
+
+The dated Section 20 planning amendment and its accepted adaptive-decision follow-up were explicitly requested by the project owner on 2026-10-29. They record the required product direction and proposed additive interfaces; they do not authorize an individual implementer to invent incompatible fields, apply undocumented migrations or move another module's data ownership.
+
+---
+
+# 20. Organizer and Final Challenge Delivery Requirements — 2026-10-29
+
+The complete implementation and verification specification is [NASA planting windows, rotation decisions and Bangla mobile delivery](docs/plans/2026-10-29-nasa-planting-window-and-rotation.md). Its Section 13 maps all five organizer images and every part of the [preserved final statement](docs/plans/references/2026-10-29-organizer/problem-statement.md) to owners, outputs and release evidence. The original optional considerations are included in this project's scope because the user explicitly requested complete coverage.
+
+## Required outcomes
+
+1. District/crop/season selection for Bangladesh, including Rajshahi/Aman, source-backed rainfall-onset and thermal analysis over 2001-2025, and an actionable planting/transplanting sentence with a supported revised window.
+2. Fixed 2001-2012 versus 2013-2025 onset distributions; Mann-Whitney U statistic/p-value with assumptions; signed whole-day shifts, effect/uncertainty and complete threshold sensitivity at 15/20/25 mm. The organizer's example eleven-day shift is illustrative, never a hardcoded outcome.
+3. Crop-specific sourced GDD bases/calendars, explicit usable-rain definition with a true consecutive dry-spell rule, and tests for each pure function in `backend/src/compute/agro.py`.
+4. Versioned district Parquet, all-64-district POWER/NDVI/SMAP coverage over actual available periods, the additional source families and local data in the detailed plan, and `OFFLINE=1` that prevents all live analytical fallback.
+5. Existing FastAPI app exposes `GET /advisory?district=&crop=` with explicit season resolution, shifts, both distributions, statistics, assumptions and provenance; farm-specific scenarios remain authenticated and owner scoped.
+6. Current rotation plus two evidence-supported alternatives, with soil health, nutrient cycling, cover/bare periods, erosion/infiltration potential, pests, water, forage, market/resources, farmer priorities, gaps and uncertainty explained.
+7. Bangla/English React Native UI with a district map, two-period and GDD charts, timelines/overlays, labeled climate/what-if exploration, visible assumptions/citations and strictly under-160-character summaries suitable for sharing/SMS composition.
+8. Explain satellite versus ground data and scientific terms; use realistic spatial support, holdout validation and method comparisons. No fabricated field measurements, future-weather certainty or unsupported yield/profit/water-saving figures.
+9. Preserve all-farm listing after sign-in, farm-scoped chat, confirmed M2-to-M3 season/task handoff and M6 integration. Add the voice plan's Android speech/tap fallback, real-phone checks and offline safety without replacing existing auth/state stores.
+10. Apache-2.0 original code with upstream/data/model rights retained, public working repo, dataset URLs and methods in README, completed official project page, exact challenge identification, demonstration video and genuine contribution evidence.
+11. After the required core flow, add the [accepted adaptive decisions](docs/plans/2026-10-29-adaptive-decisions-and-confirmed-plan-b.md): M2 chooses a useful farmer-observable question and computes bounded feasible ranges; M1 persists confirmed answers; dated M4 evidence prompts a supported Plan B; M5 presents the exact diff and confirmation; transaction-aware M2/M3 operations apply it once. Preserve completed work, planting history and all farm/season ownership. No paid AI is needed for these deterministic rules.
+
+## Milestones and completion policy
+
+Follow the detailed plan's pre-event preparation and organizer schedule: Day 1 morning compute/tests; afternoon map/crop/distributions; evening advisory/assumptions and recording by 18:30 event-local time; Day 2 morning bilingual phone UI, summaries and an outside-team test; noon freeze/record/submit. This is an initial vertical-slice milestone, not a guarantee that the entire full scope fits 48 hours.
+
+The screenshot's cut order is retained as a contingency, not an automatic waiver of the user's full scope. Report partial milestones honestly and keep outstanding gates open. Full completion requires V01-V15 in the detailed plan plus A01-A08 in the accepted adaptive-decision specification: data, science, agronomy, API, offline, isolation, lifecycle/rotation, decision questions/envelopes/policies, atomic confirmed execution, responsive browser, physical Android, usability, production and submission evidence. Planning checkboxes do not establish implementation or field validation. Rice-floor portfolio optimization, shared-pump scheduling and other research suggestions are not part of this accepted three-feature increment.
 

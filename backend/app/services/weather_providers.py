@@ -33,6 +33,8 @@ from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any
 
+from app.core.config import settings
+
 # ── Constants ────────────────────────────────────────────────────────────────
 _USER_AGENT = "FieldShiftBD/1.0 (local advisory tool)"
 _HTTP_TIMEOUT_SECONDS = 9.0
@@ -71,6 +73,8 @@ def _http_json(url: str) -> dict[str, Any]:
 
     Framework-free: uses urllib so the services layer has no web dependency.
     """
+    if settings.OFFLINE_MODE:
+        raise WeatherProviderError("offline_mode", "outbound weather requests are disabled")
     request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
     try:
         with urllib.request.urlopen(request, timeout=_HTTP_TIMEOUT_SECONDS) as response:

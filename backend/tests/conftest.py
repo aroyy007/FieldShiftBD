@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import sessionmaker
@@ -135,3 +135,45 @@ def client_and_farm():
     db.close()
     Base.metadata.drop_all(engine)
     engine.dispose()
+
+
+@pytest.fixture
+def foundation_sessions():
+    """Isolated SQLite UOW database for shared-foundation transaction tests."""
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection, _record):
+        # SQLite's legacy transaction mode can release the first SAVEPOINT as
+        # a commit. Disable its implicit BEGIN so the Session's root transaction
+        # reliably encloses nested owner writes in rollback tests.
+        connection.isolation_level = None
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    @event.listens_for(engine, "begin")
+    def begin_sqlite_transaction(connection):
+        connection.exec_driver_sql("BEGIN")
+
+    # Match the repository's API fixture: PostgreSQL UUID/JSONB server defaults
+    # are omitted only from the disposable SQLite schema used in unit tests.
+    for table in Base.metadata.tables.values():
+        for column in table.columns:
+            if column.server_default is None:
+                continue
+            default_sql = str(column.server_default.arg)
+            if "gen_random_uuid" in default_sql or "::jsonb" in default_sql:
+                column.server_default = None
+
+    Base.metadata.create_all(engine)
+    sessions = sessionmaker(autoflush=False, expire_on_commit=False, bind=engine)
+    try:
+        yield sessions
+    finally:
+        Base.metadata.drop_all(engine)
+        engine.dispose()

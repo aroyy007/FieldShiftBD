@@ -1,8 +1,9 @@
-# FieldShift PostgreSQL Schema Proposal
+# FieldShift PostgreSQL Schema
 
-> **Status: design draft.** This document makes concrete recommendations for a standalone
-> PostgreSQL implementation, but it does not authorize migrations. The team must approve
-> the shared domain contract before schema implementation begins.
+> **Status:** Sections 1–19 describe the shared schema proposal and do not independently
+> authorize new migrations. Section 20 records the additive foundation migration
+> `c6f4e739a2b1`, which is implemented and migration-tested. Future schema changes still
+> require review by the owning module and integration steward.
 
 ## 1. Overview
 
@@ -934,3 +935,36 @@ After those are agreed, convert the design into PostgreSQL migrations with:
 - Enforce ownership in backend authorization and query scoping. Standalone PostgreSQL does not provide Supabase RLS as an implicit protection layer.
 
 The database must remain consistent with the shared domain contract and the six-module ownership model.
+
+## 20. Shared challenge foundation (Alembic `c6f4e739a2b1`)
+
+This additive migration creates only the foundation's new PostgreSQL tables;
+it does not alter the existing farmer, farmland, season, task, problem, disease,
+weather, or chat tables. The migration depends on `b904f5e0c3aa` and is the
+single current Alembic head.
+
+| Table | Purpose and important constraints |
+|---|---|
+| `consent_records` | Append-only farmer-scoped consent events with purpose/decision/channel checks, client capture time kept only as provenance, monotonic server `version` per `(farmer_id, purpose)`, and unique request key. Latest consent is selected by version, never by client clock. |
+| `evidence_artifacts` | Immutable exact source release, checksum, license, coverage, resolution, and quality status; unique source/dataset/version/checksum. |
+| `analysis_records` | Immutable versioned analytical input/output snapshot, status, fingerprint, computed/expiry times; owner IDs must both be null or match the farm's farmer via composite FK. |
+| `analysis_record_sources` | Normalized relation from analysis records to the exact evidence artifacts used, validated by foreign keys and relation kind. |
+| `adaptive_policy_versions` | Versioned, scoped, reviewed policy documents with effective dates and a unique policy/version pair. |
+| `proposed_actions` | Confirmation-gated action, farmer/farm/season composite ownership, preconditions, task diff, version, lifecycle, and expiry. |
+| `action_receipts` | Immutable durable idempotent outcome and request fingerprint; action/farmer ownership is enforced by composite FK and one key per farmer. |
+| `delivery_outbox` | Receipt-linked delivery event with unique receipt/event and idempotency keys, retry status, availability, and lease-state checks. |
+
+No raw raster, photo, audio, or farmer export is stored in these tables.
+Analytical JSON is limited to the versioned input/output envelope and policy
+documents; data-source lineage remains normalized through `analysis_record_sources`.
+New action and receipt paths are safe-off until the affected module adapters
+pass contract, transaction, PostgreSQL, and user-confirmation checks. Existing
+routes retain their current transaction behavior.
+
+For a clean disposable PostgreSQL database, run `alembic upgrade head` and
+`alembic check`. To prove compatibility with pre-existing rows, run
+`python scripts/verify_foundation_upgrade_compat.py` from `backend` against a
+disposable PostgreSQL database whose name includes `test`; that script
+intentionally downgrades to `b904f5e0c3aa`, inserts clearly synthetic legacy
+farmer/farm/crop records, re-upgrades, and verifies they remain. It must never
+be used against a development or production database.

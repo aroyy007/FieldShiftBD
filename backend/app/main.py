@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 from app.api import (
     routes_disease,
+    routes_foundation,
     routes_farm_state,
     routes_m1_catalog,
     routes_m1_profile,
@@ -16,8 +18,23 @@ from app.api import (
 
 from app.core.config import settings
 from app.core.security import decode_access_token
+from app.contracts.challenge.v1 import ApiError
+from app.services.foundation import ChallengeRuntime, ChallengeUnavailable
 
 app = FastAPI(title="FieldShift API")
+app.state.challenge_runtime = ChallengeRuntime.from_settings(settings)
+
+
+@app.exception_handler(ChallengeUnavailable)
+async def challenge_unavailable_handler(request: Request, exc: ChallengeUnavailable):
+    error = ApiError(
+        contract_version="1.0.0",
+        code="unavailable",
+        message=str(exc),
+        retriable=True,
+        details={"feature": exc.feature},
+    )
+    return JSONResponse(status_code=503, content={"detail": error.model_dump(mode="json")})
 
 
 # ── Auth middleware ────────────────────────────────────────────────────────────
@@ -64,6 +81,7 @@ if cors_origins:
 # ── Routers ────────────────────────────────────────────────────────────────────
 # Include all module routers here.
 app.include_router(routes_system.router)
+app.include_router(routes_foundation.router)
 app.include_router(routes_m1_profile.router)   # Module 1 — Profile & Onboarding
 app.include_router(routes_m1_catalog.router)   # Module 1 — Crop catalog & reference data
 app.include_router(routes_m2_advisor.router)   # Module 2 — Crop Advisor

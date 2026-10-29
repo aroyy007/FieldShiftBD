@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: SecretStr | None = None
     GEMINI_MODEL: str = "gemini-3.8-flash"
     GEMINI_TIMEOUT_SECONDS: float = Field(default=20.0, gt=0, le=60)
+    CHALLENGE_CLIMATE_ENABLED: bool = False
+    CHALLENGE_ADVISORY_ENABLED: bool = False
+    CHALLENGE_ROTATION_ENABLED: bool = False
+    CHALLENGE_ADAPTIVE_DECISIONS_ENABLED: bool = False
+    CHALLENGE_ACTION_CONFIRMATION_ENABLED: bool = False
+    CHALLENGE_DISEASE_PROBLEM_SYNC_ENABLED: bool = False
+    CHALLENGE_VOICE_ENABLED: bool = False
+    OFFLINE_MODE: bool = False
+    CLIMATE_CACHE_DIR: str = "data/climate/cache"
 
     class Config:
         env_file = ".env"

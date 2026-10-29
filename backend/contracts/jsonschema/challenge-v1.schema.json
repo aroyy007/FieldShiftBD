@@ -1,0 +1,2487 @@
+{
+  "$defs": {
+    "ActionExecutionReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "format": "uuid",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "action_version": {
+          "minimum": 1,
+          "title": "Action Version",
+          "type": "integer"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed At"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "farmer_id": {
+          "format": "uuid",
+          "title": "Farmer Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "maxLength": 200,
+          "minLength": 8,
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "receipt_id": {
+          "format": "uuid",
+          "title": "Receipt Id",
+          "type": "string"
+        },
+        "result": {
+          "additionalProperties": true,
+          "title": "Result",
+          "type": "object"
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "rejected",
+            "conflict",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "receipt_id",
+        "action_id",
+        "farmer_id",
+        "idempotency_key",
+        "action_version",
+        "status",
+        "created_at"
+      ],
+      "title": "ActionExecutionReceipt",
+      "type": "object"
+    },
+    "ActionPrecondition": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Value"
+        },
+        "kind": {
+          "enum": [
+            "farm_state_matches",
+            "task_state_matches",
+            "evidence_is_fresh",
+            "consent_is_active"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "max_age_seconds": {
+          "anyOf": [
+            {
+              "maximum": 31536000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Age Seconds"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "subject": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "subject"
+      ],
+      "title": "ActionPrecondition",
+      "type": "object"
+    },
+    "AdaptiveRecommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_status": {
+          "enum": [
+            "recommended",
+            "no_change",
+            "needs_farmer_input",
+            "insufficient_evidence",
+            "unavailable"
+          ],
+          "title": "Answer Status",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Constraints",
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "decision_question": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Decision Question",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "recommendation_code": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommendation Code"
+        },
+        "unknowns": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Unknowns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "contract_version",
+        "farmland_id",
+        "decision_question",
+        "answer_status",
+        "created_at"
+      ],
+      "title": "AdaptiveRecommendation",
+      "type": "object"
+    },
+    "ApiError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "unavailable",
+            "invalid_input",
+            "not_found",
+            "forbidden",
+            "conflict",
+            "expired",
+            "stale_evidence"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "message": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retriable": {
+          "title": "Retriable",
+          "type": "boolean"
+        },
+        "trace_id": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trace Id"
+        }
+      },
+      "required": [
+        "contract_version",
+        "code",
+        "message",
+        "retriable"
+      ],
+      "title": "ApiError",
+      "type": "object"
+    },
+    "ClimateAssetManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Checksum Sha256",
+          "type": "string"
+        },
+        "coverage_end": {
+          "format": "date",
+          "title": "Coverage End",
+          "type": "string"
+        },
+        "coverage_start": {
+          "format": "date",
+          "title": "Coverage Start",
+          "type": "string"
+        },
+        "dataset_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "dataset_version": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Dataset Version",
+          "type": "string"
+        },
+        "license": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "License",
+          "type": "string"
+        },
+        "quality_status": {
+          "enum": [
+            "verified",
+            "provisional",
+            "synthetic"
+          ],
+          "title": "Quality Status",
+          "type": "string"
+        },
+        "relative_path": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "spatial_resolution_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial Resolution M"
+        },
+        "temporal_resolution": {
+          "enum": [
+            "daily",
+            "8_day",
+            "monthly",
+            "static",
+            "scenario"
+          ],
+          "title": "Temporal Resolution",
+          "type": "string"
+        },
+        "units": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Units",
+          "type": "string"
+        },
+        "variable": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset_id",
+        "source_name",
+        "dataset_id",
+        "dataset_version",
+        "variable",
+        "units",
+        "temporal_resolution",
+        "coverage_start",
+        "coverage_end",
+        "relative_path",
+        "checksum_sha256",
+        "size_bytes",
+        "license",
+        "quality_status"
+      ],
+      "title": "ClimateAssetManifest",
+      "type": "object"
+    },
+    "ClimateVariableCoverage": {
+      "additionalProperties": false,
+      "description": "Measured coverage; unavailable observations are never represented as zero.",
+      "properties": {
+        "expected_observations": {
+          "minimum": 0,
+          "title": "Expected Observations",
+          "type": "integer"
+        },
+        "missing_observations": {
+          "minimum": 0,
+          "title": "Missing Observations",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "partial",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "units": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Units",
+          "type": "string"
+        },
+        "valid_observations": {
+          "minimum": 0,
+          "title": "Valid Observations",
+          "type": "integer"
+        },
+        "variable": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable",
+        "units",
+        "status",
+        "expected_observations",
+        "valid_observations",
+        "missing_observations"
+      ],
+      "title": "ClimateVariableCoverage",
+      "type": "object"
+    },
+    "ConsentRecordInput": {
+      "additionalProperties": false,
+      "properties": {
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "channel": {
+          "enum": [
+            "explicit_tap",
+            "voice_confirmed",
+            "settings",
+            "system_import"
+          ],
+          "title": "Channel",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "granted",
+            "denied",
+            "withdrawn"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "policy_version": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "personalized_advice",
+            "offline_storage",
+            "speech_audio_transcription",
+            "disease_problem_sync",
+            "research"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "purpose",
+        "decision",
+        "policy_version",
+        "channel",
+        "captured_at"
+      ],
+      "title": "ConsentRecordInput",
+      "type": "object"
+    },
+    "CropPriority": {
+      "additionalProperties": false,
+      "properties": {
+        "crop_code": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Crop Code",
+          "type": "string"
+        },
+        "rank": {
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "crop_code",
+        "rank"
+      ],
+      "title": "CropPriority",
+      "type": "object"
+    },
+    "DailyClimateObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "quality_flags": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Quality Flags",
+          "type": "array"
+        },
+        "rainfall_mm": {
+          "minimum": 0,
+          "title": "Rainfall Mm",
+          "type": "number"
+        },
+        "solar_mj_m2_day": {
+          "minimum": 0,
+          "title": "Solar Mj M2 Day",
+          "type": "number"
+        },
+        "temperature_c": {
+          "title": "Temperature C",
+          "type": "number"
+        }
+      },
+      "required": [
+        "date",
+        "rainfall_mm",
+        "temperature_c",
+        "solar_mj_m2_day"
+      ],
+      "title": "DailyClimateObservation",
+      "type": "object"
+    },
+    "DiseaseProblemSyncReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "disease_result_id": {
+          "format": "uuid",
+          "title": "Disease Result Id",
+          "type": "string"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "problem_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Problem Id"
+        },
+        "retriable": {
+          "title": "Retriable",
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "awaiting_confirmation",
+            "synchronized",
+            "no_problem",
+            "ineligible",
+            "conflict",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "disease_result_id",
+        "farmland_id",
+        "status",
+        "retriable",
+        "created_at"
+      ],
+      "title": "DiseaseProblemSyncReceipt",
+      "type": "object"
+    },
+    "DiseaseProblemSyncRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment": {
+          "enum": [
+            "possible_issue",
+            "healthy",
+            "uncertain"
+          ],
+          "title": "Assessment",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "consent_receipt_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consent Receipt Id"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "disease_result_id": {
+          "format": "uuid",
+          "title": "Disease Result Id",
+          "type": "string"
+        },
+        "farmer_confirmation": {
+          "enum": [
+            "not_required",
+            "not_supported",
+            "pending",
+            "confirmed",
+            "denied"
+          ],
+          "title": "Farmer Confirmation",
+          "type": "string"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "maxLength": 200,
+          "minLength": 8,
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "legacy",
+            "deferred_confirmation"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "possible_issue": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Possible Issue"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        },
+        "symptoms": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ObservedSymptom"
+              },
+              "maxItems": 100,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symptoms"
+        }
+      },
+      "required": [
+        "contract_version",
+        "disease_result_id",
+        "farmland_id",
+        "idempotency_key",
+        "mode",
+        "assessment",
+        "farmer_confirmation",
+        "requested_at"
+      ],
+      "title": "DiseaseProblemSyncRequest",
+      "type": "object"
+    },
+    "DistrictClimateBundle": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "daily_series": {
+          "items": {
+            "$ref": "#/$defs/DailyClimateObservation"
+          },
+          "maxItems": 20000,
+          "minItems": 1,
+          "title": "Daily Series",
+          "type": "array"
+        },
+        "manifest": {
+          "$ref": "#/$defs/DistrictClimateBundleManifest"
+        }
+      },
+      "required": [
+        "contract_version",
+        "manifest",
+        "daily_series"
+      ],
+      "title": "DistrictClimateBundle",
+      "type": "object"
+    },
+    "DistrictClimateBundleManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "assets": {
+          "items": {
+            "$ref": "#/$defs/ClimateAssetManifest"
+          },
+          "maxItems": 100,
+          "title": "Assets",
+          "type": "array"
+        },
+        "bundle_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Bundle Id",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "coverage_by_variable": {
+          "items": {
+            "$ref": "#/$defs/ClimateVariableCoverage"
+          },
+          "maxItems": 100,
+          "title": "Coverage By Variable",
+          "type": "array"
+        },
+        "coverage_end": {
+          "format": "date",
+          "title": "Coverage End",
+          "type": "string"
+        },
+        "coverage_start": {
+          "format": "date",
+          "title": "Coverage Start",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "district_code": {
+          "maxLength": 24,
+          "minLength": 1,
+          "title": "District Code",
+          "type": "string"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/SourceProvenance"
+          },
+          "maxItems": 100,
+          "title": "Provenance",
+          "type": "array"
+        },
+        "quality_status": {
+          "default": "verified",
+          "enum": [
+            "verified",
+            "provisional",
+            "synthetic"
+          ],
+          "title": "Quality Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "district_code",
+        "bundle_id",
+        "created_at",
+        "coverage_start",
+        "coverage_end",
+        "assets"
+      ],
+      "title": "DistrictClimateBundleManifest",
+      "type": "object"
+    },
+    "FarmProfileSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "active_season": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SeasonSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "crop_priorities": {
+          "items": {
+            "$ref": "#/$defs/CropPriority"
+          },
+          "maxItems": 100,
+          "title": "Crop Priorities",
+          "type": "array"
+        },
+        "farmer_id": {
+          "format": "uuid",
+          "title": "Farmer Id",
+          "type": "string"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/FarmlandProfile"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/SourceProvenance"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Provenance",
+          "type": "array"
+        },
+        "rotation_history": {
+          "items": {
+            "$ref": "#/$defs/RotationHistoryEntry"
+          },
+          "maxItems": 100,
+          "title": "Rotation History",
+          "type": "array"
+        }
+      },
+      "required": [
+        "contract_version",
+        "farmland_id",
+        "farmer_id",
+        "captured_at",
+        "profile",
+        "provenance"
+      ],
+      "title": "FarmProfileSnapshot",
+      "type": "object"
+    },
+    "FarmlandProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "area_unit": {
+          "enum": [
+            "square_metre",
+            "decimal",
+            "acre",
+            "hectare"
+          ],
+          "title": "Area Unit",
+          "type": "string"
+        },
+        "budget_amount": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budget Amount"
+        },
+        "budget_currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budget Currency"
+        },
+        "country_code": {
+          "const": "BD",
+          "default": "BD",
+          "title": "Country Code",
+          "type": "string"
+        },
+        "district": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "District"
+        },
+        "district_code": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "District Code"
+        },
+        "division": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Division"
+        },
+        "equipment": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Equipment",
+          "type": "array"
+        },
+        "irrigation_available": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Irrigation Available"
+        },
+        "land_area_sqm": {
+          "exclusiveMinimum": 0,
+          "title": "Land Area Sqm",
+          "type": "number"
+        },
+        "land_type": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Land Type"
+        },
+        "latitude": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latitude"
+        },
+        "longitude": {
+          "anyOf": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longitude"
+        },
+        "soil_type": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Soil Type"
+        },
+        "upazila": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upazila"
+        },
+        "upazila_code": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upazila Code"
+        },
+        "village_or_locality": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Village Or Locality"
+        },
+        "water_source": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Water Source"
+        }
+      },
+      "required": [
+        "land_area_sqm",
+        "area_unit"
+      ],
+      "title": "FarmlandProfile",
+      "type": "object"
+    },
+    "ObservedSymptom": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "source": {
+          "enum": [
+            "farmer_reported",
+            "model_suggested",
+            "expert_verified"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "source"
+      ],
+      "title": "ObservedSymptom",
+      "type": "object"
+    },
+    "OnsetComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_onset_days": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "title": "Baseline Onset Days",
+          "type": "array"
+        },
+        "baseline_years": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "title": "Baseline Years",
+          "type": "array"
+        },
+        "p_value": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "P Value",
+          "type": "number"
+        },
+        "recent_onset_days": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 13,
+          "minItems": 13,
+          "title": "Recent Onset Days",
+          "type": "array"
+        },
+        "recent_years": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 13,
+          "minItems": 13,
+          "title": "Recent Years",
+          "type": "array"
+        },
+        "test_name": {
+          "const": "mann_whitney_u",
+          "title": "Test Name",
+          "type": "string"
+        },
+        "test_statistic": {
+          "minimum": 0,
+          "title": "Test Statistic",
+          "type": "number"
+        }
+      },
+      "required": [
+        "baseline_years",
+        "recent_years",
+        "baseline_onset_days",
+        "recent_onset_days",
+        "test_name",
+        "test_statistic",
+        "p_value"
+      ],
+      "title": "OnsetComparison",
+      "type": "object"
+    },
+    "PlantingWindowAdvisory": {
+      "additionalProperties": false,
+      "properties": {
+        "advice_bn": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Advice Bn"
+        },
+        "advice_en": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Advice En"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "comparison": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OnsetComparison"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "crop_code": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Crop Code",
+          "type": "string"
+        },
+        "district_code": {
+          "maxLength": 24,
+          "minLength": 1,
+          "title": "District Code",
+          "type": "string"
+        },
+        "onset_shift_days": {
+          "anyOf": [
+            {
+              "maximum": 366,
+              "minimum": -366,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Onset Shift Days"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/SourceProvenance"
+          },
+          "maxItems": 100,
+          "title": "Provenance",
+          "type": "array"
+        },
+        "recommended_window": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RecommendedPlantingWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "sms_summary": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sms Summary"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "insufficient_data",
+            "provisional",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "status",
+        "district_code",
+        "crop_code",
+        "created_at"
+      ],
+      "title": "PlantingWindowAdvisory",
+      "type": "object"
+    },
+    "ProposedAction": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "format": "uuid",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "farmer_id": {
+          "format": "uuid",
+          "title": "Farmer Id",
+          "type": "string"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "preconditions": {
+          "items": {
+            "$ref": "#/$defs/ActionPrecondition"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Preconditions",
+          "type": "array"
+        },
+        "required_consent_purposes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Required Consent Purposes",
+          "type": "array"
+        },
+        "season_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Season Id"
+        },
+        "source_module": {
+          "enum": [
+            "m2",
+            "m3",
+            "m4",
+            "m5",
+            "m6"
+          ],
+          "title": "Source Module",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "awaiting_confirmation",
+            "confirmed",
+            "applied",
+            "rejected",
+            "expired",
+            "conflict",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "task_diff": {
+          "$ref": "#/$defs/TaskDiff"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "contract_version",
+        "action_id",
+        "farmer_id",
+        "farmland_id",
+        "source_module",
+        "status",
+        "version",
+        "created_at",
+        "expires_at",
+        "preconditions",
+        "task_diff"
+      ],
+      "title": "ProposedAction",
+      "type": "object"
+    },
+    "RecommendedPlantingWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "RecommendedPlantingWindow",
+      "type": "object"
+    },
+    "RotationComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "current_sequence": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Current Sequence",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/SourceProvenance"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_version",
+        "farmland_id",
+        "current_sequence",
+        "alternatives",
+        "evidence",
+        "created_at"
+      ],
+      "title": "RotationComparison",
+      "type": "object"
+    },
+    "RotationHistoryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "crop_code": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Crop Code",
+          "type": "string"
+        },
+        "harvest_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Harvest Date"
+        },
+        "planting_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planting Date"
+        },
+        "season_id": {
+          "format": "uuid",
+          "title": "Season Id",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "farmer_reported",
+            "recorded_plan",
+            "verified"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "yield_amount": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Yield Amount"
+        },
+        "yield_unit": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Yield Unit"
+        }
+      },
+      "required": [
+        "season_id",
+        "crop_code",
+        "source"
+      ],
+      "title": "RotationHistoryEntry",
+      "type": "object"
+    },
+    "SeasonSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "crop_code": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Crop Code"
+        },
+        "crop_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Crop Id"
+        },
+        "current_growth_stage_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Growth Stage Id"
+        },
+        "current_growth_stage_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Growth Stage Name"
+        },
+        "expected_harvest_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Harvest Date"
+        },
+        "growth_stage_as_of": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Growth Stage As Of"
+        },
+        "planting_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Planting Date"
+        },
+        "season_id": {
+          "format": "uuid",
+          "title": "Season Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "active",
+            "completed",
+            "cancelled"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "variety_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variety Id"
+        },
+        "variety_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variety Name"
+        }
+      },
+      "required": [
+        "season_id",
+        "status"
+      ],
+      "title": "SeasonSnapshot",
+      "type": "object"
+    },
+    "SourceProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "checksum_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checksum Sha256"
+        },
+        "dataset_version": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Version"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "method": {
+          "enum": [
+            "farmer_input",
+            "nasa_power",
+            "imerg",
+            "smap",
+            "modis_ndvi",
+            "landsat",
+            "ecostress",
+            "grace_fo",
+            "srtm",
+            "gedi",
+            "nex_gddp_cmip6",
+            "bam_derived",
+            "third_party",
+            "model_output",
+            "human_review",
+            "manual_entry"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "quality_status": {
+          "default": "verified",
+          "enum": [
+            "verified",
+            "provisional",
+            "synthetic",
+            "stale",
+            "unavailable"
+          ],
+          "title": "Quality Status",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        },
+        "spatial_resolution_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial Resolution M"
+        },
+        "temporal_end": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temporal End"
+        },
+        "temporal_start": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temporal Start"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_name",
+        "retrieved_at",
+        "recorded_at",
+        "method"
+      ],
+      "title": "SourceProvenance",
+      "type": "object"
+    },
+    "TaskDiff": {
+      "additionalProperties": false,
+      "properties": {
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/TaskDiffOperation"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "operations"
+      ],
+      "title": "TaskDiff",
+      "type": "object"
+    },
+    "TaskDiffApplyResult": {
+      "additionalProperties": false,
+      "description": "M3-owned, transaction-aware task mutation receipt for M5 orchestration.",
+      "properties": {
+        "action_id": {
+          "format": "uuid",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "cancelled_task_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Cancelled Task Ids",
+          "type": "array"
+        },
+        "completed_task_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Completed Task Ids",
+          "type": "array"
+        },
+        "contract_version": {
+          "const": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "created_task_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Created Task Ids",
+          "type": "array"
+        },
+        "farmer_id": {
+          "format": "uuid",
+          "title": "Farmer Id",
+          "type": "string"
+        },
+        "farmland_id": {
+          "format": "uuid",
+          "title": "Farmland Id",
+          "type": "string"
+        },
+        "season_id": {
+          "format": "uuid",
+          "title": "Season Id",
+          "type": "string"
+        },
+        "updated_task_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Updated Task Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "contract_version",
+        "action_id",
+        "farmer_id",
+        "farmland_id",
+        "season_id"
+      ],
+      "title": "TaskDiffApplyResult",
+      "type": "object"
+    },
+    "TaskDiffOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "due_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Due At"
+        },
+        "expected_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "pending",
+                "completed",
+                "skipped",
+                "cancelled"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Status"
+        },
+        "operation": {
+          "enum": [
+            "create",
+            "update",
+            "complete",
+            "cancel"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "enum": [
+                "low",
+                "normal",
+                "high",
+                "urgent"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "reference": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "operation",
+        "reference"
+      ],
+      "title": "TaskDiffOperation",
+      "type": "object"
+    }
+  },
+  "$id": "https://fieldshiftbd.dev/contracts/challenge-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Root used by the deterministic JSON Schema/TypeScript exporter.",
+  "properties": {
+    "action_execution_receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ActionExecutionReceipt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "adaptive_recommendation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AdaptiveRecommendation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "api_error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ApiError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "climate_variable_coverage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ClimateVariableCoverage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "consent_record_input": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConsentRecordInput"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "contract_version": {
+      "const": "1.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "disease_problem_sync_receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DiseaseProblemSyncReceipt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "disease_problem_sync_request": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DiseaseProblemSyncRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "district_climate_bundle": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DistrictClimateBundle"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "district_climate_bundle_manifest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DistrictClimateBundleManifest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "farm_profile_snapshot": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FarmProfileSnapshot"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "planting_window_advisory": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PlantingWindowAdvisory"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "proposed_action": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProposedAction"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rotation_comparison": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RotationComparison"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "source_provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SourceProvenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "task_diff": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TaskDiff"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "task_diff_apply_result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TaskDiffApplyResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "contract_version"
+  ],
+  "title": "ContractCatalog",
+  "type": "object"
+}

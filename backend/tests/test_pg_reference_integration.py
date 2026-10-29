@@ -24,6 +24,7 @@ from sqlalchemy.orm import sessionmaker
 
 PG_URL = os.environ.get("FIELDSHIFT_PG_TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not PG_URL, reason="set FIELDSHIFT_PG_TEST_DATABASE_URL to an isolated test DB")
+pytestmark = [pytestmark, pytest.mark.postgres]
 
 EVALUATED_ON = date(2026, 10, 8)
 SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "app/data/m2_knowledge_sources/barc_potato_comilla_snapshot.json"
@@ -35,7 +36,12 @@ def pg_session_factory():
     engine = create_engine(PG_URL)
     with engine.connect() as connection:
         version = connection.execute(text("select version_num from alembic_version")).scalar()
-    assert version == "a7c4e2d91b30", "migrate the test database with `alembic upgrade head` first"
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
+    alembic_ini = Path(__file__).resolve().parents[1] / "alembic.ini"
+    current_head = ScriptDirectory.from_config(Config(str(alembic_ini))).get_current_head()
+    assert version == current_head, "migrate the test database with `alembic upgrade head` first"
     yield sessionmaker(autoflush=False, bind=engine)
     engine.dispose()
 

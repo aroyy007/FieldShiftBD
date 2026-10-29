@@ -1,0 +1,646 @@
+{
+  "version": 1,
+  "source_of_truth": "plan.md, docs/plans/README.md, and docs/plans/FOUNDATION_AND_PARALLEL_WORK.md",
+  "shared_foundation": {
+    "contract_version": "1.0.0",
+    "single_writer": "integration steward",
+    "backend_contract_source": "app.contracts.challenge.v1",
+    "backend_ports": "app.contracts.challenge.ports",
+    "generated_json_schema": "contracts/jsonschema/challenge-v1.schema.json",
+    "generated_typescript": "frontend/src/modules/shared/contracts.generated.ts",
+    "fake_adapters": "tests/fakes/",
+    "action_coordinator": "app.services.actions",
+    "transaction_aware_m3_owner": "app.services.operational_actions",
+    "climate_cache_reader": "app.services.climate",
+    "profile_snapshot_reader": "app.services.profile_intake",
+    "alembic_revision": "c6f4e739a2b1",
+    "frontend_modules": "frontend/src/modules/m1 through m6",
+    "feature_flags_default": false,
+    "availability_endpoint": "/challenge/foundation/availability"
+  },
+  "modules": {
+    "M1": {
+      "name": "Farm Profile & Onboarding",
+      "router_imports": [
+        "app.api.routes_m1_profile:router",
+        "app.api.routes_m1_catalog:router"
+      ],
+      "owned_models": [
+        "app.models.core.Farmer",
+        "app.models.core.Farmland",
+        "app.models.profile.FarmerProfile",
+        "app.models.core.FarmlandCropPreference",
+        "app.models.core.Crop",
+        "app.models.core.CropVariety"
+      ],
+      "interfaces": [
+        {
+          "method": "post",
+          "path": "/auth/register"
+        },
+        {
+          "method": "post",
+          "path": "/auth/login"
+        },
+        {
+          "method": "get",
+          "path": "/profile"
+        },
+        {
+          "method": "patch",
+          "path": "/profile/farmer-profile"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}"
+        },
+        {
+          "method": "patch",
+          "path": "/farmlands/{farmland_id}"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/onboarding-status"
+        },
+        {
+          "method": "get",
+          "path": "/crops"
+        },
+        {
+          "method": "get",
+          "path": "/crops/{crop_id}"
+        },
+        {
+          "method": "get",
+          "path": "/reference/locations"
+        },
+        {
+          "method": "get",
+          "path": "/reference/profile-vocabulary"
+        }
+      ],
+      "depends_on": [],
+      "provides_to": [
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6"
+      ],
+      "invariants": [
+        "farmland ownership is farmer scoped",
+        "farmer and farm profile are authoritative",
+        "unknown profile data is not inferred as zero"
+      ],
+      "contract_checks": [
+        {
+          "method": "post",
+          "path": "/farmlands",
+          "success_status": "201",
+          "request_schema": "FarmlandCreate",
+          "response_schema": "FarmlandRead",
+          "request_required": [
+            "name",
+            "land_area_sqm"
+          ],
+          "response_required": [
+            "id",
+            "farmer_id",
+            "name",
+            "country_code",
+            "division",
+            "district",
+            "upazila",
+            "village_or_locality",
+            "latitude",
+            "longitude",
+            "land_area_sqm",
+            "land_area_display_unit",
+            "soil_type",
+            "irrigation_available",
+            "water_source",
+            "farming_method",
+            "budget_amount",
+            "budget_currency",
+            "previous_crop",
+            "previous_yield_amount",
+            "previous_yield_unit",
+            "equipment",
+            "created_at",
+            "updated_at"
+          ]
+        }
+      ]
+    },
+    "M2": {
+      "name": "Crop Advisor & Season Lifecycle",
+      "router_imports": [
+        "app.api.routes_m2_advisor:router"
+      ],
+      "owned_models": [
+        "app.models.season.CropRecommendation",
+        "app.models.season.Season",
+        "app.models.season.SeasonPlan",
+        "app.models.season.GrowthStage"
+      ],
+      "interfaces": [
+        {
+          "method": "post",
+          "path": "/advisor/farmlands/{farmland_id}/recommendations"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/farmlands/{farmland_id}/recommendations"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/recommendations"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/recommendations/{recommendation_id}/dismiss"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/seasons"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/farmlands/{farmland_id}/seasons"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/seasons/{season_id}/plan"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/seasons/{season_id}/plan"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/seasons/{season_id}/activate"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/seasons/{season_id}/harvest-guidance"
+        },
+        {
+          "method": "post",
+          "path": "/advisor/seasons/{season_id}/close"
+        }
+      ],
+      "depends_on": [
+        "M1",
+        "approved_agricultural_knowledge"
+      ],
+      "provides_to": [
+        "M3",
+        "M5",
+        "frontend"
+      ],
+      "invariants": [
+        "saved M1 farmland is authoritative",
+        "recommendation exploration has no operational task writes",
+        "M2 owns plan definitions; M3 owns operational tasks and current-stage updates"
+      ],
+      "contract_checks": [
+        {
+          "method": "post",
+          "path": "/advisor/recommendations",
+          "success_status": "200",
+          "request_schema": "FarmProfileInput",
+          "response_schema": "CropRecommendationSet",
+          "request_properties": [
+            "farmland_id",
+            "location",
+            "resources",
+            "crop_preferences"
+          ],
+          "response_required": [
+            "farmland_id",
+            "status",
+            "message"
+          ],
+          "request_required": []
+        }
+      ]
+    },
+    "M3": {
+      "name": "Farm Brain / Operational State",
+      "router_imports": [
+        "app.api.routes_farm_state:router"
+      ],
+      "owned_models": [
+        "app.models.state.Task",
+        "app.models.state.Problem",
+        "app.models.state.FarmCheckin"
+      ],
+      "interfaces": [
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/state"
+        },
+        {
+          "method": "patch",
+          "path": "/farmlands/{farmland_id}/state/growth-stage"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/tasks"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/tasks"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/seasons/{season_id}/tasks/from-plan"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/tasks/{task_id}"
+        },
+        {
+          "method": "patch",
+          "path": "/farmlands/{farmland_id}/tasks/{task_id}"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/problems"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/problems"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/problems/{problem_id}"
+        },
+        {
+          "method": "patch",
+          "path": "/farmlands/{farmland_id}/problems/{problem_id}"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/check-ins"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/check-ins"
+        }
+      ],
+      "depends_on": [
+        "M1",
+        "M2"
+      ],
+      "provides_to": [
+        "M4",
+        "M5",
+        "M6",
+        "frontend"
+      ],
+      "invariants": [
+        "all reads and writes require verified farmer ownership",
+        "task references are idempotent within a season",
+        "farm and season foreign keys must agree",
+        "current operational stage is M3 controlled"
+      ],
+      "contract_checks": [
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/seasons/{season_id}/tasks/from-plan",
+          "success_status": "200",
+          "request_schema": "PlanTaskImportRequest",
+          "response_schema": "TaskImportResult",
+          "request_required": [
+            "tasks"
+          ],
+          "response_required": [
+            "created_count",
+            "existing_count",
+            "tasks"
+          ]
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/state",
+          "success_status": "200",
+          "response_schema": "FarmStateRead",
+          "response_required": [
+            "farmland_id",
+            "active_season",
+            "current_growth_stage",
+            "growth_stages",
+            "days_since_planting",
+            "season_progress_percent",
+            "tasks",
+            "open_problems",
+            "latest_checkin"
+          ]
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/problems",
+          "success_status": "201",
+          "request_schema": "ProblemCreate",
+          "response_schema": "ProblemRead",
+          "request_required": [
+            "category",
+            "description"
+          ],
+          "request_properties": [
+            "source",
+            "severity",
+            "season_id"
+          ],
+          "response_required": [
+            "id",
+            "farmland_id",
+            "season_id",
+            "source",
+            "category",
+            "description",
+            "severity",
+            "status",
+            "created_at",
+            "resolved_at"
+          ],
+          "enum_values": {
+            "ProblemCreate.source": [
+              "farmer",
+              "weather",
+              "disease_detection",
+              "system"
+            ],
+            "ProblemCreate.severity": [
+              "low",
+              "moderate",
+              "high",
+              "critical"
+            ],
+            "ProblemRead.status": [
+              "open",
+              "monitoring",
+              "resolved",
+              "dismissed"
+            ]
+          }
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/tasks",
+          "success_status": "201",
+          "request_schema": "TaskCreate",
+          "response_schema": "TaskRead",
+          "request_required": [
+            "title"
+          ],
+          "request_properties": [
+            "source",
+            "source_reference",
+            "season_id"
+          ],
+          "response_required": [
+            "id",
+            "farmland_id",
+            "season_id",
+            "growth_stage_id",
+            "title",
+            "description",
+            "due_at",
+            "status",
+            "priority",
+            "source",
+            "source_reference",
+            "completed_at",
+            "created_at",
+            "updated_at"
+          ],
+          "enum_values": {
+            "TaskCreate.source": [
+              "season_plan",
+              "weather",
+              "disease",
+              "farmer",
+              "system"
+            ],
+            "TaskRead.status": [
+              "pending",
+              "completed",
+              "skipped",
+              "cancelled"
+            ]
+          }
+        }
+      ]
+    },
+    "M4": {
+      "name": "Weather Intelligence & Alerts",
+      "router_imports": [
+        "app.api.routes_m4_weather:router"
+      ],
+      "owned_models": [
+        "app.models.weather.WeatherEvent",
+        "app.models.weather.WeatherAlert"
+      ],
+      "interfaces": [
+        {
+          "method": "get",
+          "path": "/weather/assessment/{farmland_id}"
+        },
+        {
+          "method": "get",
+          "path": "/weather/assessment/{farmland_id}/demo"
+        },
+        {
+          "method": "get",
+          "path": "/weather/raw/{farmland_id}"
+        }
+      ],
+      "depends_on": [
+        "M1",
+        "M3"
+      ],
+      "provides_to": [
+        "M2",
+        "M5",
+        "frontend"
+      ],
+      "invariants": [
+        "forecast, historical observation and projection stay distinct",
+        "source failure is explicit",
+        "M4 evidence does not mutate M2/M3 state",
+        "current public implementation is read only"
+      ],
+      "contract_checks": [
+        {
+          "method": "get",
+          "path": "/weather/assessment/{farmland_id}",
+          "success_status": "200",
+          "response_schema": "WeatherAssessmentOut",
+          "response_required": [
+            "farmland_id",
+            "crop_name",
+            "growth_stage",
+            "location_name",
+            "coordinates",
+            "assessed_at",
+            "providers",
+            "alerts",
+            "suppressed_events",
+            "detected_event_count"
+          ]
+        }
+      ]
+    },
+    "M5": {
+      "name": "Conversational Layer",
+      "router_imports": [
+        "app.api.routes_m5_chat:router"
+      ],
+      "owned_models": [
+        "app.models.chat.Conversation",
+        "app.models.chat.ChatMessage"
+      ],
+      "interfaces": [
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/conversations"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/conversations"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/conversations/{conversation_id}"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/conversations/{conversation_id}/messages"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/chat"
+        }
+      ],
+      "depends_on": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M6"
+      ],
+      "provides_to": [
+        "frontend"
+      ],
+      "invariants": [
+        "chat context is farm scoped",
+        "M5 renders domain results and does not own their state",
+        "replayed client request IDs return the original response"
+      ],
+      "contract_checks": [
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/conversations/{conversation_id}/messages",
+          "success_status": "200",
+          "request_schema": "ChatMessageCreate",
+          "response_schema": "ChatResponse",
+          "request_required": [
+            "message"
+          ],
+          "response_required": [
+            "conversation_id",
+            "farmer_message",
+            "assistant_message",
+            "intent",
+            "context_summary"
+          ],
+          "enum_values": {
+            "ChatResponse.intent": [
+              "resource_inquiry",
+              "task_inquiry",
+              "weather_inquiry",
+              "disease_inquiry",
+              "crop_advice",
+              "onboarding_help",
+              "general_qa"
+            ]
+          }
+        }
+      ]
+    },
+    "M6": {
+      "name": "Disease Detection",
+      "router_imports": [
+        "app.api.routes_disease:router"
+      ],
+      "owned_models": [
+        "app.models.disease.DiseaseResult"
+      ],
+      "interfaces": [
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/disease-results"
+        },
+        {
+          "method": "get",
+          "path": "/farmlands/{farmland_id}/disease-results"
+        },
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/disease-results/{disease_result_id}/sync-problem"
+        }
+      ],
+      "depends_on": [
+        "M1",
+        "M3"
+      ],
+      "provides_to": [
+        "M3",
+        "M5",
+        "frontend"
+      ],
+      "invariants": [
+        "disease result belongs to its authenticated farm",
+        "low-confidence/healthy results do not create a problem",
+        "M3 is the problem-state owner",
+        "repeated issue sync reuses the existing open problem"
+      ],
+      "contract_checks": [
+        {
+          "method": "post",
+          "path": "/farmlands/{farmland_id}/disease-results/{disease_result_id}/sync-problem",
+          "success_status": "200",
+          "response_schema": "DiseaseProblemSyncResponse",
+          "response_required": [
+            "disease_result",
+            "farm_problem",
+            "problem_sync",
+            "message"
+          ],
+          "enum_values": {
+            "DiseaseProblemSyncResponse.problem_sync": [
+              "not_required",
+              "created",
+              "reused",
+              "failed"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "shared_infrastructure": [
+    "GET /",
+    "GET /health"
+  ]
+}

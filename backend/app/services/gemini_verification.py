@@ -162,6 +162,9 @@ class GeminiApiVerifier:
 
 
 def get_gemini_verifier():
+    if settings.OFFLINE_MODE:
+        yield None
+        return
     secret = settings.GEMINI_API_KEY
     api_key = secret.get_secret_value().strip() if secret is not None else ""
     if not api_key:

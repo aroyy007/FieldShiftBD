@@ -1,0 +1,86 @@
+{
+  "test_only_warning": "SYNTHETIC CONTRACT MOCKS ONLY — NOT FARM DATA, WEATHER OBSERVATIONS, DISEASE ADVICE OR RECOMMENDATIONS.",
+  "m2_recommendation_set": {
+    "farmland_id": "22222222-2222-4222-8222-222222222222",
+    "status": "no_approved_knowledge",
+    "message": "Test fixture: no approved knowledge is available.",
+    "recommendations": []
+  },
+  "m2_plan_tasks_to_m3": {
+    "tasks": [
+      {
+        "reference": "mock:stage-one:field-check",
+        "growth_stage_id": "44444444-4444-4444-8444-444444444444",
+        "title": "Test only: inspect the field",
+        "description": "Contract fixture, not an agricultural instruction.",
+        "days_after_planting": 5,
+        "priority": "normal"
+      }
+    ]
+  },
+  "m3_farm_state_to_consumers": {
+    "farmland_id": "22222222-2222-4222-8222-222222222222",
+    "active_season": null,
+    "current_growth_stage": null,
+    "growth_stages": [],
+    "days_since_planting": null,
+    "season_progress_percent": null,
+    "tasks": [],
+    "open_problems": [],
+    "latest_checkin": null
+  },
+  "m4_weather_assessment_to_consumers": {
+    "farmland_id": "22222222-2222-4222-8222-222222222222",
+    "crop_name": "Synthetic test crop",
+    "growth_stage": "unknown",
+    "location_name": "Synthetic test district",
+    "coordinates": {"latitude": 23.0, "longitude": 90.0},
+    "assessed_at": "2026-01-01",
+    "providers": [
+      {"provider": "synthetic-provider", "state": "unavailable", "reason": "fixture only"}
+    ],
+    "alerts": [],
+    "suppressed_events": [],
+    "detected_event_count": 0
+  },
+  "m5_chat_response_to_frontend": {
+    "conversation_id": "55555555-5555-4555-8555-555555555555",
+    "farmer_message": {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "conversation_id": "55555555-5555-4555-8555-555555555555",
+      "sender_type": "farmer",
+      "message": "Test fixture question",
+      "message_type": "text",
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    "assistant_message": {
+      "id": "77777777-7777-4777-8777-777777777777",
+      "conversation_id": "55555555-5555-4555-8555-555555555555",
+      "sender_type": "assistant",
+      "message": "Test fixture response",
+      "message_type": "text",
+      "created_at": "2026-01-01T00:00:01Z"
+    },
+    "intent": "general_qa",
+    "context_summary": {"farmland_name": "Synthetic test farm"},
+    "suggested_actions": []
+  },
+  "m6_disease_sync_to_m3_and_frontend": {
+    "disease_result": {
+      "id": "88888888-8888-4888-8888-888888888888",
+      "farmland_id": "22222222-2222-4222-8222-222222222222",
+      "season_id": null,
+      "crop_id": null,
+      "crop_name": null,
+      "possible_issue": null,
+      "confidence": null,
+      "symptoms": [],
+      "recommended_actions": [],
+      "model_details": {"fixture": true},
+      "created_at": "2026-01-01T00:00:00Z"
+    },
+    "farm_problem": null,
+    "problem_sync": "not_required",
+    "message": "Test fixture only."
+  }
+}
