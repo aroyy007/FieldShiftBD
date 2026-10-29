@@ -1,5 +1,9 @@
 # Backend
 
+For parallel module ownership and existing public contract checks, start with
+[`contracts/README.md`](contracts/README.md) and the executable
+[`contracts/module-ownership.json`](contracts/module-ownership.json) manifest.
+
 ## Module 3 farm-state API
 
 Module 3 is the shared operational state owner. `FarmState` is assembled from
