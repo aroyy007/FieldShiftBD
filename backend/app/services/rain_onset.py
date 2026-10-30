@@ -7,8 +7,63 @@ not itself recommend a crop or planting date.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Mapping
+
+
+@dataclass(frozen=True)
+class GrowingDegreeDayResult:
+    total_degree_days: float | None
+    expected_days: int
+    valid_days: int
+    method: str
+    base_temperature_c: float
+    cap_temperature_c: float | None
+
+    @property
+    def complete(self) -> bool:
+        return self.valid_days == self.expected_days and self.total_degree_days is not None
+
+
+def accumulate_growing_degree_days(
+    daily_mean_temperature_c: Mapping[date, float | None],
+    start: date,
+    end: date,
+    *,
+    base_temperature_c: float,
+    cap_temperature_c: float | None = None,
+) -> GrowingDegreeDayResult:
+    """Accumulate daily-mean GDD; missing days make the total unavailable."""
+    if end < start:
+        raise ValueError("end must not precede start")
+    if not math.isfinite(base_temperature_c):
+        raise ValueError("base_temperature_c must be finite")
+    if cap_temperature_c is not None and (
+        not math.isfinite(cap_temperature_c) or cap_temperature_c < base_temperature_c
+    ):
+        raise ValueError("cap_temperature_c must be finite and at least the base")
+
+    expected_days = (end - start).days + 1
+    values: list[float] = []
+    for offset in range(expected_days):
+        day = start + timedelta(days=offset)
+        value = daily_mean_temperature_c.get(day)
+        if value is None or not math.isfinite(float(value)):
+            continue
+        temperature = float(value)
+        if cap_temperature_c is not None:
+            temperature = min(temperature, cap_temperature_c)
+        values.append(max(0.0, temperature - base_temperature_c))
+
+    return GrowingDegreeDayResult(
+        total_degree_days=(round(sum(values), 2) if len(values) == expected_days else None),
+        expected_days=expected_days,
+        valid_days=len(values),
+        method="daily_mean_max_zero_v1",
+        base_temperature_c=base_temperature_c,
+        cap_temperature_c=cap_temperature_c,
+    )
 
 
 def find_usable_rain_onset(

@@ -1,6 +1,9 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
-from app.services.rain_onset import find_usable_rain_onset
+from app.services.rain_onset import (
+    accumulate_growing_degree_days,
+    find_usable_rain_onset,
+)
 
 
 def _rain(start: date, values: list[float | None]) -> dict[date, float | None]:
@@ -59,3 +62,34 @@ def test_returns_none_when_confirmation_period_is_incomplete():
     onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=6))
 
     assert onset is None
+
+
+def test_gdd_uses_explicit_base_and_does_not_treat_missing_temperature_as_zero():
+    temperatures = {
+        date(2025, 1, 1): 20.0,
+        date(2025, 1, 2): None,
+        date(2025, 1, 3): 30.0,
+    }
+
+    result = accumulate_growing_degree_days(
+        temperatures, date(2025, 1, 1), date(2025, 1, 3), base_temperature_c=10
+    )
+
+    assert result.total_degree_days is None
+    assert result.valid_days == 2
+    assert result.expected_days == 3
+
+
+def test_gdd_reports_complete_capped_daily_mean_accumulation():
+    temperatures = {date(2025, 1, day): 30.0 for day in range(1, 4)}
+
+    result = accumulate_growing_degree_days(
+        temperatures,
+        date(2025, 1, 1),
+        date(2025, 1, 3),
+        base_temperature_c=10,
+        cap_temperature_c=25,
+    )
+
+    assert result.total_degree_days == 45
+    assert result.complete
