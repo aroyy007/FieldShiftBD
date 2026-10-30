@@ -18,15 +18,17 @@ def find_usable_rain_onset(
     *,
     window_days: int = 7,
     threshold_mm: float = 20.0,
-    confirmation_days: int = 7,
-    minimum_followup_rain_mm: float = 1.0,
+    confirmation_days: int = 14,
+    dry_day_threshold_mm: float = 1.0,
+    max_consecutive_dry_days: int = 7,
 ) -> date | None:
     """Return the first qualifying onset date, or ``None`` when unsupported.
 
     A candidate is the first day of a complete ``window_days`` period whose
     accumulated rainfall reaches ``threshold_mm``, followed by a complete
-    ``confirmation_days`` period containing at least one day above
-    ``minimum_followup_rain_mm``. Missing, negative, or non-finite daily values
+    ``confirmation_days`` period with no run longer than
+    ``max_consecutive_dry_days`` where daily rain is at or below
+    ``dry_day_threshold_mm``. Missing, negative, or non-finite daily values
     invalidate that candidate; missing observations are never treated as zero.
     ``season_end`` is inclusive and seasons may cross calendar years.
     """
@@ -36,8 +38,10 @@ def find_usable_rain_onset(
         raise ValueError("window_days and confirmation_days must be positive")
     if not math.isfinite(threshold_mm) or threshold_mm < 0:
         raise ValueError("threshold_mm must be finite and non-negative")
-    if not math.isfinite(minimum_followup_rain_mm) or minimum_followup_rain_mm < 0:
-        raise ValueError("minimum_followup_rain_mm must be finite and non-negative")
+    if not math.isfinite(dry_day_threshold_mm) or dry_day_threshold_mm < 0:
+        raise ValueError("dry_day_threshold_mm must be finite and non-negative")
+    if max_consecutive_dry_days < 0:
+        raise ValueError("max_consecutive_dry_days must be non-negative")
 
     required_days = window_days + confirmation_days
     final_candidate = season_end - timedelta(days=required_days - 1)
@@ -56,11 +60,15 @@ def find_usable_rain_onset(
             for value in values
         ):
             accumulated = sum(float(daily_rain_mm[day]) for day in accumulation_dates)
-            followup_has_rain = any(
-                float(daily_rain_mm[day]) > minimum_followup_rain_mm
-                for day in followup_dates
-            )
-            if accumulated >= threshold_mm and followup_has_rain:
+            longest_dry_spell = 0
+            current_dry_spell = 0
+            for day in followup_dates:
+                if float(daily_rain_mm[day]) <= dry_day_threshold_mm:
+                    current_dry_spell += 1
+                    longest_dry_spell = max(longest_dry_spell, current_dry_spell)
+                else:
+                    current_dry_spell = 0
+            if accumulated >= threshold_mm and longest_dry_spell <= max_consecutive_dry_days:
                 return candidate
 
         candidate += timedelta(days=1)

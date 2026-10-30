@@ -9,20 +9,29 @@ def _rain(start: date, values: list[float | None]) -> dict[date, float | None]:
 
 def test_finds_first_qualifying_window_and_returns_calendar_date():
     start = date(2025, 6, 1)
-    rainfall = _rain(start, [1, 1, 1, 1, 1, 1, 1, 1, 20, 0, 0, 2, 0, 0, 0, 0])
+    rainfall = _rain(start, [1, 1, 1, 1, 1, 1, 1, 1, 20, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0])
 
-    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=15))
+    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=22))
 
     assert onset == start + timedelta(days=2)
 
 
 def test_skips_rain_window_followed_by_a_dry_spell():
     start = date(2025, 6, 1)
-    rainfall = _rain(start, [4] * 7 + [0] * 14 + [4] * 7 + [0] * 7 + [2])
+    rainfall = _rain(start, [4] * 7 + [0] * 14 + [4] * 7 + [0] * 7 + [2] + [0] * 4)
 
-    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=35))
+    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=39))
 
     assert onset == start + timedelta(days=19)
+
+
+def test_rejects_followup_with_a_long_consecutive_dry_spell_even_if_rain_returns():
+    start = date(2025, 6, 1)
+    rainfall = _rain(start, [4] * 7 + [2] + [0] * 10 + [2] + [0] * 14)
+
+    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=32))
+
+    assert onset is None
 
 
 def test_skips_candidate_windows_with_missing_daily_observations():
@@ -36,9 +45,9 @@ def test_skips_candidate_windows_with_missing_daily_observations():
 
 def test_handles_season_crossing_calendar_year():
     start = date(2025, 12, 28)
-    rainfall = _rain(start, [4, 4, 4, 4, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0])
+    rainfall = _rain(start, [4, 4, 4, 4, 4, 0, 0, 2] + [0] * 7 + [2] + [0] * 5)
 
-    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=13))
+    onset = find_usable_rain_onset(rainfall, start, start + timedelta(days=20))
 
     assert onset == start
 
