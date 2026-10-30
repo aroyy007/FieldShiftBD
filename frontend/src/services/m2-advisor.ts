@@ -103,6 +103,33 @@ export type HarvestGuidance = {
   knowledge_refs: KnowledgeReference[];
 };
 
+export type PlantingWindowEvidence = {
+  status: 'available' | 'insufficient_data' | 'unavailable';
+  message_bn: string;
+  message_en: string;
+  farmland_id: string;
+  season_id: string;
+  crop_name: string;
+  annual_comparison: null | {
+    status: 'available' | 'insufficient_data';
+    baseline_period: string | null;
+    recent_period: string | null;
+    baseline: { median_onset_day: number | null; sample_size: number; onset_day_offsets: number[]; excluded_years: number[] };
+    recent: { median_onset_day: number | null; sample_size: number; onset_day_offsets: number[]; excluded_years: number[] };
+    observed_shift_days: number | null;
+    mann_whitney: { u_statistic: number | null; p_value: number | null; rank_biserial_effect: number | null };
+    sensitivity: { threshold_mm: number; status: string; observed_shift_days: number | null; baseline_sample_size: number; recent_sample_size: number }[];
+    definition: Record<string, unknown>;
+    limitation: string;
+  };
+  recommended_shift_days: number | null;
+  gdd_summary: null | { method: string; annual_values: { year: number; total_degree_days: number | null; valid_days: number; expected_days: number }[]; valid_year_count: number; baseline_valid_years: number; recent_valid_years: number; baseline_mean: number | null; recent_mean: number | null };
+  planting_calendar: Record<string, unknown> | null;
+  data_provenance: { source: string; source_url: string; dataset: string; variables: string[]; temporal_start: string; temporal_end: string; spatial_resolution_m: number; spatial_scale: string; cache_status: string; retrieved_at: string | null; district_code?: string; coverage_by_variable?: { variable: string; units: string; status: string; expected_observations: number; valid_observations: number; missing_observations: number }[] };
+  limitations_bn: string[];
+  limitations_en: string[];
+};
+
 type ApiError = Error & { status?: number };
 
 export async function m2Request<T>(path: string, init: RequestInit = {}): Promise<T> {

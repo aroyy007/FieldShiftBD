@@ -9,7 +9,7 @@ The shared root and health endpoints (`GET /`, `GET /health`) are infrastructure
 | Module | Own implementation | Stable integration seam | Do not take over |
 |---|---|---|---|
 | M1 | Farmer auth/profile, farmland, catalog and confirmed farmer facts | Existing M1 routes and M2 `FarmProfileInput` composition | Another module's operational or season records |
-| M2 | Crop recommendations, approved knowledge, season lifecycle/plan definitions and new pure advisory computations | Existing `/advisor` routes and existing M2 response schemas; additive versioned result contract for the NASA/adaptive plan | M1 profile/catalog or M3 task/current-stage writes |
+| M2 | Crop recommendations, approved knowledge, season lifecycle/plan definitions and new pure advisory computations | Existing `/advisor` routes plus authenticated `/advisor/farmlands/{farmland_id}/planting-window`; response includes annual NASA onset/GDD evidence and provenance | M1 profile/catalog or M3 task/current-stage writes |
 | M3 | Farm state, current operational stage, tasks, problems, check-ins | Existing `/farmlands/{id}/state`, tasks, problems, check-ins and plan-task import contracts | M2 plan definition or duplicate state in a new snapshot table |
 | M4 | Weather/environment source adapters, QA and dated evidence | Existing `/weather` contracts; planned read-only climate bundle supplied to M2 | Crop decision rules, plan selection or task execution |
 | M5 | Farm-scoped conversation, language/voice and proposed-action presentation | Existing chat schemas/routes and the shared ProposedAction contract when approved | Recalculation of agronomy or direct writes to M1/M2/M3/M6 data |

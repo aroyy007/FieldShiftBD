@@ -58,6 +58,13 @@ class NasaPowerHistoryProvider:
         self._cache_root = Path(cache_root).resolve() / "power-history"
         self._clock = clock or (lambda: datetime.now(timezone.utc))
 
+    def has_cached_bundle(
+        self, district_code: str, latitude: float, longitude: float, start: date, end: date
+    ) -> bool:
+        key_material = f"{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
+        key = hashlib.sha256(key_material.encode()).hexdigest()
+        return (self._cache_root / key[:2] / f"{key}.json").is_file()
+
     def get_bundle(
         self,
         district_code: str,
@@ -72,10 +79,12 @@ class NasaPowerHistoryProvider:
         key_material = f"{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
         key = hashlib.sha256(key_material.encode()).hexdigest()
         cache_file = self._cache_root / key[:2] / f"{key}.json"
-        if offline:
-            if not cache_file.is_file():
-                raise ArtifactNotFound("no cached NASA POWER history for this location and period")
+        # Persistent cache is authoritative for repeat calls and offline demos.
+        # This avoids making every farmer request wait on a 25-year API query.
+        if cache_file.is_file():
             return DistrictClimateBundle.model_validate_json(cache_file.read_bytes())
+        if offline:
+            raise ArtifactNotFound("no cached NASA POWER history for this location and period")
 
         payload = _request_power(url)
         observations, coverages = parse_power_daily_response(payload, start, end)

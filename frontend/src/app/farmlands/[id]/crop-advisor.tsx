@@ -21,6 +21,7 @@ import {
   RegionalContext,
   Season,
   SeasonPlan,
+  PlantingWindowEvidence,
   m2Request,
 } from '../../../services/m2-advisor';
 import {
@@ -57,7 +58,7 @@ const errorText = (error: unknown, fallback: string) => error instanceof Error ?
 export default function CropAdvisorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const farmlandId = Array.isArray(id) ? id[0] : id;
-  const { farmlands, authLoading, dataLoading, refreshFarmland } = useAppContext();
+  const { farmlands, authLoading, dataLoading, refreshFarmland, profile } = useAppContext();
   const router = useRouter();
   const farm = farmlands.find(item => item.id === farmlandId);
 
@@ -73,6 +74,10 @@ export default function CropAdvisorScreen() {
   const [planMessage, setPlanMessage] = useState('');
   const [harvest, setHarvest] = useState<HarvestGuidance | null>(null);
   const [harvestMessage, setHarvestMessage] = useState('');
+  const [plantingEvidence, setPlantingEvidence] = useState<PlantingWindowEvidence | null>(null);
+  const [plantingEvidenceLoading, setPlantingEvidenceLoading] = useState(false);
+  const [plantingEvidenceError, setPlantingEvidenceError] = useState('');
+  const [plantingEvidenceReload, setPlantingEvidenceReload] = useState(0);
   const [chosenCropId, setChosenCropId] = useState<string | null>(null);
   const [chosenRecommendationId, setChosenRecommendationId] = useState<string | null>(null);
   const [chosenVarietyId, setChosenVarietyId] = useState<string | null>(null);
@@ -117,6 +122,7 @@ export default function CropAdvisorScreen() {
       setVocabulary(profileVocabulary);
       setSeasons(history);
       setSavedRecommendations(saved);
+      setSelectedSeason(current => current ?? history.find(item => item.status === 'active' || item.status === 'planned') ?? null);
       setLoadState('ready');
     })
     .catch(requestError => {
@@ -127,6 +133,29 @@ export default function CropAdvisorScreen() {
   useEffect(() => {
     if (farm) void fetchAdvisorData();
   }, [farm?.id, fetchAdvisorData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!selectedSeason || !farmlandId) {
+      return;
+    }
+    let current = true;
+    void Promise.resolve().then(() => {
+      if (current) {
+        setPlantingEvidenceLoading(true);
+        setPlantingEvidenceError('');
+      }
+      return m2Request<PlantingWindowEvidence>(
+        `/advisor/farmlands/${farmlandId}/planting-window?season_id=${encodeURIComponent(selectedSeason.season_id)}`,
+      );
+    }).then(value => {
+      if (current) setPlantingEvidence(value);
+    }).catch(requestError => {
+      if (current) setPlantingEvidenceError(errorText(requestError, 'Could not load NASA climate evidence.'));
+    }).finally(() => {
+      if (current) setPlantingEvidenceLoading(false);
+    });
+    return () => { current = false; };
+  }, [farmlandId, selectedSeason, plantingEvidenceReload]);
 
   function loadAdvisorData() {
     setLoadState('loading');
@@ -613,6 +642,86 @@ export default function CropAdvisorScreen() {
                 </Card>
 
                 <Card>
+                  <Text style={styles.sectionTitle}>
+                    {profile?.preferred_language === 'bn' ? 'NASA বৃষ্টির ইতিহাস ও রোপণ-সময়ের প্রমাণ' : 'NASA rainfall history and planting-window evidence'}
+                  </Text>
+                  <Text style={styles.helper}>
+                    {profile?.preferred_language === 'bn'
+                      ? 'এটি ২৫ বছরের বৃষ্টির সময় ও তাপমাত্রার তথ্য তুলনা করে। যাচাইকৃত ফসল ক্যালেন্ডার না থাকলে কোনো রোপণ-পরামর্শ দেখানো হবে না।'
+                      : 'Compares 25 years of rainfall timing and temperature. No planting advice is shown without a reviewed crop calendar.'}
+                  </Text>
+                  {plantingEvidenceLoading && <Text style={styles.helper}>{profile?.preferred_language === 'bn' ? 'NASA তথ্য যাচাই হচ্ছে…' : 'Checking NASA evidence…'}</Text>}
+                  {plantingEvidenceError ? (
+                    <View>
+                      <Text accessibilityRole="alert" style={styles.warningText}>{plantingEvidenceError}</Text>
+                      <Button accessibilityRole="button" title={profile?.preferred_language === 'bn' ? 'আবার চেষ্টা করুন' : 'Try again'} variant="outline" onPress={() => setPlantingEvidenceReload(value => value + 1)} />
+                    </View>
+                  ) : null}
+                  {plantingEvidence && plantingEvidence.season_id === selectedSeason.season_id && (() => {
+                    const bn = profile?.preferred_language === 'bn';
+                    const provenance = plantingEvidence.data_provenance;
+                    const comparison = plantingEvidence.annual_comparison;
+                    return (
+                      <View style={styles.evidenceBlock}>
+                        <Text style={plantingEvidence.status === 'available' ? styles.evidenceStatus : styles.warningText}>
+                          {bn ? plantingEvidence.message_bn : plantingEvidence.message_en}
+                        </Text>
+                        {plantingEvidence.status === 'available' && plantingEvidence.recommended_shift_days !== null && (
+                          <Text style={styles.evidenceStatus}>
+                            {bn ? 'যাচাইকৃত ক্যালেন্ডার নীতি অনুযায়ী ঐতিহাসিক বৃষ্টির onset পরিবর্তনের সমান রোপণ-সময় সামঞ্জস্য:' : 'Adjustment under the reviewed crop-calendar policy, matching the observed onset change:'} {plantingEvidence.recommended_shift_days > 0 ? '+' : ''}{plantingEvidence.recommended_shift_days} {bn ? 'দিন' : 'days'}
+                          </Text>
+                        )}
+                        {comparison && (
+                          <>
+                            <Text style={styles.label}>{bn ? 'বার্ষিক তুলনা' : 'Annual comparison'}</Text>
+                            <Text style={styles.body}>
+                              {comparison.baseline_period ?? '2001–2012'}: {comparison.baseline.median_onset_day == null ? '—' : `${comparison.baseline.median_onset_day} ${bn ? 'মৌসুম শুরুর পর দিন' : 'days after season start'}`} ({comparison.baseline.sample_size} {bn ? 'বছর' : 'years'})
+                            </Text>
+                            <Text style={styles.body}>
+                              {comparison.recent_period ?? '2013–2025'}: {comparison.recent.median_onset_day == null ? '—' : `${comparison.recent.median_onset_day} ${bn ? 'মৌসুম শুরুর পর দিন' : 'days after season start'}`} ({comparison.recent.sample_size} {bn ? 'বছর' : 'years'})
+                            </Text>
+                            <Text style={styles.body}>
+                              {bn ? 'মধ্যম onset-এর পর্যবেক্ষিত পার্থক্য' : 'Observed median onset difference'}: {comparison.observed_shift_days == null ? '—' : `${comparison.observed_shift_days} ${bn ? 'দিন' : 'days'}`}
+                            </Text>
+                            <Text style={styles.helper}>
+                              Mann–Whitney U {comparison.mann_whitney.u_statistic ?? '—'} · p={comparison.mann_whitney.p_value?.toFixed(4) ?? '—'} · {bn ? 'rank-biserial effect' : 'rank-biserial effect'} {comparison.mann_whitney.rank_biserial_effect ?? '—'}
+                            </Text>
+                            <Text style={styles.label}>{bn ? 'বৃষ্টির সীমা বদলালে ফল' : 'Sensitivity to rainfall threshold'}</Text>
+                            {comparison.sensitivity.map(item => (
+                              <Text key={item.threshold_mm} style={styles.helper}>
+                                {item.threshold_mm} mm: {item.observed_shift_days == null ? (bn ? 'তথ্য অপর্যাপ্ত' : 'insufficient data') : `${item.observed_shift_days} ${bn ? 'দিন' : 'days'}`}
+                              </Text>
+                            ))}
+                          </>
+                        )}
+                        {plantingEvidence.gdd_summary && (
+                          <Text style={styles.body}>
+                            {bn ? 'GDD গড় (২০০১–১২ / ২০১৩–২৫)' : 'Mean GDD (2001–12 / 2013–25)'}: {plantingEvidence.gdd_summary.baseline_mean ?? '—'} / {plantingEvidence.gdd_summary.recent_mean ?? '—'}
+                          </Text>
+                        )}
+                        <Text style={styles.label}>{bn ? 'তথ্যের উৎস ও সীমা' : 'Source and data limits'}</Text>
+                        <Text style={styles.helper}>{provenance.source} · {provenance.temporal_start} – {provenance.temporal_end}</Text>
+                        <Text style={styles.helper}>{bn ? 'স্থানিক পরিসর' : 'Spatial scale'}: {provenance.spatial_scale}</Text>
+                        <Text style={styles.helper}>{bn ? 'ক্যাশ অবস্থা' : 'Cache status'}: {provenance.cache_status === 'hit'
+                          ? (bn ? 'সংরক্ষিত ক্যাশে' : 'persistent cache')
+                          : provenance.cache_status === 'fetched_live_and_cached'
+                            ? (bn ? 'সরাসরি আনা ও ক্যাশে সংরক্ষিত' : 'fetched live and cached')
+                            : provenance.cache_status}</Text>
+                        <Text style={styles.helper}>{provenance.source_url}</Text>
+                        {plantingEvidence.planting_calendar?.source_name ? (
+                          <Text style={styles.helper}>
+                            {bn ? 'ফসল ক্যালেন্ডারের উৎস' : 'Crop-calendar source'}: {String(plantingEvidence.planting_calendar.source_name)} {plantingEvidence.planting_calendar.source_reference ? `· ${String(plantingEvidence.planting_calendar.source_reference)}` : ''}
+                          </Text>
+                        ) : null}
+                        {(bn ? plantingEvidence.limitations_bn : plantingEvidence.limitations_en).map((item, index) => (
+                          <Text key={`${index}-${item}`} style={styles.helper}>{item}</Text>
+                        ))}
+                      </View>
+                    );
+                  })()}
+                </Card>
+
+                <Card>
                   <Text style={styles.sectionTitle}>Harvest guidance and outcome</Text>
                   <Button accessibilityRole="button" disabled={busy !== null} title={busy === 'harvest' ? 'Loading guidance…' : 'View harvest guidance'} variant="outline" onPress={() => void loadHarvestGuidance()} />
                   {harvestMessage ? <Text style={styles.warningText}>{harvestMessage}</Text> : null}
@@ -840,6 +949,8 @@ const styles = StyleSheet.create({
   toolsContent: { gap: SPACING.md },
   loaderRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   sectionTitle: { ...TYPOGRAPHY.h3, marginBottom: SPACING.sm },
+  evidenceBlock: { gap: SPACING.xs, marginTop: SPACING.sm },
+  evidenceStatus: { ...TYPOGRAPHY.body, color: COLORS.primaryDark, fontWeight: '600', paddingVertical: SPACING.xs },
   body: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, lineHeight: 23 },
   label: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.text, marginTop: SPACING.sm, marginBottom: SPACING.xs },
   input: { minHeight: 48, width: '100%', borderWidth: 1, borderColor: COLORS.border, borderRadius: 12, backgroundColor: COLORS.surface, paddingHorizontal: 14, paddingVertical: 11, color: COLORS.text, fontSize: 16, marginBottom: SPACING.xs },

@@ -178,6 +178,10 @@
         },
         {
           "method": "get",
+          "path": "/advisor/farmlands/{farmland_id}/planting-window"
+        },
+        {
+          "method": "get",
           "path": "/advisor/seasons/{season_id}/plan"
         },
         {
