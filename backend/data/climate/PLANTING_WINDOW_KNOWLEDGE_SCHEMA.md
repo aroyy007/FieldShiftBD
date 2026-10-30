@@ -8,6 +8,10 @@ an `AgriculturalKnowledge` row for the selected crop satisfies all of these:
 - its JSON `content` has the structure below; values must come from the cited,
   reviewed agronomic source, not from an LLM or a synthetic fixture
 
+The numeric values below only illustrate the JSON shape. They are not
+validated Bangladesh crop-calendar or GDD recommendations and must not be
+loaded into production as-is.
+
 ```json
 {
   "planting_window": {
