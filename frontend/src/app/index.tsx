@@ -6,10 +6,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import { useAppContext } from '../context/AppProvider';
 import { ArrowRightIcon, BrandPlantIcon, FeatureIcon } from '../components/icons';
@@ -33,6 +32,7 @@ const COPY = {
     features: ['Crop\nadvice', 'Daily\ntasks', 'Weather\nupdates', 'Leaf\nscanning'],
     getStarted: 'Get started',
     signIn: 'I already have an account',
+    explore: 'Explore NASA rainfall history',
   },
   bn: {
     tagline: 'AI কৃষি সহকারী',
@@ -41,6 +41,7 @@ const COPY = {
     features: ['ফসলের\nপরামর্শ', 'দৈনিক\nকাজ', 'আবহাওয়ার\nখবর', 'পাতা\nস্ক্যান'],
     getStarted: 'শুরু করুন',
     signIn: 'আমার অ্যাকাউন্ট আছে',
+    explore: 'NASA বৃষ্টির ইতিহাস দেখুন',
   },
 } as const;
 
@@ -49,26 +50,8 @@ const FEATURES: FeatureIconName[] = ['crop', 'tasks', 'weather', 'scan'];
 export default function Index() {
   const { user } = useAppContext();
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
   const [language, setLanguage] = useState<Language>('en');
   const copy = COPY[language];
-  const pageScale = Math.min(width / 393, 1);
-  const availableHeight = Math.max(
-    height - (Platform.OS === 'web' ? 0 : insets.top + insets.bottom),
-    1,
-  );
-  const compactPageStyle = pageScale < 1 ? {
-    width: width / pageScale,
-    maxWidth: width / pageScale,
-    height: availableHeight / pageScale,
-    flexGrow: 0,
-    flexShrink: 0,
-    alignSelf: 'flex-start' as const,
-    marginLeft: -(width / pageScale - width) / 2,
-    marginTop: -(availableHeight / pageScale - availableHeight) / 2,
-    transform: [{ scale: pageScale }],
-  } : undefined;
 
   useEffect(() => {
     if (user) router.replace('/farmlands' as Href);
@@ -80,9 +63,8 @@ export default function Index() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
-        scrollEnabled={pageScale === 1}
       >
-        <View style={[styles.page, compactPageStyle]}>
+        <View style={styles.page}>
           <View style={styles.mainContent}>
             <View style={styles.introGroup}>
               <View style={styles.header}>
@@ -154,6 +136,9 @@ export default function Index() {
                 style={({ pressed }) => [styles.signInButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.signInButtonText}>{copy.signIn}</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={() => router.push(`/advisory?language=${language}` as Href)} style={styles.signInButton}>
+                <Text style={styles.signInButtonText}>{copy.explore}</Text>
               </Pressable>
             </View>
           </View>

@@ -10,6 +10,9 @@ import {
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card } from '../../../components/ui';
 import CropAdvisorPresentation from '../../../components/CropAdvisorPresentation';
+import RotationComparisonCard from '../../../components/RotationComparisonCard';
+import CropCalendarReferences, { PublishedCalendarDetails } from '../../../components/CropCalendarReferences';
+import ClimateEvidenceCharts from '../../../components/ClimateEvidenceCharts';
 import OptionPickerModal from '../../../components/OptionPickerModal';
 import type { CropAdvisorIconName } from '../../../components/crop-advisor-icons';
 import { useAppContext } from '../../../context/AppProvider';
@@ -22,6 +25,7 @@ import {
   Season,
   SeasonPlan,
   PlantingWindowEvidence,
+  RotationComparison,
   m2Request,
 } from '../../../services/m2-advisor';
 import {
@@ -61,6 +65,7 @@ export default function CropAdvisorScreen() {
   const { farmlands, authLoading, dataLoading, refreshFarmland, profile } = useAppContext();
   const router = useRouter();
   const farm = farmlands.find(item => item.id === farmlandId);
+  const loadedFarmId = farm?.id ?? null;
 
   const [catalog, setCatalog] = useState<CropCatalogItem[]>([]);
   const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
@@ -78,6 +83,10 @@ export default function CropAdvisorScreen() {
   const [plantingEvidenceLoading, setPlantingEvidenceLoading] = useState(false);
   const [plantingEvidenceError, setPlantingEvidenceError] = useState('');
   const [plantingEvidenceReload, setPlantingEvidenceReload] = useState(0);
+  const [rotationComparison, setRotationComparison] = useState<RotationComparison | null>(null);
+  const [rotationComparisonLoading, setRotationComparisonLoading] = useState(false);
+  const [rotationComparisonError, setRotationComparisonError] = useState('');
+  const [rotationComparisonReload, setRotationComparisonReload] = useState(0);
   const [chosenCropId, setChosenCropId] = useState<string | null>(null);
   const [chosenRecommendationId, setChosenRecommendationId] = useState<string | null>(null);
   const [chosenVarietyId, setChosenVarietyId] = useState<string | null>(null);
@@ -156,6 +165,28 @@ export default function CropAdvisorScreen() {
     });
     return () => { current = false; };
   }, [farmlandId, selectedSeason, plantingEvidenceReload]);
+
+  useEffect(() => {
+    if (!loadedFarmId || !farmlandId) return;
+    let current = true;
+    void Promise.resolve().then(() => {
+      if (current) {
+        setRotationComparisonLoading(true);
+        setRotationComparisonError('');
+      }
+      return m2Request<RotationComparison>(
+        `/advisor/farmlands/${farmlandId}/rotation-comparisons`,
+        { method: 'POST' },
+      );
+    }).then(value => {
+      if (current) setRotationComparison(value);
+    }).catch(requestError => {
+      if (current) setRotationComparisonError(errorText(requestError, 'Could not load crop sequence comparison.'));
+    }).finally(() => {
+      if (current) setRotationComparisonLoading(false);
+    });
+    return () => { current = false; };
+  }, [farmlandId, loadedFarmId, selectedSeason?.season_id, rotationComparisonReload]);
 
   function loadAdvisorData() {
     setLoadState('loading');
@@ -382,6 +413,7 @@ export default function CropAdvisorScreen() {
       setSelectedSeason(current => current ? { ...current, ...closed } : current);
       setNotice('Season outcome saved.');
       await refreshLists();
+      setRotationComparisonReload(value => value + 1);
     } catch (requestError) {
       setError(errorText(requestError, 'Could not save the season outcome.'));
     } finally {
@@ -574,6 +606,17 @@ export default function CropAdvisorScreen() {
               </Card>
             )}
 
+            <RotationComparisonCard
+              comparison={rotationComparison}
+              loading={rotationComparisonLoading}
+              error={rotationComparisonError}
+              language={profile?.preferred_language === 'bn' ? 'bn' : 'en'}
+              onRetry={() => setRotationComparisonReload(value => value + 1)}
+            />
+
+            <CropCalendarReferences language={profile?.preferred_language === 'bn' ? 'bn' : 'en'} />
+            <Button accessibilityRole="button" title={profile?.preferred_language === 'bn' ? 'জেলার NASA বৃষ্টির ইতিহাস দেখুন' : 'Explore district NASA rainfall history'} variant="outline" onPress={() => router.push(`/advisory?district=${encodeURIComponent(farm?.district ?? '')}&language=${profile?.preferred_language === 'bn' ? 'bn' : 'en'}` as Href)} />
+
             <Card>
               <Text style={styles.sectionTitle}>Start a season</Text>
               {openSeason ? (
@@ -666,13 +709,22 @@ export default function CropAdvisorScreen() {
                         <Text style={plantingEvidence.status === 'available' ? styles.evidenceStatus : styles.warningText}>
                           {bn ? plantingEvidence.message_bn : plantingEvidence.message_en}
                         </Text>
+                        {plantingEvidence.variety_calendar_reference ? <PublishedCalendarDetails reference={plantingEvidence.variety_calendar_reference} language={bn ? 'bn' : 'en'} /> : null}
                         {plantingEvidence.status === 'available' && plantingEvidence.recommended_shift_days !== null && (
                           <Text style={styles.evidenceStatus}>
                             {bn ? 'যাচাইকৃত ক্যালেন্ডার নীতি অনুযায়ী ঐতিহাসিক বৃষ্টির onset পরিবর্তনের সমান রোপণ-সময় সামঞ্জস্য:' : 'Adjustment under the reviewed crop-calendar policy, matching the observed onset change:'} {plantingEvidence.recommended_shift_days > 0 ? '+' : ''}{plantingEvidence.recommended_shift_days} {bn ? 'দিন' : 'days'}
                           </Text>
                         )}
+                        {plantingEvidence.status === 'available' && plantingEvidence.recommended_shift_days === null && (
+                          <Text style={styles.helper}>
+                            {bn
+                              ? 'রোপণের তারিখ পরিবর্তনের পরামর্শ হিসাব করা হয়নি। নিচের দিনসংখ্যাটি শুধু ঐতিহাসিক বৃষ্টির শুরুতে পার্থক্য।'
+                              : 'No planting-date adjustment was calculated. The day difference below is only the historical rainfall-onset shift.'}
+                          </Text>
+                        )}
                         {comparison && (
                           <>
+                            <ClimateEvidenceCharts comparison={comparison} gdd={plantingEvidence.gdd_summary} language={bn ? 'bn' : 'en'} />
                             <Text style={styles.label}>{bn ? 'বার্ষিক তুলনা' : 'Annual comparison'}</Text>
                             <Text style={styles.body}>
                               {comparison.baseline_period ?? '2001–2012'}: {comparison.baseline.median_onset_day == null ? '—' : `${comparison.baseline.median_onset_day} ${bn ? 'মৌসুম শুরুর পর দিন' : 'days after season start'}`} ({comparison.baseline.sample_size} {bn ? 'বছর' : 'years'})

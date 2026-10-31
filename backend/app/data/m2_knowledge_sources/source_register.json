@@ -1,9 +1,10 @@
 {
-  "register_version": 3,
-  "research_date": "2026-10-08",
+  "register_version": 4,
+  "research_date": "2026-10-30",
   "purpose": "Auditable source research and policy-accepted snapshots for M2.",
-  "status": "policy_accepted_records_imported_by_scripts.import_reference_data",
+  "status": "initial_policy_accepted_records_imported_by_scripts.import_reference_data; 2026-10-30 national capture refresh awaits database import",
   "initial_crop_coverage": {
+    "snapshot_captured_on": "2026-10-08",
     "selected": [
       {
         "crop": "Potato",
@@ -53,6 +54,36 @@
       "Rajshahi (5081)"
     ],
     "coverage_limitation": "Positive farm-level fit is available only for Potato (high land + loam) and Wheat (high or medium-high land + loam or clay loam) anywhere in Bangladesh, as general published conditions. No crop has verified growth-stage definitions, so season plans, initial tasks, and season activation remain unavailable."
+  },
+  "source_capture_refresh": {
+    "source": "BARC Agri-Advisory Portal crop-zoning API",
+    "captured_on": "2026-10-30",
+    "manifest_path": "app/data/source_captures/barc_crop_zoning/capture_manifest.json",
+    "manifest_entries": 675,
+    "district_upazila_lists": 64,
+    "listed_upazila_codes": 482,
+    "captured_upazila_suitability_responses": 482,
+    "capture_integrity": "All manifest paths exist, all JSON parses, all SHA-256 values match, and response codes match the 482 unique codes in the source upazila lists.",
+    "candidate_regional_rows_by_m1_crop": {
+      "potato": {
+        "upazilas_with_matching_records": 481,
+        "matching_api_rows": 1065
+      },
+      "wheat": {
+        "upazilas_with_matching_records": 481,
+        "matching_api_rows": 1065
+      },
+      "maize": {
+        "upazilas_with_matching_records": 481,
+        "matching_api_rows": 1443
+      },
+      "rice": {
+        "upazilas_with_matching_records": 482,
+        "matching_api_rows": 2714
+      }
+    },
+    "database_import_status": "not_verified_after_refresh; scripts.import_reference_data --check-only could not run because Docker was unavailable and host Python is 3.9, below backend requirement.",
+    "interpretation": "Captured source coverage is not the same as accepted/imported database coverage. Regional records remain upazila aggregates and cannot establish individual-farm suitability."
   },
   "review_workflow": {
     "production_approval": "Four automated source policies accept narrowly defined, machine-checked facts: m2-barc-upazila-zoning-v1 (legacy BARC Potato/Comilla map snapshot), m2-barc-portal-bilingual-v1 (values stated in BOTH the English and Bangla text of the same BARC Agri-Advisory Portal record), m2-barc-portal-variety-duration-v1 (published variety duration within 30-250 days, directly planted crops only), and m2-barc-czs-upazila-suitability-v1 (upazila class distribution, regional context only). Every accepted row expires 180 days after capture. Read-time validation rebuilds each row from the pinned capture and claim manifest; edited rows are ignored.",
@@ -373,8 +404,56 @@
       "limitations": [
         "Commercial subscription service built on a customer's own field sensors for Canadian farming; it publishes no open Bangladesh data or reuse terms."
       ]
+    },
+    {
+      "organization": "Bangladesh Rice Research Institute (BRRI)",
+      "document_or_page_title": "Rice-Based Farming Systems Department achievements — cropping pattern technologies",
+      "url": "https://brri.gov.bd/pages/static-pages/6922dc9b933eb65569e1140d",
+      "publication_or_update_date": "2020-06-07",
+      "retrieval_date": "2026-11-01",
+      "source_type": "national_research_institute_cropping_patterns",
+      "facts_supported": [
+        "BRRI lists rice-based cropping patterns by ecosystem. Patterns 1, 2, and 4 are listed for irrigated high to medium-high land (level 1) with clay loam to clay soil.",
+        "The cited patterns list Boro and transplanted Aman rice; chickpea, wet-seeded Aus, and wet-seeded Aman; and wet-seeded Boro, Sesbania rostrata green manure, and transplanted Aman."
+      ],
+      "m2_categories": [
+        "documented_rotation_pattern_preview"
+      ],
+      "production_knowledge_eligible_now": true,
+      "accepted_use": "Read-only display of the named BRRI sequences when saved irrigation, land-type, and soil-type values match the source scope. The API does not rank them or let a farmer select/create a season from this response.",
+      "limitations": [
+        "The source page was last updated in 2020. A current agronomist review and district-level validation have not been recorded.",
+        "The page does not provide sequence-specific planting dates, crop-stage calendars, climate feasibility, water quantities, or measured yield, labor, cost, nutrient, carbon, erosion, or pest-cycle effects.",
+        "The source ecosystem is not a village-specific suitability assessment. NASA climate evidence is not yet integrated into rotation scoring."
+      ]
+    },
+    {
+      "organization": "Bangladesh Rice Research Institute (BRRI)",
+      "document_or_page_title": "Rice Profile published calendar references (dhan80, dhan31, dhan100, dhan48)",
+      "url": "https://riceprofile.brri.gov.bd/",
+      "reference_urls": [
+        "https://riceprofile.brri.gov.bd/varieties/90",
+        "https://riceprofile.brri.gov.bd/varieties/42",
+        "https://riceprofile.brri.gov.bd/varieties/107",
+        "https://riceprofile.brri.gov.bd/varieties/2"
+      ],
+      "retrieval_date": "2026-11-01",
+      "source_type": "official_variety_profile_reference",
+      "facts_supported": [
+        "Recurring seedbed/transplant/harvest windows and seedling ages for the named transplanted varieties.",
+        "Conditional care references, with ambiguous instructions excluded."
+      ],
+      "m2_categories": [
+        "published_calendar_reference"
+      ],
+      "production_knowledge_eligible_now": false,
+      "accepted_use": "Read-only, attributed source references pending agronomic review; no automatic season, operational stage/task or climate-adjusted recommendation.",
+      "limitations": [
+        "No explicit publication/update date or open redistribution licence established in inspected profile text.",
+        "No reviewed cultivar GDD target/cap, complete dated stage schedule or NASA shift policy; establishment methods must match."
+      ]
     }
   ],
   "candidate_facts": "See barc_portal_claims.json for accepted claims, exclusions, and rejected claims.",
-  "exclusion_reason": "Growth stages, initial tasks, sowing windows, irrigation schedules, and fertilizer doses are not imported: no inspected source states them consistently in a machine-verifiable form."
+  "exclusion_reason": "Growth stages, initial tasks, sowing windows, irrigation schedules, and fertilizer doses are not imported: no inspected source states them consistently in a machine-verifiable form. BRRI rotation patterns are displayed only as scope-matched, non-ranked source examples; exact calendars and quantified trade-offs remain unavailable."
 }

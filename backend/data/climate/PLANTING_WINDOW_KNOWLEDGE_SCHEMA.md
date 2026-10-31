@@ -1,5 +1,11 @@
 # Reviewed crop-calendar data for the planting-window advisory
 
+Public source references are separate: `/advisor/calendar-references` reads
+`app/data/m2_knowledge_sources/brri_crop_calendar_references.json` without creating
+approved knowledge rows. The public `/advisory` uses an explicitly provisional
+rainfall definition and district cache; cultivar GDD and recommended shifts are
+null until reviewed rules support them. Source-checking does not fill reviewer IDs.
+
 The authenticated M2 endpoint intentionally returns `insufficient_data` until
 an `AgriculturalKnowledge` row for the selected crop satisfies all of these:
 
@@ -18,8 +24,7 @@ loaded into production as-is.
     "season_start_month": 6,
     "season_start_day": 1,
     "season_end_month": 10,
-    "season_end_day": 31,
-    "onset_shift_policy": "shift_window_by_observed_onset_delta"
+    "season_end_day": 31
   },
   "gdd": {
     "base_temperature_c": 10,
@@ -28,10 +33,11 @@ loaded into production as-is.
 }
 ```
 
-The adjustment policy must be explicitly supported by the reviewed source.
-If it is absent, the API may not convert an observed climate shift into a crop
-planting adjustment. The output reports historical evidence and the adjustment
-in days; it is not a field-scale measurement or a yield guarantee.
+The API reports observed rainfall-onset and GDD evidence. It does not currently
+calculate a planting-date adjustment. A future adjustment must be derived from
+a reviewed crop calendar and checked against the relevant agronomic and farm
+constraints; an observed climate shift alone is not enough. The output is not a
+field-scale measurement or a yield guarantee.
 
 POWER requests cover 2001-01-01 through 2025-12-31 for the saved farm
 coordinates and are cached under `CLIMATE_CACHE_DIR`. Every year must have

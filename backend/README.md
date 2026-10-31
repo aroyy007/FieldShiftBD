@@ -4,6 +4,55 @@ For parallel module ownership and existing public contract checks, start with
 [`contracts/README.md`](contracts/README.md) and the executable
 [`contracts/module-ownership.json`](contracts/module-ownership.json) manifest.
 
+## Module 2 rotation examples
+
+`GET /advisor/calendar-references?crop=rice&season=aman` exposes minimal published
+BRRI calendar/care references for dhan80/Aman, dhan31/Aman, dhan100/Boro and
+dhan48/Aus. Source verification is separate from agronomist approval; no row is
+seeded as approved operational knowledge, and no cultivar GDD target is invented.
+
+`GET /advisory?district=5081&crop=rice&season=aman` is a public, cache-only
+historical comparison. Omit `season` to get choices. It returns explicit
+provisional method status, annual onset distributions/statistics/sensitivity,
+source calendars, bilingual summaries and point/time/cache provenance. Missing,
+corrupt, expired or stale-source caches return503. Requests never fetch NASA.
+The `/advisory` frontend screen provides district/season selection and charts;
+the existing Crop Advisor links to it and renders reviewed farm GDD when present.
+
+Prepare a district cache before requests with `python -m
+scripts.prefetch_district_power --help`. Supply a publicly sourced representative
+point and its source URL; coordinates are not guessed from district names. Saved
+official GeoJSON can be replayed with `--input-json` and its original
+`--retrieved-at` timestamp. Replay refreshes the normalized cache explicitly.
+Versions are kept under `data/climate/cache/{district}/versions/`. The current
+cache is JSON; the plan's complete64-district Parquet release remains open.
+
+Pure onset/GDD/statistical code lives in `src/compute/agro.py`; prior service
+imports remain compatible. The method searches every declared candidate day and
+uses trailing observations across month/year boundaries. An incomplete tail
+cannot be labelled observed no-onset. Sensitivity uses the declared15/20/25mm
+protocol. The public May–October operational definition still needs agronomic
+review and does not authorize a planting shift or serve as a Boro irrigation rule.
+
+`POST /advisor/farmlands/{farmland_id}/rotation-comparisons` returns a read-only,
+authenticated comparison of recorded farm crops and two published BRRI sequences.
+Set `CHALLENGE_ROTATION_ENABLED=true` to enable it; the code default is off and
+the example environment explicitly enables this preview. The Crop Advisor screen
+renders the response in Bangla or English.
+
+The preview requires saved irrigation availability, high/medium-high land, and
+clay/clay-loam soil to match the cited BRRI ecosystem. Missing inputs and known
+scope mismatches return explicit statuses. The underlying BRRI page was updated
+in 2020; the local capture date is preserved in provenance. See
+[`brri_rotation_patterns_evidence.md`](app/data/m2_knowledge_sources/brri_rotation_patterns_evidence.md).
+
+Each rotation step now matches source calendars by exact variety, season and
+establishment method. Transplanted dates are not applied to wet-seeded steps.
+Recorded seasons and district NASA context are returned separately. Complete
+reviewed calendars, ranking, dated feasibility, NASA rotation scoring and
+measured soil/yield/cost effects remain unavailable. This response cannot select
+a crop or change a season.
+
 ## Module 3 farm-state API
 
 Module 3 is the shared operational state owner. `FarmState` is assembled from
@@ -47,12 +96,10 @@ Bangladesh time.
 
 ### Frontend integration boundary
 
-The existing Expo `AppProvider` still uses in-memory demo data and does not
-call these endpoints. The backend API is the durable Module 3 contract; wiring
-the screens to it depends on Module 1 providing authenticated UUID farmlands
-and an authentication layer that installs `request.state.current_farmer_id`.
-Until then, frontend task/check-in/problem edits are demo-only and reset when
-the app reloads.
+The Expo `AppProvider` loads authenticated farmer-owned farmlands through the
+API. Field task, check-in, and problem screens use the durable Module 3 routes.
+They require a reachable backend, a valid sign-in token, and matching UUID farm
+and season identifiers; a static web export alone does not provide the API.
 
 ```json
 {

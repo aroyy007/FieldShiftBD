@@ -97,6 +97,7 @@ class DatabaseFarmProfileSnapshotReader:
                 equipment=list(farmland.equipment or []),
                 budget_amount=float(farmland.budget_amount) if farmland.budget_amount is not None else None,
                 budget_currency=farmland.budget_currency,
+                previous_crop=farmland.previous_crop,
             ),
             active_season=season_snapshot,
             crop_priorities=priorities,

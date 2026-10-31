@@ -50,7 +50,7 @@ def test_complete_seasons_without_onset_are_not_reported_as_missing_coverage():
     rainfall = {}
     for year in range(2001, 2026):
         start = date(year, 6, 1)
-        for offset in range(45):
+        for offset in range(65):
             rainfall[start + timedelta(days=offset)] = 0.0
 
     result = compare_annual_onsets(
@@ -63,3 +63,18 @@ def test_complete_seasons_without_onset_are_not_reported_as_missing_coverage():
 
     assert result["baseline"]["missing_coverage_years"] == []
     assert result["baseline"]["no_usable_onset_years"] == list(range(2001, 2013))
+
+
+def test_no_onset_with_missing_confirmation_tail_is_insufficient_not_observed_absence():
+    rainfall = {date(2001, 6, 1) + timedelta(days=offset): 0 for offset in range(45)}
+    result = compare_annual_onsets(rainfall, season_start_month=6, season_start_day=1,
+                                 season_end_month=7, season_end_day=15)
+    assert 2001 in result["baseline"]["missing_coverage_years"]
+    assert 2001 not in result["baseline"]["no_usable_onset_years"]
+
+
+def test_primary_threshold_cannot_be_silently_relabelled():
+    import pytest
+    with pytest.raises(ValueError, match="15.*20.*25"):
+        compare_annual_onsets({}, season_start_month=6, season_start_day=1,
+                              season_end_month=7, season_end_day=15, thresholds_mm=(15.0,))

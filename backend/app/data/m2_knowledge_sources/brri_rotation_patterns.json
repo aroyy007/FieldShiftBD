@@ -1,0 +1,179 @@
+{
+  "catalog_version": "brri-rfs-patterns-v1",
+  "captured_on": "2026-11-01",
+  "source": {
+    "source_id": "brri-rfs-patterns-2020",
+    "organization": "Bangladesh Rice Research Institute (BRRI)",
+    "title": "Rice-Based Farming Systems Department achievements — cropping pattern technologies",
+    "url": "https://brri.gov.bd/pages/static-pages/6922dc9b933eb65569e1140d",
+    "updated_on": "2020-06-07",
+    "source_scope_en": "Irrigated high to medium-high land (level 1), clay loam to clay soil.",
+    "source_scope_bn": "সেচযুক্ত উঁচু থেকে মাঝারি উঁচু জমি (ধাপ-১), এঁটেল দোআঁশ থেকে এঁটেল মাটি।"
+  },
+  "profile_match": {
+    "land_types": [
+      "high",
+      "medium_high"
+    ],
+    "soil_types": [
+      "clay",
+      "clay loam"
+    ],
+    "irrigation_available": true
+  },
+  "patterns": [
+    {
+      "pattern_id": "BRRI-RFS-01",
+      "reference_number": "1",
+      "name_en": "Boro rice followed by transplanted Aman rice",
+      "name_bn": "বোরো ধানের পর রোপা আমন ধান",
+      "steps": [
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "boro",
+          "season_label_en": "Boro",
+          "season_label_bn": "বোরো",
+          "practice_note_en": "BRRI dhan29, BRRI dhan28, or BR14",
+          "practice_note_bn": "ব্রি ধান২৯, ব্রি ধান২৮ অথবা বিআর১৪",
+          "cultivation_method": "unspecified",
+          "variety_names": [
+            "BRRI dhan29",
+            "BRRI dhan28",
+            "BR14"
+          ]
+        },
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "aman",
+          "season_label_en": "Transplanted Aman",
+          "season_label_bn": "রোপা আমন",
+          "practice_note_en": "BR10, BR11, BRRI dhan30, dhan31, or dhan32",
+          "practice_note_bn": "বিআর১০, বিআর১১, ব্রি ধান৩০, ধান৩১ অথবা ধান৩২",
+          "cultivation_method": "transplanted",
+          "variety_names": [
+            "BR10",
+            "BR11",
+            "BRRI dhan30",
+            "BRRI dhan31",
+            "BRRI dhan32"
+          ]
+        }
+      ]
+    },
+    {
+      "pattern_id": "BRRI-RFS-02",
+      "reference_number": "2",
+      "name_en": "Chickpea, wet-seeded Aus, and wet-seeded Aman",
+      "name_bn": "ছোলা, ভেজা বোনা আউশ ও ভেজা বোনা আমন",
+      "steps": [
+        {
+          "crop_code": "chickpea",
+          "crop_name_en": "Chickpea",
+          "crop_name_bn": "ছোলা",
+          "season_code": "rabi",
+          "season_label_en": "Rabi",
+          "season_label_bn": "রবি",
+          "practice_note_en": "BARI Chola-2",
+          "practice_note_bn": "বারি ছোলা-২",
+          "cultivation_method": "unspecified",
+          "variety_names": [
+            "BARI Chola-2"
+          ]
+        },
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "aus",
+          "season_label_en": "Wet-seeded Aus",
+          "season_label_bn": "ভেজা বোনা আউশ",
+          "practice_note_en": "BR26",
+          "practice_note_bn": "বিআর২৬",
+          "cultivation_method": "wet_seeded",
+          "variety_names": [
+            "BR26"
+          ]
+        },
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "aman",
+          "season_label_en": "Wet-seeded Aman",
+          "season_label_bn": "ভেজা বোনা আমন",
+          "practice_note_en": "BRRI dhan33",
+          "practice_note_bn": "ব্রি ধান৩৩",
+          "cultivation_method": "wet_seeded",
+          "variety_names": [
+            "BRRI dhan33"
+          ]
+        }
+      ]
+    },
+    {
+      "pattern_id": "BRRI-RFS-04",
+      "reference_number": "4",
+      "name_en": "Wet-seeded Boro, Sesbania green manure, and transplanted Aman",
+      "name_bn": "ভেজা বোনা বোরো, ধৈঞ্চা সবুজ সার ও রোপা আমন",
+      "steps": [
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "boro",
+          "season_label_en": "Wet-seeded Boro",
+          "season_label_bn": "ভেজা বোনা বোরো",
+          "practice_note_en": "BRRI dhan28",
+          "practice_note_bn": "ব্রি ধান২৮",
+          "cultivation_method": "wet_seeded",
+          "variety_names": [
+            "BRRI dhan28"
+          ]
+        },
+        {
+          "crop_code": "sesbania_rostrata",
+          "crop_name_en": "Sesbania rostrata green manure",
+          "crop_name_bn": "ধৈঞ্চা সবুজ সার",
+          "season_code": "green_manure",
+          "season_label_en": "Green-manure period",
+          "season_label_bn": "সবুজ সারের সময়",
+          "practice_note_en": null,
+          "practice_note_bn": null,
+          "crop_role": "green_manure",
+          "cultivation_method": "unspecified",
+          "variety_names": []
+        },
+        {
+          "crop_code": "rice",
+          "crop_name_en": "Rice",
+          "crop_name_bn": "ধান",
+          "season_code": "aman",
+          "season_label_en": "Transplanted Aman",
+          "season_label_bn": "রোপা আমন",
+          "practice_note_en": "BR10, BR11, or BRRI dhan31",
+          "practice_note_bn": "বিআর১০, বিআর১১ অথবা ব্রি ধান৩১",
+          "cultivation_method": "transplanted",
+          "variety_names": [
+            "BR10",
+            "BR11",
+            "BRRI dhan31"
+          ]
+        }
+      ]
+    }
+  ],
+  "use_limits_en": [
+    "These are BRRI-published cropping patterns for the listed source ecosystem, not a recommendation for a specific village or field.",
+    "The source page does not provide planting dates, crop-calendar feasibility, or quantified yield, soil nutrient, carbon, erosion, labor, cost, or water effects.",
+    "Do not select a rotation or create a season from this comparison."
+  ],
+  "use_limits_bn": [
+    "এগুলো BRRI-তে প্রকাশিত নির্দিষ্ট কৃষি-পরিবেশের ফসল বিন্যাস; কোনো নির্দিষ্ট গ্রাম বা জমির জন্য সুপারিশ নয়।",
+    "উৎস পাতায় রোপণের তারিখ, ফসল ক্যালেন্ডার যাচাই, বা ফলন, মাটির পুষ্টি, কার্বন, ক্ষয়, শ্রম, খরচ ও পানির পরিমাণগত প্রভাব দেওয়া নেই।",
+    "এই তুলনা থেকে ফসল বিন্যাস নির্বাচন বা নতুন মৌসুম তৈরি করা যাবে না।"
+  ]
+}

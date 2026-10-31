@@ -34,6 +34,7 @@ POWER_PARAMETERS = {
 POWER_FILL_VALUE = -999.0
 POWER_TIMEOUT_SECONDS = 45
 POWER_RESOLUTION_METERS = 50_000
+POWER_NORMALIZATION_VERSION = "power-geojson-units-v2"
 
 
 def _request_power(url: str) -> dict[str, Any]:
@@ -54,14 +55,15 @@ def _request_power(url: str) -> dict[str, Any]:
 class NasaPowerHistoryProvider:
     """Fetch normalized POWER daily histories and keep a persistent JSON cache."""
 
-    def __init__(self, cache_root: Path, *, clock=None) -> None:
+    def __init__(self, cache_root: Path, *, clock=None, fetcher=None) -> None:
         self._cache_root = Path(cache_root).resolve() / "power-history"
         self._clock = clock or (lambda: datetime.now(timezone.utc))
+        self._fetcher = fetcher or _request_power
 
     def has_cached_bundle(
         self, district_code: str, latitude: float, longitude: float, start: date, end: date
     ) -> bool:
-        key_material = f"{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
+        key_material = f"{POWER_NORMALIZATION_VERSION}|{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
         key = hashlib.sha256(key_material.encode()).hexdigest()
         return (self._cache_root / key[:2] / f"{key}.json").is_file()
 
@@ -74,30 +76,37 @@ class NasaPowerHistoryProvider:
         end: date,
         *,
         offline: bool = False,
+        refresh: bool = False,
+        source_retrieved_at: datetime | None = None,
     ) -> DistrictClimateBundle:
         url = build_power_daily_url(latitude, longitude, start, end)
-        key_material = f"{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
+        key_material = f"{POWER_NORMALIZATION_VERSION}|{district_code}|{latitude:.4f}|{longitude:.4f}|{start}|{end}"
         key = hashlib.sha256(key_material.encode()).hexdigest()
         cache_file = self._cache_root / key[:2] / f"{key}.json"
         # Persistent cache is authoritative for repeat calls and offline demos.
         # This avoids making every farmer request wait on a 25-year API query.
-        if cache_file.is_file():
+        if offline and refresh:
+            raise ValueError("offline cache reads cannot refresh a source")
+        if cache_file.is_file() and not refresh:
             return DistrictClimateBundle.model_validate_json(cache_file.read_bytes())
         if offline:
             raise ArtifactNotFound("no cached NASA POWER history for this location and period")
 
-        payload = _request_power(url)
+        payload = self._fetcher(url)
         observations, coverages = parse_power_daily_response(payload, start, end)
         if not observations:
             raise ValueError("NASA POWER returned no complete daily observations")
         now = self._clock()
+        acquired_at = source_retrieved_at or now
+        if acquired_at.tzinfo is None or acquired_at > now:
+            raise ValueError("source retrieval time must be timezone-aware and not in the future")
         bundle_id = f"power-{key}"
         provenance = SourceProvenance(
             source_id="nasa-power-daily-point",
             source_name="NASA POWER Daily Point",
             source_url=POWER_DOCS_URL,
-            dataset_version="POWER Daily API",
-            retrieved_at=now,
+            dataset_version=f"POWER Daily API; {POWER_NORMALIZATION_VERSION}",
+            retrieved_at=acquired_at,
             recorded_at=now,
             method="nasa_power",
             temporal_start=start,
@@ -167,9 +176,23 @@ def parse_power_daily_response(
     """Normalize POWER data, retaining gaps through coverage counts and dates."""
     if end < start:
         raise ValueError("end must not precede start")
-    parameters = payload.get("parameters") or (
-        (payload.get("properties") or {}).get("parameter") or {}
-    )
+    # NASA GeoJSON puts daily series in properties.parameter; the top-level
+    # parameters object contains units/labels and must never shadow the series.
+    live_series = (payload.get("properties") or {}).get("parameter")
+    parameters = live_series if live_series is not None else payload.get("parameters", {})
+    if live_series is not None:
+        metadata = payload.get("parameters") or {}
+        solar_units = (metadata.get("ALLSKY_SFC_SW_DWN", {}).get("units") or "").casefold().replace("^", "").replace("²", "2").replace(" ", "")
+        if solar_units == "mj/m2/day":
+            solar_factor = 1.0
+        elif solar_units in {"kw-hr/m2/day", "kwh/m2/day"}:
+            solar_factor = 3.6
+        else:
+            raise ValueError("unsupported or missing NASA solar radiation unit")
+    else:
+        # Compatibility with the pre-existing normalized internal fixture shape.
+        # Actual API responses always use the metadata-validated GeoJSON branch.
+        solar_factor = 3.6
     expected_days = (end - start).days + 1
     expected_keys = [
         (start + timedelta(days=offset)).strftime("%Y%m%d")
@@ -188,7 +211,8 @@ def parse_power_daily_response(
                 normalized[key] = None
                 continue
             normalized[key] = (
-                None if not math.isfinite(value) or value == POWER_FILL_VALUE else value
+                None if (not math.isfinite(value) or value == POWER_FILL_VALUE
+                         or (parameter in {"PRECTOTCORR", "ALLSKY_SFC_SW_DWN"} and value < 0)) else value
             )
         values_by_parameter[parameter] = normalized
         valid = sum(value is not None for value in normalized.values())
@@ -208,17 +232,17 @@ def parse_power_daily_response(
     for key in expected_keys:
         rainfall = values_by_parameter["PRECTOTCORR"][key]
         temperature = values_by_parameter["T2M"][key]
-        solar_kwh = values_by_parameter["ALLSKY_SFC_SW_DWN"][key]
-        if rainfall is None or temperature is None or solar_kwh is None:
+        solar = values_by_parameter["ALLSKY_SFC_SW_DWN"][key]
+        if rainfall is None or temperature is None or solar is None:
             continue
-        if rainfall < 0 or solar_kwh < 0:
+        if rainfall < 0 or solar < 0:
             continue
         observations.append(
             DailyClimateObservation(
                 date=date(int(key[:4]), int(key[4:6]), int(key[6:8])),
                 rainfall_mm=rainfall,
                 temperature_c=temperature,
-                solar_mj_m2_day=solar_kwh * 3.6,
+                solar_mj_m2_day=solar * solar_factor,
             )
         )
     return observations, coverages

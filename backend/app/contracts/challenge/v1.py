@@ -11,6 +11,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+from app.schemas.planting_window import DistrictClimateEvidence, VarietyCalendarReference
 
 CONTRACT_VERSION = "1.0.0"
 
@@ -109,6 +110,7 @@ class FarmlandProfile(ContractModel):
     equipment: list[str] = Field(default_factory=list, max_length=100)
     budget_amount: float | None = Field(default=None, ge=0)
     budget_currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
+    previous_crop: str | None = Field(default=None, max_length=160)
 
     @model_validator(mode="after")
     def validate_coordinate_pair(self) -> "FarmlandProfile":
@@ -185,6 +187,13 @@ class ClimateAssetManifest(ContractModel):
         return self
 
 
+class ClimateSamplingPoint(ContractModel):
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    description: str = Field(min_length=1, max_length=500)
+    source_url: str = Field(min_length=1, max_length=2048)
+
+
 class DistrictClimateBundleManifest(ContractModel):
     contract_version: Literal["1.0.0"]
     district_code: DistrictCode = Field(min_length=1, max_length=24)
@@ -197,6 +206,7 @@ class DistrictClimateBundleManifest(ContractModel):
     coverage_by_variable: list["ClimateVariableCoverage"] = Field(default_factory=list, max_length=100)
     provenance: list[SourceProvenance] = Field(default_factory=list, max_length=100)
     quality_status: Literal["verified", "provisional", "synthetic"] = "verified"
+    sampling_point: ClimateSamplingPoint | None = None
 
     @model_validator(mode="after")
     def validate_manifest_coverage(self) -> "DistrictClimateBundleManifest":
@@ -318,13 +328,89 @@ class PlantingWindowAdvisory(ContractModel):
         return self
 
 
+class RotationStepCalendarEvidence(ContractModel):
+    status: Literal["source_reference_available", "not_available", "cultivation_method_mismatch"]
+    references: list[VarietyCalendarReference] = Field(default_factory=list, max_length=10)
+    gaps_en: list[str] = Field(default_factory=list, max_length=10)
+    gaps_bn: list[str] = Field(default_factory=list, max_length=10)
+
+
+class RotationSequenceStep(ContractModel):
+    crop_code: CropCode = Field(min_length=1, max_length=80)
+    crop_name_en: str = Field(min_length=1, max_length=160)
+    crop_name_bn: str = Field(min_length=1, max_length=160)
+    season_code: str = Field(min_length=1, max_length=80)
+    season_label_en: str = Field(min_length=1, max_length=120)
+    season_label_bn: str = Field(min_length=1, max_length=120)
+    practice_note_en: str | None = Field(default=None, max_length=240)
+    practice_note_bn: str | None = Field(default=None, max_length=240)
+    crop_role: Literal["crop", "green_manure"] = "crop"
+    cultivation_method: Literal["transplanted", "wet_seeded", "unspecified"] = "unspecified"
+    variety_names: list[str] = Field(default_factory=list, max_length=20)
+    calendar_evidence: RotationStepCalendarEvidence | None = None
+
+
+class RotationTradeoff(ContractModel):
+    dimension: Literal["sequence_length", "legume", "green_manure"]
+    evidence_status: Literal["source_documented", "derived_from_sequence", "not_assessed"]
+    label_en: str = Field(min_length=1, max_length=160)
+    label_bn: str = Field(min_length=1, max_length=160)
+    detail_en: str = Field(min_length=1, max_length=600)
+    detail_bn: str = Field(min_length=1, max_length=600)
+    evidence_ids: list[str] = Field(default_factory=list, max_length=10)
+
+
+class RotationStrategy(ContractModel):
+    strategy_id: str = Field(min_length=1, max_length=120)
+    name_en: str = Field(min_length=1, max_length=200)
+    name_bn: str = Field(min_length=1, max_length=200)
+    applicability_status: Literal["matches_documented_scope"]
+    documented_scope_en: str = Field(min_length=1, max_length=500)
+    documented_scope_bn: str = Field(min_length=1, max_length=500)
+    steps: list[RotationSequenceStep] = Field(min_length=2, max_length=12)
+    tradeoffs: list[RotationTradeoff] = Field(default_factory=list, max_length=20)
+    evidence_ids: list[str] = Field(min_length=1, max_length=20)
+    calendar_feasibility_status: Literal["insufficient_reviewed_evidence"] = "insufficient_reviewed_evidence"
+
+
 class RotationComparison(ContractModel):
     contract_version: Literal["1.0.0"]
     farmland_id: UUID
-    current_sequence: list[CropCode] = Field(min_length=1, max_length=12)
-    alternatives: list[list[CropCode]] = Field(min_length=1, max_length=3)
-    evidence: list[SourceProvenance] = Field(min_length=1, max_length=100)
+    status: Literal["available", "insufficient_evidence", "outside_documented_scope"] = "available"
+    message_en: str | None = Field(default=None, max_length=1000)
+    message_bn: str | None = Field(default=None, max_length=1000)
+    current_sequence: list[CropCode] = Field(default_factory=list, max_length=12)
+    current_sequence_basis: Literal[
+        "active_and_completed_seasons", "active_season_only", "completed_seasons_only", "not_recorded"
+    ] = "not_recorded"
+    farmer_reported_previous_crop: str | None = Field(default=None, max_length=160)
+    alternatives: list[list[CropCode]] = Field(default_factory=list, max_length=3)
+    strategies: list[RotationStrategy] = Field(default_factory=list, max_length=3)
+    evidence: list[SourceProvenance] = Field(default_factory=list, max_length=100)
+    unknowns_en: list[str] = Field(default_factory=list, max_length=100)
+    unknowns_bn: list[str] = Field(default_factory=list, max_length=100)
+    scope_notes_en: list[str] = Field(default_factory=list, max_length=100)
+    scope_notes_bn: list[str] = Field(default_factory=list, max_length=100)
+    not_assessed_en: list[str] = Field(default_factory=list, max_length=100)
+    not_assessed_bn: list[str] = Field(default_factory=list, max_length=100)
+    selection_allowed: bool = False
+    climate_evidence: DistrictClimateEvidence | None = None
+    climate_status: Literal["not_configured", "unavailable", "provisional", "insufficient_data"] = "not_configured"
+    recorded_history: list[RotationHistoryEntry] = Field(default_factory=list, max_length=100)
+    active_season: SeasonSnapshot | None = None
     created_at: AwareDatetime
+
+    @model_validator(mode="after")
+    def validate_available_rotation_comparison(self) -> "RotationComparison":
+        if self.status == "available" and (
+            not self.current_sequence or len(self.alternatives) < 2 or len(self.strategies) < 2 or not self.evidence
+        ):
+            raise ValueError(
+                "available rotation comparisons require a recorded sequence, two documented alternatives, and evidence"
+            )
+        if self.selection_allowed:
+            raise ValueError("rotation exploration cannot authorize season selection")
+        return self
 
 
 class AdaptiveRecommendation(ContractModel):

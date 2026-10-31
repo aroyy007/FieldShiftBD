@@ -1,10 +1,11 @@
 """HTTP API for Module 2 crop advice and season lifecycle."""
 
 from datetime import date
+from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,7 +13,8 @@ from sqlalchemy.orm import Session
 from app.core.auth import get_current_farmer_id
 from app.core.config import settings
 from app.core.database import get_db
-from app.contracts.challenge.ports import ArtifactNotFound
+from app.contracts.challenge.ports import ArtifactNotFound, AdapterConflict, StaleArtifact
+from app.contracts.challenge.v1 import RotationComparison
 from app.models.core import AgriculturalKnowledge, Crop, Farmland
 from app.models.season import (
     CropRecommendation as CropRecommendationRecord,
@@ -31,17 +33,49 @@ from app.schemas.m2_advisor import (
     SeasonResponse,
 )
 from app.schemas.planting_window import PlantingWindowEvidence, unavailable_provenance
+from app.schemas.planting_window import VarietyCalendarReference, PublicPlantingWindowEvidence
 from app.services import m2_advisor
 from app.services.climate.power_history import NasaPowerHistoryProvider
-from app.services.planting_window_analysis import compare_annual_onsets
-from app.services.rain_onset import accumulate_growing_degree_days
+from app.services.m1_reference import resolve_location
+from app.services.profile_intake.snapshot import (
+    DatabaseFarmProfileSnapshotReader,
+    FarmSnapshotNotFound,
+)
+from src.compute.agro import compare_annual_onsets
+from src.compute.agro import accumulate_growing_degree_days
+from app.services.crop_calendar_references import (
+    calendar_reference_for_variety,
+    published_calendar_references,
+)
+from app.services.district_advisory import public_advisory
+from app.services.climate.cache import CorruptClimateCache
 
 router = APIRouter(prefix="/advisor", tags=["Crop Advisor & Season Lifecycle"])
+public_router = APIRouter(tags=["Public district climate advisory — Module 2"])
 DbSession = Annotated[Session, Depends(get_db)]
 FarmerId = Annotated[UUID, Depends(get_current_farmer_id)]
 
 NASA_HISTORY_START = date(2001, 1, 1)
 NASA_HISTORY_END = date(2025, 12, 31)
+
+
+@public_router.get("/advisory", response_model=PublicPlantingWindowEvidence)
+def get_public_advisory(
+    district: Annotated[str, Query(min_length=1, max_length=120)],
+    crop: Annotated[str, Query(min_length=1, max_length=80)] = "rice",
+    season: Annotated[str | None, Query(max_length=20)] = None,
+):
+    """Read published district climate cache; never acquire NASA data here."""
+    try:
+        return public_advisory(Path(settings.CLIMATE_CACHE_DIR), district, crop, season)
+    except (ArtifactNotFound, AdapterConflict, StaleArtifact, CorruptClimateCache, OSError) as exc:
+        raise HTTPException(status_code=503, detail={
+            "code": "climate_cache_unavailable",
+            "message_en": "Verified district climate cache is missing, expired, or unreadable. Published calendars remain available separately.",
+            "message_bn": "জেলার যাচাইকৃত জলবায়ু ক্যাশ নেই, মেয়াদ শেষ বা পড়া যায়নি। প্রকাশিত জাতের ক্যালেন্ডার আলাদাভাবে দেখা যাবে।",
+        }) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 def _planting_evidence_response(
@@ -58,6 +92,7 @@ def _planting_evidence_response(
     gdd=None,
     provenance=None,
 ) -> PlantingWindowEvidence:
+    variety_reference = calendar_reference_for_variety(crop.name, season.variety_name)
     return PlantingWindowEvidence(
         status=status_value,
         message_bn=message_bn,
@@ -69,10 +104,20 @@ def _planting_evidence_response(
         recommended_shift_days=recommended_shift_days,
         gdd_summary=gdd,
         planting_calendar=calendar,
+        variety_calendar_reference=variety_reference,
         data_provenance=provenance or unavailable_provenance(),
         limitations_bn=["NASA POWER প্রায় ৫০ কিমি এলাকার আবহাওয়া দেখায়; এটি আপনার জমির সরাসরি পরিমাপ নয়।"],
         limitations_en=["NASA POWER describes weather over an approximately 50 km area; it is not a direct measurement of this field."],
     )
+
+
+@router.get("/calendar-references", response_model=list[VarietyCalendarReference])
+def get_calendar_references(crop: str = "rice", season: str | None = None):
+    """Public source references carry no farm data or operational approval."""
+    try:
+        return published_calendar_references(crop, season)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 def _require_owned_farmland(db: Session, farmland_id: UUID, farmer_id: UUID) -> Farmland:
@@ -227,6 +272,26 @@ def get_season_history(
         _raise_domain_error(exc)
 
 
+@router.post(
+    "/farmlands/{farmland_id}/rotation-comparisons",
+    response_model=RotationComparison,
+)
+def compare_farmland_rotations(
+    farmland_id: UUID,
+    request: Request,
+    db: DbSession,
+    farmer_id: FarmerId,
+):
+    """Return a read-only comparison from the saved farmer-owned farm profile."""
+    _require_owned_farmland(db, farmland_id, farmer_id)
+    provider = request.app.state.challenge_runtime.require_adapter("rotation")
+    try:
+        snapshot = DatabaseFarmProfileSnapshotReader(db).get_snapshot(farmer_id, farmland_id)
+    except FarmSnapshotNotFound as exc:
+        raise HTTPException(status_code=404, detail="Farmland not found") from exc
+    return provider.compare(snapshot)
+
+
 @router.get(
     "/farmlands/{farmland_id}/planting-window",
     response_model=PlantingWindowEvidence,
@@ -254,6 +319,20 @@ def planting_window_evidence(
     if crop is None:
         raise HTTPException(status_code=404, detail="Crop not found")
 
+    try:
+        resolved_location = resolve_location(
+            farmland.division,
+            farmland.district,
+            farmland.upazila,
+            farmland.country_code,
+        )
+    except ValueError:
+        resolved_location = None
+    district_code = resolved_location.district_code if resolved_location else None
+    applicable_region_codes = {district_code, f"BD-DIST-{district_code}"} if district_code else set()
+    if resolved_location and resolved_location.upazila_code:
+        applicable_region_codes.add(f"BD-UPZ-{resolved_location.upazila_code}")
+
     knowledge_rows = db.scalars(
         select(AgriculturalKnowledge).where(
             AgriculturalKnowledge.crop_id == crop.id,
@@ -269,7 +348,7 @@ def planting_window_evidence(
     ).all()
     calendar_row = next((row for row in knowledge_rows if
                          row.crop_variety_id in (None, season.crop_variety_id)
-                         and row.region_code in (None, district_code)
+                         and (row.region_code is None or row.region_code in applicable_region_codes)
                          and isinstance(row.content, dict)
                          and isinstance(row.content.get("planting_window"), dict)
                          and isinstance(row.content.get("gdd"), dict)), None)
@@ -281,9 +360,21 @@ def planting_window_evidence(
             farmland, season, crop,
         )
 
+    if district_code is None:
+        return _planting_evidence_response(
+            "insufficient_data",
+            "সংরক্ষিত জেলার নাম বাংলাদেশের যাচাইকৃত জেলা-তালিকার সঙ্গে মেলেনি। জেলা ঠিক করে আবার চেষ্টা করুন।",
+            "The saved district could not be matched to the Bangladesh district reference. Correct the district and try again.",
+            farmland, season, crop,
+            calendar={
+                "source_name": calendar_row.source_name,
+                "source_reference": calendar_row.source_reference,
+                "reviewed_at": calendar_row.reviewed_at.isoformat(),
+            },
+        )
+
     planting = calendar_row.content["planting_window"]
     gdd_config = calendar_row.content["gdd"]
-    shift_policy = planting.get("onset_shift_policy")
     try:
         start_month = int(planting["season_start_month"])
         start_day = int(planting["season_start_day"])
@@ -299,13 +390,11 @@ def planting_window_evidence(
             cap_temperature is not None and not base_temperature <= cap_temperature <= 55
         ):
             raise ValueError("invalid GDD temperature range")
-        if shift_policy != "shift_window_by_observed_onset_delta":
-            raise ValueError("crop calendar has no reviewed onset-to-window shift policy")
     except (KeyError, TypeError, ValueError):
         return _planting_evidence_response(
             "insufficient_data",
-            "যাচাইকৃত ফসল ক্যালেন্ডারে মৌসুমের তারিখ, GDD ভিত্তি বা রোপণ-সময় সামঞ্জস্যের নীতি অসম্পূর্ণ।",
-            "The reviewed crop calendar is missing valid season dates, a GDD base, or an approved planting-window adjustment policy.",
+            "যাচাইকৃত ফসল ক্যালেন্ডারে মৌসুমের তারিখ বা GDD তাপমাত্রা-ভিত্তি অসম্পূর্ণ।",
+            "The reviewed crop calendar is missing valid season dates or a GDD temperature base.",
             farmland, season, crop,
         )
 
@@ -415,7 +504,10 @@ def planting_window_evidence(
                   "gdd_base_temperature_c": base_temperature,
                   "gdd_cap_temperature_c": cap_temperature},
         comparison=comparison,
-        recommended_shift_days=(comparison["observed_shift_days"] if enough else None),
+        # An observed rainfall-onset difference is climate evidence, not a
+        # planting-date recommendation. No feasibility model currently checks
+        # candidate windows against agronomic and farm constraints.
+        recommended_shift_days=None,
         gdd={"method": "daily_mean_max_zero_v1", "annual_values": annual_gdd,
              "valid_year_count": len(valid_gdd),
              "baseline_valid_years": len(baseline_gdd),

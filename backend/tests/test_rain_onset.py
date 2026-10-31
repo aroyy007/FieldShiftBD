@@ -64,6 +64,13 @@ def test_returns_none_when_confirmation_period_is_incomplete():
     assert onset is None
 
 
+def test_search_includes_final_candidate_using_cross_year_trailing_observations():
+    end = date(2025, 12, 31)
+    start = date(2025, 12, 25)
+    rainfall = _rain(start, [0] * 12 + [20] + [2] * 14)
+    assert find_usable_rain_onset(rainfall, start, end) == end
+
+
 def test_gdd_uses_explicit_base_and_does_not_treat_missing_temperature_as_zero():
     temperatures = {
         date(2025, 1, 1): 20.0,

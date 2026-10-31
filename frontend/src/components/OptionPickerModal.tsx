@@ -11,6 +11,7 @@ type Props = {
   allowClear?: boolean;
   onSelect: (value: string | null) => void;
   onClose: () => void;
+  language?: 'bn' | 'en';
 };
 
 const PAPER = '#fffdf7';
@@ -18,7 +19,8 @@ const INK = '#102b25';
 const GREEN = '#07543a';
 
 /** Searchable single-choice sheet used for reference data (locations, soil, varieties). */
-export default function OptionPickerModal({ visible, title, options, selected, allowClear, onSelect, onClose }: Props) {
+export default function OptionPickerModal({ visible, title, options, selected, allowClear, onSelect, onClose, language = 'en' }: Props) {
+  const bn = language === 'bn';
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     const key = query.trim().toLowerCase();
@@ -35,14 +37,14 @@ export default function OptionPickerModal({ visible, title, options, selected, a
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
       <View style={styles.root}>
-        <Pressable accessibilityLabel="Close picker" style={styles.scrim} onPress={close} />
+        <Pressable accessibilityLabel={bn ? 'তালিকা বন্ধ করুন' : 'Close picker'} style={styles.scrim} onPress={close} />
         <View style={styles.sheet}>
           <Text style={styles.title}>{title}</Text>
           {options.length > 8 ? (
             <TextInput
-              accessibilityLabel={`Search ${title}`}
+              accessibilityLabel={bn ? `${title} খুঁজুন` : `Search ${title}`}
               autoCorrect={false}
-              placeholder="Search"
+              placeholder={bn ? 'খুঁজুন' : 'Search'}
               placeholderTextColor="#82909a"
               value={query}
               onChangeText={setQuery}
@@ -54,7 +56,7 @@ export default function OptionPickerModal({ visible, title, options, selected, a
             keyExtractor={item => item.value}
             keyboardShouldPersistTaps="handled"
             style={styles.list}
-            ListEmptyComponent={<Text style={styles.empty}>No matching options.</Text>}
+            ListEmptyComponent={<Text style={styles.empty}>{bn ? 'কোনো মিল পাওয়া যায়নি।' : 'No matching options.'}</Text>}
             renderItem={({ item }) => (
               <Pressable
                 accessibilityRole="button"
@@ -73,11 +75,11 @@ export default function OptionPickerModal({ visible, title, options, selected, a
           <View style={styles.actions}>
             {allowClear ? (
               <Pressable accessibilityRole="button" onPress={() => { setQuery(''); onSelect(null); }} style={styles.secondary}>
-                <Text style={styles.secondaryText}>Clear</Text>
+                <Text style={styles.secondaryText}>{bn ? 'মুছুন' : 'Clear'}</Text>
               </Pressable>
             ) : null}
             <Pressable accessibilityRole="button" onPress={close} style={styles.secondary}>
-              <Text style={styles.secondaryText}>Cancel</Text>
+              <Text style={styles.secondaryText}>{bn ? 'বন্ধ করুন' : 'Cancel'}</Text>
             </Pressable>
           </View>
         </View>

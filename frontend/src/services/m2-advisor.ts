@@ -1,4 +1,7 @@
 import { ApiClientError, apiRequest } from './api-client';
+import type { RotationComparison as RotationComparisonContract } from '../modules/shared/contracts.generated';
+
+export type RotationComparison = RotationComparisonContract;
 
 export type KnowledgeReference = {
   source_name: string;
@@ -103,6 +106,32 @@ export type HarvestGuidance = {
   knowledge_refs: KnowledgeReference[];
 };
 
+export type VarietyCalendarReference = {
+  profile_id: string | null;
+  variety_name: string;
+  variety_name_bn: string | null;
+  season: string;
+  cultivation_method: 'transplanted';
+  review_status: 'source_verified_pending_agronomy_review';
+  activation_allowed: false;
+  seedbed_window: { start: string; end: string } | null;
+  seedling_age_days: { min: number; max: number } | null;
+  transplanting_window: { start: string; end: string };
+  reported_life_duration_days: number;
+  harvest_window: { start: string; end: string };
+  duration_reference_event: 'not_stated';
+  care_references: { kind: string; timing_basis: string; day_range: { min: number; max: number } | null; condition_en: string; condition_bn: string | null; detail_en: string; detail_bn: string | null }[];
+  gdd_reference: { status: 'not_cultivar_validated'; reviewed_base_temperature_c: null; cap_temperature_c: null; target_degree_days: null; candidate_method_reference_id: string | null } | null;
+  excluded_ambiguities: string[];
+  geographic_scope_bn: string;
+  geographic_scope_en: string;
+  source_name: string;
+  source_url: string;
+  source_accessed: string;
+  limitations_bn: string[];
+  limitations_en: string[];
+};
+
 export type PlantingWindowEvidence = {
   status: 'available' | 'insufficient_data' | 'unavailable';
   message_bn: string;
@@ -125,7 +154,8 @@ export type PlantingWindowEvidence = {
   recommended_shift_days: number | null;
   gdd_summary: null | { method: string; annual_values: { year: number; total_degree_days: number | null; valid_days: number; expected_days: number }[]; valid_year_count: number; baseline_valid_years: number; recent_valid_years: number; baseline_mean: number | null; recent_mean: number | null };
   planting_calendar: Record<string, unknown> | null;
-  data_provenance: { source: string; source_url: string; dataset: string; variables: string[]; temporal_start: string; temporal_end: string; spatial_resolution_m: number; spatial_scale: string; cache_status: string; retrieved_at: string | null; district_code?: string; coverage_by_variable?: { variable: string; units: string; status: string; expected_observations: number; valid_observations: number; missing_observations: number }[] };
+  variety_calendar_reference: VarietyCalendarReference | null;
+  data_provenance: { source: string; source_url: string; dataset: string; variables: string[]; temporal_start: string; temporal_end: string; spatial_resolution_m: number; spatial_scale: string; cache_status: string; retrieved_at: string | null; district_code?: string; sampling_point?: Record<string, unknown> | null; coverage_by_variable?: { variable: string; units: string; status: string; expected_observations: number; valid_observations: number; missing_observations: number }[] };
   limitations_bn: string[];
   limitations_en: string[];
 };

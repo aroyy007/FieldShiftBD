@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -22,6 +23,7 @@ from app.core.security import decode_access_token
 from app.contracts.challenge.v1 import ApiError
 from app.services.foundation import ChallengeRuntime, ChallengeUnavailable
 from app.services.m5_actions import create_action_coordinator
+from app.services.rotation_comparison import BrriRotationComparisonProvider
 
 app = FastAPI(title="FieldShift API")
 app.state.challenge_runtime = ChallengeRuntime.from_settings(settings)
@@ -30,6 +32,7 @@ app.state.challenge_runtime = ChallengeRuntime.from_settings(settings)
 # Action endpoints stay safe-off until their feature switch is enabled.
 action_coordinator = create_action_coordinator()
 app.state.challenge_runtime.adapters["consent_records"] = action_coordinator
+app.state.challenge_runtime.adapters["rotation"] = BrriRotationComparisonProvider(climate_cache_root=Path(settings.CLIMATE_CACHE_DIR))
 if settings.CHALLENGE_ACTION_CONFIRMATION_ENABLED:
     app.state.challenge_runtime.adapters["action_confirmation"] = action_coordinator
 
@@ -94,6 +97,7 @@ app.include_router(routes_foundation.router)
 app.include_router(routes_m1_profile.router)   # Module 1 — Profile & Onboarding
 app.include_router(routes_m1_catalog.router)   # Module 1 — Crop catalog & reference data
 app.include_router(routes_m2_advisor.router)   # Module 2 — Crop Advisor
+app.include_router(routes_m2_advisor.public_router)
 app.include_router(routes_m4_weather.router)   # Module 4 — Weather Intelligence
 app.include_router(routes_farm_state.router)   # Module 3 — Farm Brain
 app.include_router(routes_disease.router)      # Module 6 — Disease Detection
