@@ -66,5 +66,5 @@ rotation-comparison outputs matched exactly, and the `/advisory` HTTP route
 returned the same provisional 0-day exploratory shift with a cache-hit status.
 This is one representative point cache, not 64-district coverage or a district
 average. Other NASA layers, data-rights review, QA and agronomic approval remain
-open. Full backend verification: 356 passed, 5 skipped; the skips are existing
+open. Full backend verification: 357 passed, 5 skipped; the skips are existing
 PostgreSQL-only checks unavailable in this local run. No frontend files changed.
