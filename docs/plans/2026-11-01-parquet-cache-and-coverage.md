@@ -47,3 +47,24 @@ unverified dependency ships in this increment. The implemented API is a file-
 presence inventory (`cached_count`, `requires_validation_on_load=true`), with
 no-store refresh semantics. Public advisory retains all evidence validation.
 Nationwide identifier selection is not nationwide data coverage.
+
+## Storage implementation update — 2026-11-01
+
+The earlier dependency block is resolved for the Python 3.12 implementation
+environment. PyArrow 26.0.0 is pinned. District publication now writes a compact
+versioned JSON index and an immutable SHA-256-addressed Parquet asset. The bounded
+reader retains legacy inline-JSON support and validates checksum, format/schema,
+unit metadata, finite values, row count, nulls, date ordering, file size, metadata
+and decoded table limits before returning the existing bundle contract. The
+first Parquet publication archives the prior JSON index; subsequent publications
+keep prior indexes and immutable data assets.
+
+The local Rajshahi POWER cache (point at 24.37 N, 88.70 E; 2001-01-01 through
+2025-12-31; 9,131 observations) was converted without another NASA request. Its
+daily series is 100,347 bytes as Parquet. Before/after public advisory and
+rotation-comparison outputs matched exactly, and the `/advisory` HTTP route
+returned the same provisional 0-day exploratory shift with a cache-hit status.
+This is one representative point cache, not 64-district coverage or a district
+average. Other NASA layers, data-rights review, QA and agronomic approval remain
+open. Full backend verification: 356 passed, 5 skipped; the skips are existing
+PostgreSQL-only checks unavailable in this local run. No frontend files changed.

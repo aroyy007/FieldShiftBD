@@ -24,8 +24,12 @@ scripts.prefetch_district_power --help`. Supply a publicly sourced representativ
 point and its source URL; coordinates are not guessed from district names. Saved
 official GeoJSON can be replayed with `--input-json` and its original
 `--retrieved-at` timestamp. Replay refreshes the normalized cache explicitly.
-Versions are kept under `data/climate/cache/{district}/versions/`. The current
-cache is JSON; the plan's complete64-district Parquet release remains open.
+The versioned `fieldshift-climate-parquet-v1` index stores daily observations
+in immutable, checksum-addressed Parquet files; prior JSON indexes remain under
+`data/climate/cache/{district}/versions/` and are still readable. The committed
+codec is pinned in `requirements.txt`. Acquiring and quality-checking all 64
+district histories and the other NASA layers remain separate work; file presence
+does not mean those datasets are ready.
 
 Pure onset/GDD/statistical code lives in `src/compute/agro.py`; prior service
 imports remain compatible. The method searches every declared candidate day and
@@ -273,6 +277,9 @@ the authoritative schema/hash/source checks before returning a result. The
 bilingual selector places cached entries first, keeps every district selectable,
 and leaves published variety calendars accessible if historical data is absent.
 
-This increment does not add a Parquet codec: package downloads were unavailable
-during implementation. Existing inline JSON bundles remain the active format;
-the full versioned-Parquet and 64-district acquisition/QA release is still open.
+Parquet indexes are bounded by the cache reader, which validates the format,
+column schema, units, row counts, dates, checksum and byte limits before returning
+the existing `DistrictClimateBundle` shape to advisory and rotation consumers.
+Old inline-JSON bundles remain readable. The local Rajshahi POWER history has
+been replayed into Parquet; nationwide cache acquisition, additional NASA layers,
+rights review, data QA and agronomic approval are still open.
