@@ -1218,6 +1218,73 @@
       "title": "DiseaseProblemSyncRequest",
       "type": "object"
     },
+    "DistrictCacheEntry": {
+      "additionalProperties": false,
+      "description": "Local index presence only; selected evidence still requires validation.",
+      "properties": {
+        "district_code": {
+          "pattern": "^\\d{4}$",
+          "title": "District Code",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "name_bn": {
+          "title": "Name Bn",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "cached",
+            "missing",
+            "unreadable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "district_code",
+        "name",
+        "name_bn",
+        "status"
+      ],
+      "title": "DistrictCacheEntry",
+      "type": "object"
+    },
+    "DistrictCacheInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "cached_count": {
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Cached Count",
+          "type": "integer"
+        },
+        "districts": {
+          "items": {
+            "$ref": "#/$defs/DistrictCacheEntry"
+          },
+          "maxItems": 64,
+          "title": "Districts",
+          "type": "array"
+        },
+        "requires_validation_on_load": {
+          "const": true,
+          "default": true,
+          "title": "Requires Validation On Load",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "districts",
+        "cached_count"
+      ],
+      "title": "DistrictCacheInventory",
+      "type": "object"
+    },
     "DistrictClimateBundle": {
       "additionalProperties": false,
       "properties": {
@@ -3691,6 +3758,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/DiseaseProblemSyncRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "district_cache_inventory": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DistrictCacheInventory"
         },
         {
           "type": "null"

@@ -7,7 +7,9 @@ import OptionPickerModal from '../components/OptionPickerModal';
 import ClimateEvidenceCharts from '../components/ClimateEvidenceCharts';
 import CropCalendarReferences from '../components/CropCalendarReferences';
 import { loadLocations, DistrictRef } from '../services/m1-reference';
-import { loadPublicAdvisory, PublicAdvisory } from '../services/climate-advisory';
+import { loadPublicAdvisory, loadDistrictCacheInventory, PublicAdvisory } from '../services/climate-advisory';
+import { buildDistrictOptions, cacheStatusLabel } from '../services/climate-inventory';
+import type { DistrictCacheInventory } from '../modules/shared/contracts.generated';
 import { COLORS, SPACING, TYPOGRAPHY } from '../theme/theme';
 
 export default function PublicAdvisoryScreen() {
@@ -19,6 +21,8 @@ export default function PublicAdvisoryScreen() {
   const [season, setSeason] = useState('aman');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [referenceFailed, setReferenceFailed] = useState(false);
+  const [inventory, setInventory] = useState<DistrictCacheInventory | null>(null);
+  const [inventoryFailed, setInventoryFailed] = useState(false);
   const [result, setResult] = useState<PublicAdvisory | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -42,6 +46,13 @@ export default function PublicAdvisoryScreen() {
     return () => { current = false; };
   }, [reload]);
   useEffect(() => {
+    let current = true;
+    void loadDistrictCacheInventory()
+      .then(value => { if (current) { setInventory(value); setInventoryFailed(false); } })
+      .catch(() => { if (current) { setInventory(null); setInventoryFailed(true); } });
+    return () => { current = false; };
+  }, [reload]);
+  useEffect(() => {
     if (!district) return;
     let current = true;
     void Promise.resolve().then(() => {
@@ -55,6 +66,7 @@ export default function PublicAdvisoryScreen() {
   const selected = districts.find(item => item.code === district || item.name === district);
   const seasons = [{ code: 'aman', bn: 'আমন', en: 'Aman' }, { code: 'aus', bn: 'আউশ', en: 'Aus' }, { code: 'boro', bn: 'বোরো', en: 'Boro' }];
   const provenance = result?.data_provenance;
+  const selectedCacheStatus = inventory?.districts.find(item => item.district_code === selected?.code)?.status;
   return (
     <SafeAreaView style={styles.page}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -71,6 +83,11 @@ export default function PublicAdvisoryScreen() {
           </Pressable>
           {referenceFailed ? <Text accessibilityRole="alert" style={styles.warning}>{bn ? 'জেলার তালিকা লোড হয়নি। নিচের বোতামে আবার চেষ্টা করুন।' : 'Could not load district names. Retry below.'}</Text> : null}
           <View style={styles.seasons}>{seasons.map(item => <Pressable key={item.code} accessibilityRole="button" accessibilityState={{ selected: season === item.code }} onPress={() => setSeason(item.code)} style={[styles.season, season === item.code && styles.selected]}><Text style={styles.body}>{bn ? item.bn : item.en}</Text></Pressable>)}</View>
+          {inventory ? <Text style={styles.helper}>{bn
+            ? `${inventory.districts.length}টি জেলার মধ্যে ${inventory.cached_count}টির সংরক্ষিত তথ্য আছে। খোলার সময় তথ্য যাচাই করা হবে।`
+            : `Saved data is present for ${inventory.cached_count} of ${inventory.districts.length} districts. Data is validated when opened.`}</Text> : null}
+          {inventoryFailed ? <Text style={styles.helper}>{bn ? 'কোন জেলার তথ্য আছে তা যাচাই করা যায়নি। জেলা বেছে চেষ্টা করুন।' : 'Could not check which districts have saved data. Choose a district to try.'}</Text> : null}
+          {selected && inventory ? <Text style={styles.helper}>{cacheStatusLabel(selectedCacheStatus, language)}. {bn ? 'যেকোনো জেলার জন্য নিচে প্রকাশিত জাতের ক্যালেন্ডার দেখতে পারবেন।' : 'Published variety calendars remain available below for any district.'}</Text> : null}
           <Text style={styles.helper}>{bn ? 'জেলার তালিকা ও জলবায়ু ক্যাশের কভারেজ আলাদা; প্রতিটি জেলার ডেটা এখনও প্রস্তুত নয়।' : 'District selection and climate-cache coverage differ; data is not yet prepared for every district.'}</Text>
           {district || referenceFailed ? <Button accessibilityRole="button" title={bn ? 'আবার যাচাই করুন' : 'Refresh evidence'} variant="outline" disabled={loading} onPress={() => setReload(value => value + 1)} /> : null}
         </Card>
@@ -95,7 +112,7 @@ export default function PublicAdvisoryScreen() {
         </Card> : null}
         <CropCalendarReferences language={language} season={season} />
       </ScrollView>
-      <OptionPickerModal visible={pickerOpen} title={bn ? 'জেলা' : 'District'} language={language} options={districts.map(item => ({ value: item.code, label: bn ? item.name_bn : item.name, detail: bn ? item.name : item.name_bn }))} selected={selected?.code} onSelect={value => { if (value) setDistrict(value); setPickerOpen(false); }} onClose={() => setPickerOpen(false)} />
+      <OptionPickerModal visible={pickerOpen} title={bn ? 'জেলা' : 'District'} language={language} options={buildDistrictOptions(districts, inventory, language)} selected={selected?.code} onSelect={value => { if (value) setDistrict(value); setPickerOpen(false); }} onClose={() => setPickerOpen(false)} />
     </SafeAreaView>
   );
 }

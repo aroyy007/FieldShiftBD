@@ -213,6 +213,10 @@
         {
           "method": "post",
           "path": "/advisor/seasons/{season_id}/close"
+        },
+        {
+          "method": "get",
+          "path": "/advisory/districts"
         }
       ],
       "depends_on": [

@@ -48,7 +48,7 @@
     "ios": "expo start --ios --port 8082",
     "web": "expo start --web --port 8082",
     "lint": "expo lint",
-    "test": "node --test src/services/api-client.test.mjs src/services/m5-actions.test.mjs src/services/m5-offline.test.mjs src/services/m5-speech.test.mjs src/services/m5-voice.test.mjs src/modules/shared/foundation.test.mjs",
+    "test": "node --test src/services/api-client.test.mjs src/services/m5-actions.test.mjs src/services/m5-offline.test.mjs src/services/m5-speech.test.mjs src/services/m5-voice.test.mjs src/modules/shared/foundation.test.mjs src/services/climate-inventory.test.mjs",
     "postinstall": "patch-package"
   },
   "private": true

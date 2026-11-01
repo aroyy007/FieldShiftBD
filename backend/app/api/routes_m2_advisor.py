@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -33,7 +33,7 @@ from app.schemas.m2_advisor import (
     SeasonResponse,
 )
 from app.schemas.planting_window import PlantingWindowEvidence, unavailable_provenance
-from app.schemas.planting_window import VarietyCalendarReference, PublicPlantingWindowEvidence
+from app.schemas.planting_window import VarietyCalendarReference, PublicPlantingWindowEvidence, DistrictCacheInventory
 from app.services import m2_advisor
 from app.services.climate.power_history import NasaPowerHistoryProvider
 from app.services.m1_reference import resolve_location
@@ -49,6 +49,7 @@ from app.services.crop_calendar_references import (
 )
 from app.services.district_advisory import public_advisory
 from app.services.climate.cache import CorruptClimateCache
+from app.services.climate.inventory import district_cache_inventory
 
 router = APIRouter(prefix="/advisor", tags=["Crop Advisor & Season Lifecycle"])
 public_router = APIRouter(tags=["Public district climate advisory — Module 2"])
@@ -57,6 +58,13 @@ FarmerId = Annotated[UUID, Depends(get_current_farmer_id)]
 
 NASA_HISTORY_START = date(2001, 1, 1)
 NASA_HISTORY_END = date(2025, 12, 31)
+
+
+@public_router.get("/advisory/districts", response_model=DistrictCacheInventory)
+def get_district_cache_inventory(response: Response):
+    """List local file presence only; opening evidence validates its contents."""
+    response.headers["Cache-Control"] = "no-store"
+    return district_cache_inventory(Path(settings.CLIMATE_CACHE_DIR))
 
 
 @public_router.get("/advisory", response_model=PublicPlantingWindowEvidence)

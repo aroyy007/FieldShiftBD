@@ -219,3 +219,20 @@ def unavailable_provenance(*, cache_status: str = "not_requested") -> dict[str, 
         "cache_status": cache_status,
         "retrieved_at": None,
     }
+
+
+class DistrictCacheEntry(BaseModel):
+    """Local index presence only; selected evidence still requires validation."""
+
+    model_config = ConfigDict(extra="forbid")
+    district_code: str = Field(pattern=r"^\d{4}$")
+    name: str
+    name_bn: str
+    status: Literal["cached", "missing", "unreadable"]
+
+
+class DistrictCacheInventory(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    districts: list[DistrictCacheEntry] = Field(max_length=64)
+    cached_count: int = Field(ge=0, le=64)
+    requires_validation_on_load: Literal[True] = True

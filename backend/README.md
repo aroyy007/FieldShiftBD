@@ -256,3 +256,23 @@ schema migration is needed.
 `python -m scripts.import_reference_data` runs this seed import together with
 the M1 crop catalog and the policy-accepted BARC knowledge used by Module 2;
 see `M2_GUIDE.md` → "Current knowledge coverage".
+
+### District cache presence
+
+`GET /advisory/districts` is public and read-only. It lists all 64 canonical
+Bangladesh district IDs with `cached`, `missing`, or `unreadable` file-presence
+status, `cached_count`, and `requires_validation_on_load=true`. It only checks
+bounded regular index-file metadata inside `CLIMATE_CACHE_DIR`; it never reads
+series, hashes rasters, downloads NASA data, or returns private farm data/local
+paths. The response uses `Cache-Control: no-store` so refresh can observe newly
+published or removed cache files.
+
+Presence does not certify the contents, source freshness, full NASA-layer
+coverage, field suitability or agronomic validation. `/advisory` still performs
+the authoritative schema/hash/source checks before returning a result. The
+bilingual selector places cached entries first, keeps every district selectable,
+and leaves published variety calendars accessible if historical data is absent.
+
+This increment does not add a Parquet codec: package downloads were unavailable
+during implementation. Existing inline JSON bundles remain the active format;
+the full versioned-Parquet and 64-district acquisition/QA release is still open.

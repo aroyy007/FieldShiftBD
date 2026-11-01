@@ -11,7 +11,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
-from app.schemas.planting_window import DistrictClimateEvidence, VarietyCalendarReference
+from app.schemas.planting_window import DistrictClimateEvidence, VarietyCalendarReference, DistrictCacheInventory
 
 CONTRACT_VERSION = "1.0.0"
 
@@ -49,6 +49,7 @@ class ContractCatalog(ContractModel):
     farm_profile_snapshot: "FarmProfileSnapshot | None" = None
     district_climate_bundle_manifest: "DistrictClimateBundleManifest | None" = None
     district_climate_bundle: "DistrictClimateBundle | None" = None
+    district_cache_inventory: "DistrictCacheInventory | None" = None
     climate_variable_coverage: "ClimateVariableCoverage | None" = None
     planting_window_advisory: "PlantingWindowAdvisory | None" = None
     rotation_comparison: "RotationComparison | None" = None

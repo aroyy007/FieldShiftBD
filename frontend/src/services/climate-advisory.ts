@@ -1,4 +1,5 @@
 import { apiRequest } from './api-client';
+import type { DistrictCacheInventory } from '../modules/shared/contracts.generated';
 import type { PlantingWindowEvidence, VarietyCalendarReference } from './m2-advisor';
 
 export type PublicAdvisory = {
@@ -25,4 +26,8 @@ export type PublicAdvisory = {
 
 export function loadPublicAdvisory(district: string, season: string) {
   return apiRequest<PublicAdvisory>(`/advisory?district=${encodeURIComponent(district)}&crop=rice&season=${encodeURIComponent(season)}`);
+}
+
+export function loadDistrictCacheInventory() {
+  return apiRequest<DistrictCacheInventory>('/advisory/districts');
 }
