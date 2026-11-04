@@ -146,7 +146,8 @@ def test_planting_window_reports_insufficient_data_without_reviewed_calendar(cli
     assert body["gdd_summary"] is None
     assert body["variety_calendar_reference"] is None
     assert body["data_provenance"]["source"] == "NASA POWER Daily Point"
-    assert body["data_provenance"]["spatial_resolution_m"] == 50000
+    assert body["data_provenance"]["spatial_resolution_m"] is None
+    assert "variable-specific" in body["data_provenance"]["spatial_scale"]
     assert body["data_provenance"]["cache_status"] == "not_requested"
 
 

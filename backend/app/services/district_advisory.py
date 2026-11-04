@@ -39,8 +39,12 @@ def load_district_climate_evidence(root: Path, district_input: str) -> DistrictC
             "dataset": "POWER Daily API, community AG; UTC days",
             "variables": ["precipitation (mm/day)", "temperature (°C)", "solar radiation (MJ/m²/day)"],
             "temporal_start": manifest.coverage_start, "temporal_end": manifest.coverage_end,
-            "spatial_resolution_m": 50000,
-            "spatial_scale": "Representative point grid, approximately 50 km; not a district average or field measurement",
+            "spatial_resolution_m": None,
+            "spatial_scale": (
+                "Standard NASA POWER point products use variable-specific source grids: "
+                "meteorology 0.5° × 0.625° and solar 1° × 1°. "
+                "This is a representative reference point, not a district mean or field measurement."
+            ),
             "cache_status": "hit", "retrieved_at": next(item.retrieved_at for item in manifest.provenance if item.method == "nasa_power"),
             "district_code": district.code,
             "sampling_point": manifest.sampling_point.model_dump(),

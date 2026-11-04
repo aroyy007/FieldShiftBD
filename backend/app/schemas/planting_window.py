@@ -79,7 +79,7 @@ class DataProvenanceEvidence(BaseModel):
     variables: list[str]
     temporal_start: date
     temporal_end: date
-    spatial_resolution_m: int
+    spatial_resolution_m: int | None = None
     spatial_scale: str
     cache_status: str
     retrieved_at: datetime | None
@@ -214,8 +214,12 @@ def unavailable_provenance(*, cache_status: str = "not_requested") -> dict[str, 
         "variables": ["precipitation (mm/day)", "temperature (°C)", "solar radiation (MJ/m²/day)"],
         "temporal_start": date(2001, 1, 1),
         "temporal_end": date(2025, 12, 31),
-        "spatial_resolution_m": 50000,
-        "spatial_scale": "area-level grid, approximately 50 km; not field-level",
+        "spatial_resolution_m": None,
+        "spatial_scale": (
+            "Standard NASA POWER point products use variable-specific source grids: "
+            "meteorology 0.5° × 0.625° and solar 1° × 1°. "
+            "The selected coordinates sample a representative grid point, not a district mean or field measurement."
+        ),
         "cache_status": cache_status,
         "retrieved_at": None,
     }

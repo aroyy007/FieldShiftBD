@@ -98,9 +98,13 @@ For the implementation sequence, per-module tasks, acceptance checks, and teamma
 
 ### NASA sources
 
-NASA POWER daily history is currently cached for a limited set of representative points, including Dhaka, Chattogram, and Rajshahi. The grid is approximately 50 km and represents area-level weather; it is not a measurement of a farmer's field or an average of every place in a district.
+NASA POWER daily history (2001–2025) is currently cached for representative points in Dhaka, Chattogram, and Rajshahi. Standard POWER meteorology uses a 0.5° × 0.625° grid; solar radiation uses a 1° × 1° grid. The selected BMD reference coordinates sample the corresponding source grid; they are not district averages or measurements of a farmer's field. The cache inventory and API expose the location, time span, variable coverage, retrieval time, and cache status.
 
 The compact NASA POWER cache assets and BARC crop-suitability source captures are included for reproducible local use. Their manifests record coverage, retrieval, hashes, and source attribution. The BARC portal permits accurate reproduction with prominent source acknowledgement; see the captured policy and manifest under `backend/app/data/source_captures/barc_crop_zoning/`. These assets cover only the named locations and periods; they are not nationwide field-level measurements.
+
+### Licensing and attribution
+
+Original FieldShift BD source code and documentation are licensed under Apache-2.0. The bundled disease checkpoint, NASA POWER caches, BARC portal captures, and other third-party assets have separate terms; the root license does not replace them. Read [`NOTICE`](NOTICE) and the model's [`README`](backend/model/README.md) before reusing or redistributing those assets. NASA data use must not imply NASA endorsement.
 
 Other sources in the register—including GPM IMERG, SMAP, MODIS NDVI, Landsat, ECOSTRESS, GRACE/GRACE-FO, SRTM, GEDI, and NEX-GDDP-CMIP6—are planned sources, not currently ingested app datasets. The source register records their bounded roles and open license/product review: [`backend/data/climate/source-register.json`](backend/data/climate/source-register.json).
 

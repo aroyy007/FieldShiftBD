@@ -753,7 +753,7 @@ export default function CropAdvisorScreen() {
                         )}
                         <Text style={styles.label}>{bn ? 'তথ্যের উৎস ও সীমা' : 'Source and data limits'}</Text>
                         <Text style={styles.helper}>{provenance.source} · {provenance.temporal_start} – {provenance.temporal_end}</Text>
-                        <Text style={styles.helper}>{bn ? 'স্থানিক পরিসর' : 'Spatial scale'}: {provenance.spatial_scale}</Text>
+                        <Text style={styles.helper}>{bn ? 'স্থানিক পরিসর: NASA POWER-এর আবহাওয়ার grid ০.৫° × ০.৬২৫°, আর সৌর বিকিরণের grid ১° × ১°। এটি নির্দেশক এলাকার ডেটা, জেলা-গড় বা জমির সরাসরি মাপ নয়।' : `Spatial scale: ${provenance.spatial_scale}`}</Text>
                         <Text style={styles.helper}>{bn ? 'ক্যাশ অবস্থা' : 'Cache status'}: {provenance.cache_status === 'hit'
                           ? (bn ? 'সংরক্ষিত ক্যাশে' : 'persistent cache')
                           : provenance.cache_status === 'fetched_live_and_cached'

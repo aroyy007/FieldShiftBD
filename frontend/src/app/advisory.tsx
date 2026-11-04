@@ -103,7 +103,7 @@ export default function PublicAdvisoryScreen() {
             <Text style={styles.label}>{bn ? 'উৎস ও কভারেজ' : 'Source and coverage'}</Text>
             <Text style={styles.helper}>{provenance.source} · {provenance.temporal_start} – {provenance.temporal_end}</Text>
             <Text style={styles.helper}>{bn ? 'ক্যাশ থেকে পড়া হয়েছে; সংগ্রহের সময়' : 'Read from cache; retrieved'}: {provenance.retrieved_at ?? '—'}</Text>
-            <Text style={styles.helper}>{bn ? 'এটি জেলার একটি প্রকাশিত নির্দেশক বিন্দুর এলাকার grid; জেলা-গড় বা জমির সরাসরি পরিমাপ নয়।' : provenance.spatial_scale}</Text>
+            <Text style={styles.helper}>{bn ? 'NASA POWER-এর আবহাওয়ার grid ০.৫° × ০.৬২৫°, আর সৌর বিকিরণের grid ১° × ১°। এটি নির্দেশক এলাকার ডেটা—জেলার গড় বা জমির সরাসরি মাপ নয়।' : provenance.spatial_scale}</Text>
             <Text selectable style={styles.helper}>{provenance.source_url}</Text>
             {provenance.sampling_point ? <Text selectable style={styles.helper}>{String(provenance.sampling_point.description)} · {String(provenance.sampling_point.latitude)}, {String(provenance.sampling_point.longitude)}{'\n'}{String(provenance.sampling_point.source_url)}</Text> : null}
           </View> : null}

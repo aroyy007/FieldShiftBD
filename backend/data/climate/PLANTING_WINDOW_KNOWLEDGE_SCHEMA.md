@@ -42,5 +42,7 @@ field-scale measurement or a yield guarantee.
 POWER requests cover 2001-01-01 through 2025-12-31 for the saved farm
 coordinates and are cached under `CLIMATE_CACHE_DIR`. Every year must have
 complete daily values for its configured season to enter the onset samples.
-The UI reports the approximately 50 km area-level scale and the retrieval/cache
-state alongside the results.
+The UI reports that NASA POWER's standard meteorology and solar products use
+different native grids (0.5° × 0.625° and 1° × 1° respectively), alongside the
+representative sampling point and retrieval/cache state. These values are not
+a district mean or field measurement.

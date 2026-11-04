@@ -114,8 +114,8 @@ def _planting_evidence_response(
         planting_calendar=calendar,
         variety_calendar_reference=variety_reference,
         data_provenance=provenance or unavailable_provenance(),
-        limitations_bn=["NASA POWER প্রায় ৫০ কিমি এলাকার আবহাওয়া দেখায়; এটি আপনার জমির সরাসরি পরিমাপ নয়।"],
-        limitations_en=["NASA POWER describes weather over an approximately 50 km area; it is not a direct measurement of this field."],
+        limitations_bn=["NASA POWER-এ আবহাওয়া ও সৌর বিকিরণের grid আলাদা; এটি একটি নির্দেশক বিন্দুর এলাকার তথ্য, জেলার গড় বা আপনার জমির সরাসরি পরিমাপ নয়।"],
+        limitations_en=["NASA POWER uses different native grids for meteorology (0.5° × 0.625°) and solar radiation (1° × 1°); this representative point is not a district mean or field measurement."],
     )
 
 
@@ -488,8 +488,12 @@ def planting_window_evidence(
         "variables": ["precipitation (mm/day)", "temperature (°C)", "solar radiation (MJ/m²/day)"],
         "temporal_start": manifest.coverage_start,
         "temporal_end": manifest.coverage_end,
-        "spatial_resolution_m": 50000,
-        "spatial_scale": "area-level grid, approximately 50 km; not field-level",
+        "spatial_resolution_m": None,
+        "spatial_scale": (
+            "Standard NASA POWER point products use variable-specific source grids: "
+            "meteorology 0.5° × 0.625° and solar 1° × 1°. "
+            "The selected coordinates sample a representative grid point, not a district mean or field measurement."
+        ),
         "cache_status": cache_status,
         "retrieved_at": manifest.created_at,
         "district_code": district_code,

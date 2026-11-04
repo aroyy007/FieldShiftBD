@@ -33,8 +33,8 @@ POWER_PARAMETERS = {
 }
 POWER_FILL_VALUE = -999.0
 POWER_TIMEOUT_SECONDS = 45
-POWER_RESOLUTION_METERS = 50_000
 POWER_NORMALIZATION_VERSION = "power-geojson-units-v2"
+POWER_DATA_LICENSE = "CC BY 4.0 (NASA POWER; cite NASA POWER; source product terms apply)"
 
 
 def _request_power(url: str) -> dict[str, Any]:
@@ -109,9 +109,12 @@ class NasaPowerHistoryProvider:
             retrieved_at=acquired_at,
             recorded_at=now,
             method="nasa_power",
+            license=POWER_DATA_LICENSE,
             temporal_start=start,
             temporal_end=end,
-            spatial_resolution_m=POWER_RESOLUTION_METERS,
+            # This bundle combines meteorology and solar parameters with
+            # different native grids, so one scalar resolution would mislead.
+            spatial_resolution_m=None,
             quality_status="verified",
         )
         bundle = DistrictClimateBundle(

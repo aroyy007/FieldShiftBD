@@ -987,8 +987,16 @@
           "type": "string"
         },
         "spatial_resolution_m": {
-          "title": "Spatial Resolution M",
-          "type": "integer"
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial Resolution M"
         },
         "spatial_scale": {
           "title": "Spatial Scale",
@@ -1019,7 +1027,6 @@
         "variables",
         "temporal_start",
         "temporal_end",
-        "spatial_resolution_m",
         "spatial_scale",
         "cache_status",
         "retrieved_at"

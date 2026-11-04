@@ -4,11 +4,11 @@
   "sources": [
     {
       "id": "D01",
-      "name": "NASA POWER daily meteorology",
+      "name": "NASA POWER daily meteorology and solar",
       "url": "https://power.larc.nasa.gov/docs/services/api/temporal/daily/",
-      "role": "Long daily rainfall, temperature, and solar backbone; record actual parameters, time standard, spatial representation, coverage and QA.",
-      "license_review": "Verify applicable POWER data terms and attribution for the selected endpoint/product before redistribution.",
-      "state": "Partial implementation: UTC daily POWER history provider and versioned local JSON district-point cache; real 2001–2025 Rajshahi representative-point cache verified. GeoJSON/solar-unit normalizer v2; full64-district Parquet/QA release remains open."
+      "role": "Long daily rainfall, temperature, and solar backbone; record actual parameters, time standard, product-specific native grid, coverage and QA.",
+      "license_review": "Reviewed 2026-11-04: the Registry of Open Data on AWS lists NASA POWER as CC BY 4.0, says there are no restrictions on use/access/download, and requests citation. Preserve NASA POWER attribution and check any underlying source-product notices. Sources: https://registry.opendata.aws/nasa-power/ and https://power.larc.nasa.gov/docs/acknowledgements/.",
+      "state": "Partial implementation: UTC daily POWER history provider and versioned JSON plus Parquet caches for 2001–2025 at Dhaka, Chattogram, and Rajshahi representative reference points. Standard meteorology grid is 0.5° × 0.625°; solar is 1° × 1°. These are not district means or field measurements. Normalizer v2; nationwide 64-district coverage and QA release remain open."
     },
     {
       "id": "D02",

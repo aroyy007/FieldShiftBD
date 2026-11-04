@@ -28,7 +28,7 @@ export function PublishedCalendarDetails({ reference, language }: { reference: V
       <Text style={styles.helper}>{bn ? `প্রকাশিত জীবনকাল ${reference.reported_life_duration_days} দিন। এই দিন গণনার শুরুর ধাপ উৎসে স্পষ্ট নয়; রোপণের তারিখের সঙ্গে যোগ করে কাটার দিন নির্ধারণ করবেন না।` : `Reported life duration: ${reference.reported_life_duration_days} days. Its starting event is unspecified; do not add it to a transplanting date to predict harvest.`}</Text>
       <Text style={styles.helper}>{bn ? reference.geographic_scope_bn : reference.geographic_scope_en}</Text>
       <Text style={styles.label}>{bn ? 'পরিচর্যার প্রকাশিত তথ্য' : 'Published care references'}</Text>
-      {reference.care_references.map((care, index) => (
+      {(reference.care_references ?? []).map((care, index) => (
         <View key={`${care.kind}-${index}`} style={styles.care}>
           <Text style={styles.body}>{bn ? care.detail_bn ?? care.detail_en : care.detail_en}</Text>
           {care.day_range ? <Text style={styles.helper}>{bn ? 'রোপণের পর' : 'After transplanting'}: {care.day_range.min}–{care.day_range.max} {bn ? 'দিন' : 'days'}</Text> : null}
@@ -37,7 +37,7 @@ export function PublishedCalendarDetails({ reference, language }: { reference: V
       ))}
       <Text style={styles.warning}>{bn ? 'এই জাতের যাচাইকৃত GDD মান ও সম্পূর্ণ বৃদ্ধির ধাপের সময়সূচি নেই। তাই এই তথ্য থেকে স্বয়ংক্রিয় সেচ, কাজ বা কাটার তারিখ নির্ধারণ করা হয়নি।' : 'Validated cultivar GDD parameters and a complete stage timeline are unavailable. These references do not schedule irrigation, tasks or harvest.'}</Text>
       <Text selectable style={styles.helper}>{reference.source_name} · {reference.source_accessed}{'\n'}{reference.source_url}</Text>
-      {(bn ? reference.limitations_bn : reference.limitations_en).map((item, index) => <Text key={index} style={styles.helper}>{item}</Text>)}
+      {(bn ? reference.limitations_bn ?? [] : reference.limitations_en ?? []).map((item, index) => <Text key={index} style={styles.helper}>{item}</Text>)}
     </View>
   );
 }
@@ -69,7 +69,7 @@ export default function CropCalendarReferences({ language, season }: { language:
       {loading ? <ActivityIndicator accessibilityLabel={bn ? 'ক্যালেন্ডার লোড হচ্ছে' : 'Loading calendars'} color={COLORS.primary} /> : null}
       {failed ? <><Text accessibilityRole="alert" style={styles.warning}>{bn ? 'ক্যালেন্ডার লোড হয়নি। আবার চেষ্টা করুন।' : 'Could not load calendars. Try again.'}</Text><Button accessibilityRole="button" title={bn ? 'আবার চেষ্টা করুন' : 'Try again'} variant="outline" onPress={() => { setLoading(true); setReload(value => value + 1); }} /></> : null}
       <View style={styles.options}>
-        {visibleReferences.map(item => <Pressable key={item.profile_id} accessibilityRole="button" accessibilityState={{ selected: item.profile_id === selected?.profile_id }} onPress={() => setSelectedId(item.profile_id)} style={[styles.option, item.profile_id === selected?.profile_id && styles.selected]}><Text style={styles.body}>{bn ? item.variety_name_bn ?? item.variety_name : item.variety_name} · {bn ? seasonNames[item.season] ?? item.season : item.season}</Text></Pressable>)}
+        {visibleReferences.map(item => <Pressable key={item.profile_id ?? `${item.season}-${item.variety_name}`} accessibilityRole="button" accessibilityState={{ selected: item.profile_id === selected?.profile_id }} onPress={() => setSelectedId(item.profile_id ?? null)} style={[styles.option, item.profile_id === selected?.profile_id && styles.selected]}><Text style={styles.body}>{bn ? item.variety_name_bn ?? item.variety_name : item.variety_name} · {bn ? seasonNames[item.season] ?? item.season : item.season}</Text></Pressable>)}
       </View>
       {selected && !failed ? <PublishedCalendarDetails reference={selected} language={language} /> : null}
     </Card>

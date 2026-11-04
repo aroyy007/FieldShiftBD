@@ -37,7 +37,7 @@ def test_public_advisory_reads_district_cache_without_private_farm_context(clien
                 "source_id": "test-power", "source_name": "TEST ONLY NASA fixture",
                 "source_url": "https://power.larc.nasa.gov/", "method": "nasa_power",
                 "retrieved_at": "2026-11-01T00:00:00Z", "recorded_at": "2026-11-01T00:00:00Z",
-                "quality_status": "verified", "spatial_resolution_m": 50000,
+                "quality_status": "verified", "spatial_resolution_m": None,
             }],
             "sampling_point": {"latitude": 24.37, "longitude": 88.60,
                                "description": "TEST ONLY representative point; not district mean",
@@ -61,6 +61,8 @@ def test_public_advisory_reads_district_cache_without_private_farm_context(clien
     assert body["gdd_summary"] is None
     assert body["calendar_references"]
     assert body["data_provenance"]["cache_status"] == "hit"
+    assert body["data_provenance"]["spatial_resolution_m"] is None
+    assert "variable-specific" in body["data_provenance"]["spatial_scale"]
     assert body["definition_review_status"] == "exploratory_pending_review"
     assert "farmland_id" not in body and "season_id" not in body
     assert len(body["sms_bn"]) < 160 and len(body["sms_en"]) < 160
