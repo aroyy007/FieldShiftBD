@@ -6,6 +6,8 @@ from app.contracts.challenge.v1 import (
     PlantingWindowAdvisory,
     RecommendedPlantingWindow,
     RotationComparison,
+    RotationSequenceStep,
+    RotationStrategy,
     SourceProvenance,
 )
 
@@ -53,11 +55,43 @@ class FakePlantingWindowAdvisor:
 class FakeRotationComparisonProvider:
     def compare(self, snapshot):
         current = snapshot.active_season.crop_code if snapshot.active_season else "SYNTHETIC CROP"
+        alternatives = [[current, "SYNTHETIC LENTIL"], [current, "SYNTHETIC MUSTARD"]]
+        strategies = [
+            RotationStrategy(
+                strategy_id=f"synthetic-{index}",
+                name_en=f"SYNTHETIC rotation {index}",
+                name_bn=f"SYNTHETIC rotation {index}",
+                applicability_status="matches_documented_scope",
+                documented_scope_en="SYNTHETIC test scope only",
+                documented_scope_bn="SYNTHETIC test scope only",
+                steps=[
+                    RotationSequenceStep(
+                        crop_code=current,
+                        crop_name_en=current,
+                        crop_name_bn=current,
+                        season_code="synthetic-current",
+                        season_label_en="SYNTHETIC season",
+                        season_label_bn="SYNTHETIC season",
+                    ),
+                    RotationSequenceStep(
+                        crop_code=other_crop,
+                        crop_name_en=other_crop,
+                        crop_name_bn=other_crop,
+                        season_code="synthetic-next",
+                        season_label_en="SYNTHETIC next season",
+                        season_label_bn="SYNTHETIC next season",
+                    ),
+                ],
+                evidence_ids=["synthetic-test-only"],
+            )
+            for index, other_crop in enumerate(("SYNTHETIC LENTIL", "SYNTHETIC MUSTARD"), start=1)
+        ]
         return RotationComparison(
             contract_version="1.0.0",
             farmland_id=snapshot.farmland_id,
             current_sequence=[current],
-            alternatives=[[current, "SYNTHETIC LENTIL"], [current, "SYNTHETIC MUSTARD"]],
+            alternatives=alternatives,
+            strategies=strategies,
             evidence=[SYNTHETIC_PROVENANCE],
             created_at=datetime(2026, 10, 29, tzinfo=timezone.utc),
         )

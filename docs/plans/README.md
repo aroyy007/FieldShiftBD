@@ -2,6 +2,8 @@
 
 **Active final plan:** [FINAL_IMPLEMENTATION_PLAN.md](FINAL_IMPLEMENTATION_PLAN.md) combines all four source plans with complete source appendices. Before dividing implementation work, use [FOUNDATION_AND_PARALLEL_WORK.md](FOUNDATION_AND_PARALLEL_WORK.md). Give each teammate [TEAMMATE_AI_AGENT_STARTER.md](TEAMMATE_AI_AGENT_STARTER.md) and their module brief. The earlier navigation below remains available for source detail.
 
+**Teammate-ready execution guide:** [TEAM_IMPLEMENTATION_ROADMAP.md](TEAM_IMPLEMENTATION_ROADMAP.md) summarizes the farmer journey, current footing, module backlogs, dependencies, parallel work order, branch isolation, and verification gates. It helps the team start work; it does not replace or reduce the final plan.
+
 **আপডেট:** ২৯ অক্টোবর ২০২৬। এই index থেকে পুরো plan পড়া যাবে। Organizer-এর পাঁচটি নির্দেশনার image, final problem statement, বর্তমান M1–M6 foundation, Bangla voice/mobile delivery এবং owner-accepted তিনটি adaptive feature একসঙ্গে এই plan set-এর scope। Foundation কাজের implementation ও verification status `FOUNDATION_AND_PARALLEL_WORK.md`-এ রাখা হয়; বাকি M1–M6 domain features এখানে planned এবং এই plan file-কে implementation evidence হিসেবে ধরা যাবে না।
 
 ## কোন document কী নির্ধারণ করে
@@ -9,6 +11,7 @@
 | Document | বিষয় |
 |---|---|
 | [Canonical project plan](../../plan.md) | ছয় module-এর ownership, shared foundation, change control এবং Section 20-এর required outcomes |
+| [Team implementation roadmap](TEAM_IMPLEMENTATION_ROADMAP.md) | Current implementation footing, per-module tasks, architecture flow, dependencies, integration sequence, and acceptance checks |
 | [NASA planting-window, rotation ও mobile delivery](2026-10-29-nasa-planting-window-and-rotation.md) | Organizer ও final statement-এর পূর্ণ scope, dataset/cache, onset/GDD/statistics, তিন rotation, interfaces, mobile/deployment এবং V01–V15 gates; §13-এ requirement traceability |
 | [Adaptive decisions ও confirmed Plan B](2026-10-29-adaptive-decisions-and-confirmed-plan-b.md) | Decision-driven field question, robustness envelope, versioned contingency; proposed schema, atomic confirmation/retry, D0–D6 increments ও A01–A08 gates |
 | [Bangla voice implementation](2026-10-06-voice-first-bangla.md) | Device speech/tap fallback, consent, confirmation, offline, F1–F9 user flow এবং CCR-1–CCR-12 |

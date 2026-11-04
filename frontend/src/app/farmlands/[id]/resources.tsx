@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,14 +9,15 @@ import { FarmProfileIcon, FarmProfileIconName } from '../../../components/farm-p
 import { useAppContext } from '../../../context/AppProvider';
 import type { Farmland } from '../../../data/demo';
 import { captureCurrentFarmLocation } from '../../../services/farm-location';
-import { DivisionRef, ProfileVocabulary, loadLocations, loadProfileVocabulary } from '../../../services/m1-reference';
+import { DivisionRef, ProfileVocabulary, loadCropCatalog, loadLocations, loadProfileVocabulary } from '../../../services/m1-reference';
+import type { CropCatalogItem } from '../../../services/m1-reference';
 
 const PAPER = '#fffdf7';
 const GREEN = '#07543a';
 const INK = '#102b25';
 const MUTED = '#52677a';
-type ReferenceKey = 'division' | 'district' | 'upazila' | 'soil' | 'landType' | 'irrigation';
-type LocationReferenceKey = Exclude<ReferenceKey, 'irrigation'>;
+type ReferenceKey = 'division' | 'district' | 'upazila' | 'soil' | 'landType' | 'irrigation' | 'previousCrop';
+type LocationReferenceKey = Exclude<ReferenceKey, 'irrigation' | 'previousCrop'>;
 
 export default function FarmResources() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -30,11 +32,15 @@ export default function FarmResources() {
 }
 
 function FarmResourcesForm({ farm }: { farm: Farmland }) {
-  const { updateFarmland } = useAppContext();
+  const { updateFarmland, profile } = useAppContext();
+  const bn = profile?.preferred_language === 'bn';
   const farmId = farm.id;
   const router = useRouter();
   const [divisions, setDivisions] = useState<DivisionRef[] | null>(null);
   const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
+  const [cropCatalog, setCropCatalog] = useState<CropCatalogItem[]>([]);
+  const [cropCatalogLoading, setCropCatalogLoading] = useState(true);
+  const [cropCatalogError, setCropCatalogError] = useState('');
   const [referencePicker, setReferencePicker] = useState<ReferenceKey | null>(null);
   const [divisionCode, setDivisionCode] = useState<string | null>(farm.divisionCode ?? null);
   const [districtCode, setDistrictCode] = useState<string | null>(farm.districtCode ?? null);
@@ -44,6 +50,7 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
   const [village, setVillage] = useState(farm.villageOrLocality ?? '');
   const [irrigation, setIrrigation] = useState(farm.irrigationAvailable == null ? '' : farm.irrigationAvailable ? 'Available' : 'Not available');
   const [waterSource, setWaterSource] = useState(farm.waterSource ?? '');
+  const [previousCrop, setPreviousCrop] = useState<string | null>(farm.previousCrop ?? null);
   const [equipmentText, setEquipmentText] = useState((farm.equipment ?? []).join(', '));
   const [budgetText, setBudgetText] = useState(farm.budgetAmount == null ? '' : String(farm.budgetAmount));
   const [coordinates, setCoordinates] = useState<{ latitude: number | null; longitude: number | null }>({ latitude: farm.latitude ?? null, longitude: farm.longitude ?? null });
@@ -64,8 +71,21 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
     }).catch(requestError => {
       if (active) setReferenceError(requestError instanceof Error ? requestError.message : 'Could not load farm reference data.');
     });
+    loadCropCatalog().then(items => {
+      if (!active) return;
+      setCropCatalog(items);
+      setCropCatalogError('');
+      setCropCatalogLoading(false);
+    }).catch(() => {
+      if (active) {
+        setCropCatalogLoading(false);
+        setCropCatalogError(bn
+          ? 'ফসলের তালিকা এখন লোড হয়নি। অন্য তথ্য সংরক্ষণ করা যাবে; পরে আগের ফসল যোগ করুন।'
+          : 'Crop choices did not load. Other profile details can still be saved; add this later.');
+      }
+    });
     return () => { active = false; };
-  }, []);
+  }, [bn]);
 
   const division = divisions?.find(item => item.code === divisionCode);
   const district = division?.districts.find(item => item.code === districtCode);
@@ -78,17 +98,30 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
     : landTypeOverride;
   const soil = vocabulary?.soil_textures.find(item => item.code === soilCode);
   const land = vocabulary?.land_types.find(item => item.code === landType);
+  const cropOptions: PickerOption[] = useMemo(() => cropCatalog.map(item => ({
+    value: item.name,
+    label: bn && item.name_bn ? item.name_bn : item.name,
+    detail: bn ? item.name : item.scientific_name ?? item.aliases.join(', '),
+  })), [cropCatalog, bn]);
+  const selectedPreviousCrop = cropCatalog.find(item => item.name === previousCrop);
   const referenceOptions: PickerOption[] = useMemo(() => {
     if (referencePicker === 'division') return (divisions ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
     if (referencePicker === 'district') return (division?.districts ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
     if (referencePicker === 'upazila') return (district?.upazilas ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
     if (referencePicker === 'soil') return (vocabulary?.soil_textures ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
     if (referencePicker === 'landType') return (vocabulary?.land_types ?? []).map(item => ({ value: item.code, label: item.label_en, detail: item.label_bn }));
+    if (referencePicker === 'previousCrop') return cropOptions;
     return [];
-  }, [referencePicker, divisions, division, district, vocabulary]);
+  }, [referencePicker, divisions, division, district, vocabulary, cropOptions]);
   const referenceTitles: Record<LocationReferenceKey, string> = { division: 'Division', district: 'District', upazila: 'Upazila', soil: 'Soil type', landType: 'Land type' };
 
   const selectReference = (value: string | null) => {
+    if (referencePicker === 'previousCrop') {
+      setPreviousCrop(value);
+      setReferencePicker(null);
+      setError('');
+      return;
+    }
     if (referencePicker === 'irrigation') {
       setIrrigation(value ?? '');
       setReferencePicker(null);
@@ -167,6 +200,7 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
         land_type: land?.code ?? farm.landType ?? null,
         irrigation_available: irrigation === 'Available' ? true : irrigation === 'Not available' ? false : null,
         water_source: waterSource.trim() || null,
+        previous_crop: previousCrop,
         equipment: Array.from(new Set(equipmentText.split(/[\n,]/).map(item => item.trim()).filter(Boolean))),
         budget_amount: budget,
         budget_currency: 'BDT',
@@ -234,7 +268,30 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
               <TextInput accessibilityLabel="Available equipment" value={equipmentText} onChangeText={setEquipmentText} placeholder="Pump, tractor, tools…" placeholderTextColor="#82909a" style={styles.multilineInput} multiline />
             </View>
           </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{bn ? 'আগের ফসল' : 'Previous crop'}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${bn ? 'আগের ফসল' : 'Previous crop'}: ${previousCrop ?? (bn ? 'জানা নেই' : 'Not recorded')}`}
+              disabled={cropCatalogLoading}
+              onPress={() => setReferencePicker('previousCrop')}
+              style={[styles.formRow, cropCatalogLoading && styles.disabled]}
+            >
+              <View style={styles.rowIcon}><FarmProfileIcon name="leaf" size={19} color={GREEN} /></View>
+              <Text style={styles.rowLabel}>{bn ? 'গত মৌসুমে চাষ' : 'Last season crop'}</Text>
+              <View style={styles.valueBox}>
+                <Text numberOfLines={1} style={[styles.valueText, !previousCrop && styles.placeholder]}>
+                  {selectedPreviousCrop ? (bn ? selectedPreviousCrop.name_bn ?? selectedPreviousCrop.name : selectedPreviousCrop.name) : previousCrop ?? (cropCatalogLoading ? (bn ? 'তালিকা লোড হচ্ছে…' : 'Loading…') : bn ? 'জানা নেই' : 'Not recorded')}
+                </Text>
+                <FarmChromeIcon name="chevron" size={16} color={MUTED} />
+              </View>
+            </Pressable>
+            <Text style={styles.notice}>{bn
+              ? 'এটি আপনার দেওয়া তথ্য; তারিখসহ যাচাইকৃত ফসলের ইতিহাস নয়। নিশ্চিত না হলে ফাঁকা রাখুন।'
+              : 'Farmer-reported profile information only; it is not verified season history. Clear it if unsure.'}</Text>
+          </View>
           {referenceError ? <Text accessibilityRole="alert" style={styles.error}>{referenceError}</Text> : null}
+          {cropCatalogError ? <Text style={styles.notice}>{cropCatalogError}</Text> : null}
           {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
           <Pressable accessibilityRole="button" disabled={saving} onPress={() => void save()} style={[styles.saveButton, saving && styles.disabled]}>
             <Text style={styles.saveText}>{saving ? 'Saving…' : 'Save farm profile'}</Text>
@@ -243,10 +300,11 @@ function FarmResourcesForm({ farm }: { farm: Farmland }) {
         <FarmBottomNavigation active="Home" farmId={farmId} />
         <OptionPickerModal
           visible={referencePicker !== null && referencePicker !== 'irrigation'}
-          title={referencePicker && referencePicker !== 'irrigation' ? referenceTitles[referencePicker] : ''}
+          title={referencePicker === 'previousCrop' ? (bn ? 'আগের মৌসুমের ফসল' : 'Crop from the previous season') : referencePicker && referencePicker !== 'irrigation' ? referenceTitles[referencePicker] : ''}
           options={referenceOptions}
-          selected={referencePicker === 'division' ? divisionCode : referencePicker === 'district' ? districtCode : referencePicker === 'upazila' ? upazilaCode : referencePicker === 'soil' ? soilCode : referencePicker === 'landType' ? landType : irrigation}
-          allowClear={referencePicker === 'upazila' || referencePicker === 'soil' || referencePicker === 'landType'}
+          selected={referencePicker === 'division' ? divisionCode : referencePicker === 'district' ? districtCode : referencePicker === 'upazila' ? upazilaCode : referencePicker === 'soil' ? soilCode : referencePicker === 'landType' ? landType : referencePicker === 'previousCrop' ? previousCrop : irrigation}
+          allowClear={referencePicker === 'upazila' || referencePicker === 'soil' || referencePicker === 'landType' || referencePicker === 'previousCrop'}
+          language={bn ? 'bn' : 'en'}
           onSelect={selectReference}
           onClose={() => setReferencePicker(null)}
         />
@@ -263,7 +321,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: PAPER },
   content: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 18, gap: 10 },
   card: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 6, borderRadius: 15, backgroundColor: '#fffefa', borderWidth: 1, borderColor: '#eeece3' },
-  cardTitle: { marginBottom: 4, color: INK, fontFamily: 'Georgia', fontSize: 18, lineHeight: 23, fontWeight: '700' },
+  cardTitle: { marginBottom: 4, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, lineHeight: 23, fontWeight: '700' },
   formRow: { minHeight: 42, flexDirection: 'row', alignItems: 'center', gap: 8, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
   multilineRow: { minHeight: 62, flexDirection: 'row', alignItems: 'center', gap: 8, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
   rowIcon: { width: 29, height: 29, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#e9f1e3' },

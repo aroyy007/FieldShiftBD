@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View} from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../../hooks/useHydrationSafeWindowDimensions';
 import { Href, Stack, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FarmlandSidebar } from '../../../components/FarmlandSidebar';
@@ -12,7 +13,7 @@ export default function FarmlandDetailLayout() {
   const farmId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const isWide = width >= 820;
   const isAssistant = pathname.endsWith('/chat');
   const isCropAdvisor = pathname.endsWith('/crop-advisor');

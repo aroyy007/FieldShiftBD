@@ -1,12 +1,15 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FarmBottomNavigation, FarmChromeIcon, FarmPageHeader } from '../../components/farmland-mobile-ui';
 import { FarmProfileIcon, FarmProfileIconName } from '../../components/farm-profile-icons';
 import { useAppContext } from '../../context/AppProvider';
 import OptionPickerModal, { PickerOption } from '../../components/OptionPickerModal';
-import { DivisionRef, ProfileVocabulary, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
+import { DivisionRef, ProfileVocabulary, loadCropCatalog, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
+import type { CropCatalogItem } from '../../services/m1-reference';
 import { captureCurrentFarmLocation } from '../../services/farm-location';
 
 const PAPER = '#fffdf7';
@@ -30,9 +33,10 @@ const fieldOptions: Record<FieldKey, string[]> = {
 export default function AddFarmland() {
   const router = useRouter();
   const params = useLocalSearchParams<{ name?: string | string[]; acreage?: string | string[] }>();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const labelWidth = Math.max(78, Math.min(106, width * 0.25));
-  const { createFarmland } = useAppContext();
+  const { createFarmland, profile } = useAppContext();
+  const bn = profile?.preferred_language === 'bn';
   const readParam = (value: string | string[] | undefined, fallback: string) => Array.isArray(value) ? value[0] ?? fallback : value ?? fallback;
   const [name, setName] = useState(() => readParam(params.name, ''));
   const [acreage, setAcreage] = useState(() => readParam(params.acreage, ''));
@@ -44,6 +48,11 @@ export default function AddFarmland() {
   const [referencePicker, setReferencePicker] = useState<ReferenceKey | null>(null);
   const [divisions, setDivisions] = useState<DivisionRef[] | null>(null);
   const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
+  const [cropCatalog, setCropCatalog] = useState<CropCatalogItem[]>([]);
+  const [cropCatalogLoading, setCropCatalogLoading] = useState(true);
+  const [previousCrop, setPreviousCrop] = useState<string | null>(null);
+  const [cropPickerOpen, setCropPickerOpen] = useState(false);
+  const [cropCatalogError, setCropCatalogError] = useState('');
   const [referenceError, setReferenceError] = useState('');
   const [divisionCode, setDivisionCode] = useState<string | null>(null);
   const [districtCode, setDistrictCode] = useState<string | null>(null);
@@ -65,6 +74,23 @@ export default function AddFarmland() {
     })
     .catch(requestError => setReferenceError(requestError instanceof Error ? requestError.message : 'Could not load location and soil lists.')), []);
   useEffect(() => { void fetchReference(); }, [fetchReference]);
+  useEffect(() => {
+    let active = true;
+    loadCropCatalog().then(items => {
+      if (!active) return;
+      setCropCatalog(items);
+      setCropCatalogError('');
+      setCropCatalogLoading(false);
+    }).catch(() => {
+      if (active) {
+        setCropCatalogLoading(false);
+        setCropCatalogError(bn
+          ? 'ফসলের তালিকা এখন লোড হয়নি। আগের ফসল না জানলে ফাঁকা রাখুন; পরে যোগ করা যাবে।'
+          : 'Crop choices did not load. Leave this blank if unsure; you can add it later.');
+      }
+    });
+    return () => { active = false; };
+  }, [bn]);
   const loadReference = () => {
     setReferenceError('');
     void fetchReference();
@@ -75,6 +101,12 @@ export default function AddFarmland() {
   const upazila = district?.upazilas.find(item => item.code === upazilaCode);
   const soil = vocabulary?.soil_textures.find(item => item.code === soilCode);
   const land = vocabulary?.land_types.find(item => item.code === landType);
+  const cropOptions: PickerOption[] = useMemo(() => cropCatalog.map(item => ({
+    value: item.name,
+    label: bn && item.name_bn ? item.name_bn : item.name,
+    detail: bn ? item.name : item.scientific_name ?? item.aliases.join(', '),
+  })), [cropCatalog, bn]);
+  const selectedPreviousCrop = cropCatalog.find(item => item.name === previousCrop);
   const referenceOptions: PickerOption[] = useMemo(() => {
     if (referencePicker === 'division') return (divisions ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
     if (referencePicker === 'district') return (division?.districts ?? []).map(item => ({ value: item.code, label: item.name, detail: item.name_bn }));
@@ -170,6 +202,7 @@ export default function AddFarmland() {
         equipment: equipmentText.split(/[\n,]/).map(item => item.trim()).filter(Boolean),
         budget_amount: parsedBudget,
         budget_currency: 'BDT',
+        previous_crop: previousCrop,
       });
       setError('');
       if (router.canGoBack()) router.back();
@@ -252,6 +285,25 @@ export default function AddFarmland() {
             {renderReferenceRow('field', 'Land type', 'landType', land?.label_en)}
             {renderSelectRow('drop', 'Irrigation', 'irrigation')}
             {renderSelectRow('water', 'Water source', 'waterSource')}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${bn ? 'আগের ফসল' : 'Previous crop'}: ${selectedPreviousCrop ? (bn ? selectedPreviousCrop.name_bn ?? selectedPreviousCrop.name : selectedPreviousCrop.name) : cropCatalogLoading ? (bn ? 'তালিকা লোড হচ্ছে' : 'Loading crop list') : bn ? 'জানা নেই' : 'Not recorded'}`}
+              disabled={cropCatalogLoading}
+              onPress={() => { setError(''); setCropPickerOpen(true); }}
+              style={[styles.formRow, cropCatalogLoading && styles.savingButton]}
+            >
+              <View style={styles.rowIcon}><FarmProfileIcon name="leaf" size={20} color={GREEN} /></View>
+              <Text style={[styles.rowLabel, { width: labelWidth }]} numberOfLines={1}>{bn ? 'আগের ফসল' : 'Previous crop'}</Text>
+              <View style={styles.rowValue}>
+                <Text numberOfLines={1} style={[styles.valueText, !previousCrop && styles.placeholderText]}>
+                  {selectedPreviousCrop ? (bn ? selectedPreviousCrop.name_bn ?? selectedPreviousCrop.name : selectedPreviousCrop.name) : cropCatalogLoading ? (bn ? 'তালিকা লোড হচ্ছে…' : 'Loading…') : bn ? 'জানা নেই' : 'Not recorded'}
+                </Text>
+                <FarmChromeIcon name="chevron" size={16} color={MUTED} />
+              </View>
+            </Pressable>
+            <Text style={styles.helpText}>{bn
+              ? 'শুধু আগের মৌসুমের ফসল জানান। এটি আপনার দেওয়া তথ্য; যাচাইকৃত ফসলের ইতিহাস নয়।'
+              : 'Optional. This is farmer-reported information, not verified season history. Leave blank if unsure.'}</Text>
             {renderTextRow('coins', 'Budget (BDT)', budgetText, value => { setBudgetText(value); setError(''); }, true)}
             <View style={styles.multilineRow}>
               <View style={styles.rowIcon}><FarmProfileIcon name="field" size={20} color={GREEN} /></View>
@@ -278,6 +330,7 @@ export default function AddFarmland() {
               <Text accessibilityRole="alert" style={styles.error}>{referenceError} Tap to retry.</Text>
             </Pressable>
           ) : null}
+          {cropCatalogError ? <Text style={styles.helpText}>{cropCatalogError}</Text> : null}
           {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         </ScrollView>
 
@@ -302,6 +355,16 @@ export default function AddFarmland() {
           allowClear={referencePicker === 'upazila' || referencePicker === 'soil' || referencePicker === 'landType'}
           onSelect={selectReference}
           onClose={() => setReferencePicker(null)}
+        />
+        <OptionPickerModal
+          visible={cropPickerOpen}
+          title={bn ? 'আগের মৌসুমের ফসল' : 'Crop from the previous season'}
+          options={cropOptions}
+          selected={previousCrop}
+          allowClear
+          language={bn ? 'bn' : 'en'}
+          onSelect={value => { setPreviousCrop(value); setCropPickerOpen(false); }}
+          onClose={() => setCropPickerOpen(false)}
         />
         <Modal visible={picker !== null} transparent animationType="fade" onRequestClose={() => setPicker(null)}>
           <Pressable style={styles.modalBackdrop} onPress={() => setPicker(null)}>
@@ -330,12 +393,12 @@ const styles = StyleSheet.create({
   photoBackground: { flex: 1, justifyContent: 'center' },
   photoImage: { borderRadius: 15, top: -18 },
   photoCopy: { width: '56%', height: '100%', justifyContent: 'center', paddingHorizontal: 10, backgroundColor: 'rgba(255,253,247,0.96)', borderTopRightRadius: 36, borderBottomRightRadius: 38 },
-  photoTitle: { color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 23, fontWeight: '700' },
+  photoTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 23, fontWeight: '700' },
   photoDescription: { color: MUTED, fontSize: 11, lineHeight: 14, marginTop: 1 },
   uploadButton: { height: 31, minWidth: 112, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 10, marginTop: 7, borderRadius: 10, backgroundColor: '#e9f0e3' },
   uploadText: { color: GREEN, fontSize: 11, fontWeight: '600' },
   groupCard: { paddingHorizontal: 9, paddingTop: 6, paddingBottom: 5, borderRadius: 14, backgroundColor: '#fffefa', borderWidth: 1, borderColor: '#eeece3' },
-  groupTitle: { marginBottom: 2, color: INK, fontFamily: 'Georgia', fontSize: 18, lineHeight: 23, fontWeight: '700' },
+  groupTitle: { marginBottom: 2, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, lineHeight: 23, fontWeight: '700' },
   formRow: { minHeight: 31, flexDirection: 'row', alignItems: 'center', gap: 6, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
   multilineRow: { minHeight: 51, flexDirection: 'row', alignItems: 'center', gap: 6, borderBottomWidth: 1, borderBottomColor: '#eeece5' },
   rowIcon: { width: 28, height: 28, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#e9f1e3' },
@@ -348,7 +411,7 @@ const styles = StyleSheet.create({
   infoText: { flex: 1, color: '#36546a', fontSize: 10, lineHeight: 14 },
   adviceBanner: { minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, borderRadius: 13, overflow: 'hidden', backgroundColor: '#eef3e8' },
   adviceIcon: { width: 38, height: 38, flexShrink: 0, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dfead7' },
-  adviceText: { flex: 1, color: INK, fontFamily: 'Georgia', fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  adviceText: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
   placeholderText: { color: '#82909a' },
   helpText: { color: MUTED, fontSize: 11, lineHeight: 15, paddingHorizontal: 5 },
   error: { color: '#bb2e19', fontSize: 12, lineHeight: 16, paddingHorizontal: 5 },
@@ -362,7 +425,7 @@ const styles = StyleSheet.create({
   locationNotice: { paddingHorizontal: 12, paddingBottom: 4, color: MUTED, fontSize: 10, lineHeight: 13, textAlign: 'center', backgroundColor: PAPER },
   modalBackdrop: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 12, paddingBottom: 18, backgroundColor: 'rgba(16, 24, 32, 0.38)' },
   optionSheet: { padding: 14, borderRadius: 18, backgroundColor: PAPER },
-  optionTitle: { color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 24, fontWeight: '700', marginBottom: 8 },
+  optionTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 24, fontWeight: '700', marginBottom: 8 },
   optionRow: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: BORDER },
   optionText: { color: INK, fontSize: 14 },
   optionRadio: { width: 18, height: 18, borderRadius: 10, borderWidth: 1.5, borderColor: '#abb6ad' },

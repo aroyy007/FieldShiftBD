@@ -4,8 +4,9 @@ Two independent upstreams, queried in parallel and each tolerant of failure so
 one provider being down never blocks the other:
 
 * **Open-Meteo** — 7-day point forecast (what *will* happen).
-* **NASA POWER** — daily observed point data at ~50 km area-scale, lagging ~5
-  days (what *did* happen, for context/baselines). NOT field-level.
+* **NASA POWER** — daily observed meteorology on a 0.5° x 0.625° source grid
+  (about 55 x 64 km at Bangladesh latitudes), lagging several days. It is
+  contextual area-level weather, not a field measurement.
 
 These are pure functions: they fetch and normalize, and never touch the
 database or the farm state. The suppression engine consumes their output.
@@ -232,7 +233,8 @@ def _fetch_nasa_power_cached(latitude: float, longitude: float, as_of_day: str) 
         "provider": "nasa-power",
         "kind": "observed",
         "observation_scale": (
-            "area-level point-grid data, roughly 50 km resolution; not field-level"
+            "area-level point-grid data on a 0.5° × 0.625° meteorology grid "
+            "(about 55 × 64 km at Bangladesh latitudes); not field-level"
         ),
         "period": {"start": daily[0]["date"], "end": daily[-1]["date"]},
         "retrieved_at": _now_iso(),

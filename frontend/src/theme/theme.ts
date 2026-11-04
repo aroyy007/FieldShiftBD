@@ -1,3 +1,5 @@
+import { ENGLISH_FONT_FAMILY } from './fonts';
+
 export const COLORS = {
   primary: '#2e7d32', // restrained green
   primaryLight: '#60ad5e',
@@ -30,12 +32,12 @@ export const BORDER_RADIUS = {
 };
 
 export const TYPOGRAPHY = {
-  h1: { fontSize: 32, fontWeight: 'bold' as const, color: COLORS.text },
-  h2: { fontSize: 24, fontWeight: 'bold' as const, color: COLORS.text },
-  h3: { fontSize: 18, fontWeight: '600' as const, color: COLORS.text },
-  body: { fontSize: 16, fontWeight: '400' as const, color: COLORS.text },
-  bodySecondary: { fontSize: 16, fontWeight: '400' as const, color: COLORS.textSecondary },
-  caption: { fontSize: 12, fontWeight: '400' as const, color: COLORS.textSecondary },
+  h1: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 32, fontWeight: 'bold' as const, color: COLORS.text },
+  h2: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 24, fontWeight: 'bold' as const, color: COLORS.text },
+  h3: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, fontWeight: '600' as const, color: COLORS.text },
+  body: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16, fontWeight: '400' as const, color: COLORS.text },
+  bodySecondary: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16, fontWeight: '400' as const, color: COLORS.textSecondary },
+  caption: { fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, fontWeight: '400' as const, color: COLORS.textSecondary },
 };
 
 export const SHADOWS = {

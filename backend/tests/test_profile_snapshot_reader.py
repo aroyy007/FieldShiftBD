@@ -45,6 +45,7 @@ def test_reader_maps_existing_m1_m2_m3_fields_without_inventing_missing_data(fou
             equipment=["synthetic_pump"],
             budget_amount=Decimal("15000.00"),
             budget_currency="BDT",
+            previous_crop="SYNTHETIC TEST ONLY Previous Crop",
         )
         db.add(farm)
         db.flush()
@@ -97,6 +98,7 @@ def test_reader_maps_existing_m1_m2_m3_fields_without_inventing_missing_data(fou
         assert snapshot.profile.irrigation_available is False
         assert snapshot.profile.water_source is None
         assert snapshot.profile.budget_amount == 15000
+        assert snapshot.profile.previous_crop == "SYNTHETIC TEST ONLY Previous Crop"
         assert snapshot.active_season.crop_code == aman.name
         assert snapshot.active_season.current_growth_stage_name == stage.name
         assert snapshot.crop_priorities[0].crop_code == lentil.name

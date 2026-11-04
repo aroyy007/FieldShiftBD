@@ -4,6 +4,59 @@ For parallel module ownership and existing public contract checks, start with
 [`contracts/README.md`](contracts/README.md) and the executable
 [`contracts/module-ownership.json`](contracts/module-ownership.json) manifest.
 
+## Module 2 rotation examples
+
+`GET /advisor/calendar-references?crop=rice&season=aman` exposes minimal published
+BRRI calendar/care references for dhan80/Aman, dhan31/Aman, dhan100/Boro and
+dhan48/Aus. Source verification is separate from agronomist approval; no row is
+seeded as approved operational knowledge, and no cultivar GDD target is invented.
+
+`GET /advisory?district=5081&crop=rice&season=aman` is a public, cache-only
+historical comparison. Omit `season` to get choices. It returns explicit
+provisional method status, annual onset distributions/statistics/sensitivity,
+source calendars, bilingual summaries and point/time/cache provenance. Missing,
+corrupt, expired or stale-source caches return503. Requests never fetch NASA.
+The `/advisory` frontend screen provides district/season selection and charts;
+the existing Crop Advisor links to it and renders reviewed farm GDD when present.
+
+Prepare a district cache before requests with `python -m
+scripts.prefetch_district_power --help`. Supply a publicly sourced representative
+point and its source URL; coordinates are not guessed from district names. Saved
+official GeoJSON can be replayed with `--input-json` and its original
+`--retrieved-at` timestamp. Replay refreshes the normalized cache explicitly.
+The versioned `fieldshift-climate-parquet-v1` index stores daily observations
+in immutable, checksum-addressed Parquet files; prior JSON indexes remain under
+`data/climate/cache/{district}/versions/` and are still readable. The committed
+codec is pinned in `requirements.txt`. Acquiring and quality-checking all 64
+district histories and the other NASA layers remain separate work; file presence
+does not mean those datasets are ready.
+
+Pure onset/GDD/statistical code lives in `src/compute/agro.py`; prior service
+imports remain compatible. The method searches every declared candidate day and
+uses trailing observations across month/year boundaries. An incomplete tail
+cannot be labelled observed no-onset. Sensitivity uses the declared15/20/25mm
+protocol. The public May–October operational definition still needs agronomic
+review and does not authorize a planting shift or serve as a Boro irrigation rule.
+
+`POST /advisor/farmlands/{farmland_id}/rotation-comparisons` returns a read-only,
+authenticated comparison of recorded farm crops and two published BRRI sequences.
+Set `CHALLENGE_ROTATION_ENABLED=true` to enable it; the code default is off and
+the example environment explicitly enables this preview. The Crop Advisor screen
+renders the response in Bangla or English.
+
+The preview requires saved irrigation availability, high/medium-high land, and
+clay/clay-loam soil to match the cited BRRI ecosystem. Missing inputs and known
+scope mismatches return explicit statuses. The underlying BRRI page was updated
+in 2020; the local capture date is preserved in provenance. See
+[`brri_rotation_patterns_evidence.md`](app/data/m2_knowledge_sources/brri_rotation_patterns_evidence.md).
+
+Each rotation step now matches source calendars by exact variety, season and
+establishment method. Transplanted dates are not applied to wet-seeded steps.
+Recorded seasons and district NASA context are returned separately. Complete
+reviewed calendars, ranking, dated feasibility, NASA rotation scoring and
+measured soil/yield/cost effects remain unavailable. This response cannot select
+a crop or change a season.
+
 ## Module 3 farm-state API
 
 Module 3 is the shared operational state owner. `FarmState` is assembled from
@@ -47,12 +100,10 @@ Bangladesh time.
 
 ### Frontend integration boundary
 
-The existing Expo `AppProvider` still uses in-memory demo data and does not
-call these endpoints. The backend API is the durable Module 3 contract; wiring
-the screens to it depends on Module 1 providing authenticated UUID farmlands
-and an authentication layer that installs `request.state.current_farmer_id`.
-Until then, frontend task/check-in/problem edits are demo-only and reset when
-the app reloads.
+The Expo `AppProvider` loads authenticated farmer-owned farmlands through the
+API. Field task, check-in, and problem screens use the durable Module 3 routes.
+They require a reachable backend, a valid sign-in token, and matching UUID farm
+and season identifiers; a static web export alone does not provide the API.
 
 ```json
 {
@@ -164,13 +215,22 @@ problem severity. The model does not produce verified symptoms or
 disease-specific treatment advice, so the API returns no observed symptoms and
 only conservative follow-up actions.
 
-Put the downloaded checkpoint at backend/model/crop_veg_plant_disease_model.pth
-or set DISEASE_MODEL_WEIGHTS_PATH. The class mapping is tracked at
-app/data/plant_disease_classes.json. Install base, test, and ML dependencies
-with pip install -r requirements.txt -r requirements-test.txt
--r requirements-ml.txt. The Docker image installs CPU PyTorch wheels. A clone
-does not contain the ignored checkpoint; mount or download it into the model
-directory before running inference.
+The checkpoint is stored at
+`backend/model/crop_veg_plant_disease_model.pth` with Git LFS. Run these
+commands after cloning and before building a deployable Docker image; without
+LFS, the checked-out file is only a small pointer:
+
+```bash
+git lfs install
+git lfs pull
+```
+
+You can set `DISEASE_MODEL_WEIGHTS_PATH` to use a separately mounted
+checkpoint. The class mapping is tracked at
+`app/data/plant_disease_classes.json`. Install base, test, and ML dependencies
+with `pip install -r requirements.txt -r requirements-test.txt -r requirements-ml.txt`.
+The Docker image installs CPU PyTorch wheels and includes the checkpoint when
+built from an LFS-complete checkout.
 
 The model repository declares CC BY-NC 4.0. Keep its attribution and
 non-commercial restriction in mind for any use outside the NASA challenge:
@@ -209,3 +269,26 @@ schema migration is needed.
 `python -m scripts.import_reference_data` runs this seed import together with
 the M1 crop catalog and the policy-accepted BARC knowledge used by Module 2;
 see `M2_GUIDE.md` → "Current knowledge coverage".
+
+### District cache presence
+
+`GET /advisory/districts` is public and read-only. It lists all 64 canonical
+Bangladesh district IDs with `cached`, `missing`, or `unreadable` file-presence
+status, `cached_count`, and `requires_validation_on_load=true`. It only checks
+bounded regular index-file metadata inside `CLIMATE_CACHE_DIR`; it never reads
+series, hashes rasters, downloads NASA data, or returns private farm data/local
+paths. The response uses `Cache-Control: no-store` so refresh can observe newly
+published or removed cache files.
+
+Presence does not certify the contents, source freshness, full NASA-layer
+coverage, field suitability or agronomic validation. `/advisory` still performs
+the authoritative schema/hash/source checks before returning a result. The
+bilingual selector places cached entries first, keeps every district selectable,
+and leaves published variety calendars accessible if historical data is absent.
+
+Parquet indexes are bounded by the cache reader, which validates the format,
+column schema, units, row counts, dates, checksum and byte limits before returning
+the existing `DistrictClimateBundle` shape to advisory and rotation consumers.
+Old inline-JSON bundles remain readable. The local Rajshahi POWER history has
+been replayed into Parquet; nationwide cache acquisition, additional NASA layers,
+rights review, data QA and agronomic approval are still open.

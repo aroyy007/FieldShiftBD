@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useState } from 'react';
 import { Image, ImageSourcePropType, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   summaryItem: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
   summaryIcon: { width: 38, height: 38, flexShrink: 0, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#e9f2e5' },
   attentionIcon: { backgroundColor: '#fff0dc' },
-  summaryNumber: { color: INK, fontFamily: 'Georgia', fontSize: 23, lineHeight: 26, fontWeight: '700' },
+  summaryNumber: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 23, lineHeight: 26, fontWeight: '700' },
   summaryLabel: { color: MUTED, fontSize: 9, lineHeight: 12 },
   summaryDivider: { width: 1, height: 39, backgroundColor: '#dedbd2' },
   searchRow: { flexDirection: 'row', gap: 7, marginTop: 7 },
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   featuredImage: { width: 110, height: 132 },
   farmInfo: { flex: 1, minWidth: 0, paddingTop: 1, paddingBottom: 1 },
   farmTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4, marginBottom: 3 },
-  farmName: { flex: 1, minWidth: 0, color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 23, fontWeight: '700' },
+  farmName: { flex: 1, minWidth: 0, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 23, fontWeight: '700' },
   statusPill: { overflow: 'hidden', minWidth: 49, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, textAlign: 'center', fontSize: 10, lineHeight: 13, fontWeight: '600' },
   activePill: { color: GREEN, backgroundColor: '#e8f1e4' },
   trackPill: { color: GREEN, backgroundColor: '#e8f1e4' },
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   greenTagText: { color: GREEN },
   farmChevron: { width: 13, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
   emptyText: { paddingVertical: 24, color: MUTED, fontSize: 13, textAlign: 'center' },
-  quickTitle: { color: INK, fontFamily: 'Georgia', fontSize: 22, lineHeight: 27, fontWeight: '700', marginTop: 7, marginBottom: 4 },
+  quickTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 22, lineHeight: 27, fontWeight: '700', marginTop: 7, marginBottom: 4 },
   quickActions: { flexDirection: 'row', gap: 7 },
   quickCard: { flex: 1, minWidth: 0, minHeight: 50, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 7, borderRadius: 13, backgroundColor: '#fffefa', borderWidth: 1, borderColor: '#eeece3' },
   quickIcon: { width: 34, height: 34, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 22, backgroundColor: '#e9f2e5' },
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   addButtonText: { color: PAPER, fontSize: 14, lineHeight: 18, fontWeight: '700' },
   modalBackdrop: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 12, paddingBottom: 18, backgroundColor: 'rgba(16, 24, 32, 0.38)' },
   filterSheet: { padding: 14, borderRadius: 18, backgroundColor: PAPER },
-  filterTitle: { marginBottom: 7, color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 24, fontWeight: '700' },
+  filterTitle: { marginBottom: 7, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 24, fontWeight: '700' },
   filterOption: { minHeight: 46, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#e5e2d8' },
   filterOptionText: { color: INK, fontSize: 14 },
   radio: { width: 18, height: 18, borderRadius: 10, borderWidth: 1.5, borderColor: '#abb6ad' },

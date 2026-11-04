@@ -13,7 +13,7 @@ Authentication uses the real register endpoint and JWT middleware.
 import json
 import os
 import random
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
@@ -21,12 +21,13 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, func, select, text
 from sqlalchemy.orm import sessionmaker
+from app.services.source_captures import capture_entry
 
 PG_URL = os.environ.get("FIELDSHIFT_PG_TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not PG_URL, reason="set FIELDSHIFT_PG_TEST_DATABASE_URL to an isolated test DB")
 pytestmark = [pytestmark, pytest.mark.postgres]
 
-EVALUATED_ON = date(2026, 10, 8)
+EVALUATED_ON = date.fromisoformat(capture_entry("portal/prod_tech_36.json")["retrieved_at"][:10])
 SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "app/data/m2_knowledge_sources/barc_potato_comilla_snapshot.json"
 
 
@@ -74,7 +75,7 @@ def test_postgres_ingestion_is_idempotent(pg_session_factory):
             AgriculturalKnowledge.review_status == "approved",
             AgriculturalKnowledge.reviewed_by.is_(None),
         ))
-        assert approved >= 309  # 308 portal-policy rows + legacy BARC snapshot
+        assert approved >= 2042  # 2041 portal-policy rows + legacy BARC snapshot
 
 
 @pytest.fixture
@@ -95,7 +96,7 @@ def client(pg_session_factory):
     previous = app.dependency_overrides.copy()
     app.dependency_overrides.clear()
     app.dependency_overrides[get_db] = override_get_db
-    with patch.object(m2_advisor, "_farm_today", return_value=date(2026, 10, 10)):
+    with patch.object(m2_advisor, "_farm_today", return_value=EVALUATED_ON + timedelta(days=1)):
         with TestClient(app) as test_client:
             yield test_client
     app.dependency_overrides.clear()

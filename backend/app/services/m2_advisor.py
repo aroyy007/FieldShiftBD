@@ -189,6 +189,15 @@ def profile_from_farmland(
         farming_method=farmland.farming_method,
         budget_amount=budget_amount if budget_amount is not None else farmland.budget_amount,
         budget_currency=farmland.budget_currency,
+        previous_crop=(
+            {
+                "crop_name": farmland.previous_crop,
+                "yield_amount": farmland.previous_yield_amount,
+                "yield_unit": farmland.previous_yield_unit,
+            }
+            if farmland.previous_crop or farmland.previous_yield_amount is not None
+            else None
+        ),
         previous_yield=farmland.previous_yield_amount,
         farming_experience_years=farmer_profile.farming_experience_years if farmer_profile else None,
         equipment=list(farmland.equipment or []),

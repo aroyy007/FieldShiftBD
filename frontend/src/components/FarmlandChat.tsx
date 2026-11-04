@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
@@ -8,9 +9,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../hooks/useHydrationSafeWindowDimensions';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AssistantIcon, AssistantIconName } from './assistant-icons';
@@ -34,8 +35,6 @@ const PAPER = '#fffdf7';
 const INK = '#0a392f';
 const GREEN = '#145f3b';
 const MUTED = '#687589';
-const SERIF = 'Georgia';
-const SANS = 'Arial';
 
 function createClientRequestId(): string {
   const cryptoApi = globalThis.crypto;
@@ -103,7 +102,7 @@ function FarmlandChatScoped() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const farmId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const compact = width < 380;
   const {
     user,
@@ -1083,16 +1082,16 @@ const styles = StyleSheet.create({
   page: { flex: 1, minHeight: 0, overflow: 'hidden', width: '100%', maxWidth: 480, alignSelf: 'center', backgroundColor: PAPER },
   header: { minHeight: 49, marginTop: 5, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  brandName: { color: INK, fontFamily: SERIF, fontWeight: '700', fontSize: 18, lineHeight: 21, letterSpacing: -0.4 },
-  brandTagline: { color: MUTED, fontFamily: SANS, fontSize: 11.5, lineHeight: 15 },
+  brandName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 18, lineHeight: 21, letterSpacing: -0.4 },
+  brandTagline: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11.5, lineHeight: 15 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   bellButton: { width: 31, height: 38, alignItems: 'center', justifyContent: 'center' },
   avatarButton: { width: 39, height: 39, borderRadius: 22, padding: 2, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e9e6d8' },
   avatar: { width: '100%', height: '100%', borderRadius: 20 },
   intro: { marginTop: 8, marginBottom: 1, paddingHorizontal: 21 },
-  title: { color: '#073c32', fontFamily: SERIF, fontSize: 37, fontWeight: '700', lineHeight: 43, letterSpacing: -1.1 },
+  title: { color: '#073c32', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 37, fontWeight: '700', lineHeight: 43, letterSpacing: -1.1 },
   titleCompact: { fontSize: 34, lineHeight: 39 },
-  subtitle: { color: MUTED, fontFamily: SANS, fontSize: 12.1, lineHeight: 16, letterSpacing: -0.16 },
+  subtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.1, lineHeight: 16, letterSpacing: -0.16 },
   subtitleCompact: { fontSize: 11.2, lineHeight: 15 },
   contextCards: { marginHorizontal: 16, marginTop: 10, marginBottom: 8, flexDirection: 'row', gap: 6 },
   contextCardsCompact: { marginHorizontal: 13, gap: 5, marginTop: 8, marginBottom: 7 },
@@ -1101,33 +1100,33 @@ const styles = StyleSheet.create({
   contextIcon: { width: 26, height: 30, borderRadius: 11, backgroundColor: '#edf3e8', alignItems: 'center', justifyContent: 'center' },
   contextIconCompact: { width: 23, height: 26, borderRadius: 9 },
   contextCopy: { flex: 1, minWidth: 0 },
-  contextLabel: { color: MUTED, fontFamily: SANS, fontSize: 9.8, lineHeight: 12 },
+  contextLabel: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.8, lineHeight: 12 },
   contextLabelCompact: { fontSize: 9, lineHeight: 11 },
-  contextValue: { color: INK, fontFamily: SERIF, fontWeight: '700', fontSize: 10, lineHeight: 13, letterSpacing: -0.22 },
+  contextValue: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 10, lineHeight: 13, letterSpacing: -0.22 },
   contextValueCompact: { fontSize: 9, lineHeight: 12 },
   messageScroll: { flex: 1, minHeight: 0 },
   messageContent: { paddingHorizontal: 19, paddingTop: 3, paddingBottom: 8, gap: 7 },
   emptyConversation: { flex: 1, minHeight: 170, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 26, gap: 8 },
   emptyConversationIcon: { width: 50, height: 50, borderRadius: 26, backgroundColor: '#edf3e8', alignItems: 'center', justifyContent: 'center' },
-  emptyConversationTitle: { color: INK, fontFamily: SERIF, fontSize: 17, fontWeight: '700', textAlign: 'center' },
-  emptyConversationText: { maxWidth: 300, color: MUTED, fontFamily: SANS, fontSize: 12.5, lineHeight: 18, textAlign: 'center' },
-  chatError: { marginHorizontal: 18, marginBottom: 5, color: '#a1372d', fontFamily: SANS, fontSize: 12, lineHeight: 16, textAlign: 'center' },
-  offlineNotice: { marginHorizontal: 18, marginBottom: 4, color: GREEN, fontFamily: SANS, fontSize: 11, lineHeight: 15, textAlign: 'center' },
+  emptyConversationTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, fontWeight: '700', textAlign: 'center' },
+  emptyConversationText: { maxWidth: 300, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.5, lineHeight: 18, textAlign: 'center' },
+  chatError: { marginHorizontal: 18, marginBottom: 5, color: '#a1372d', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, textAlign: 'center' },
+  offlineNotice: { marginHorizontal: 18, marginBottom: 4, color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15, textAlign: 'center' },
   clearOfflineButton: { minHeight: 44, marginHorizontal: 18, marginBottom: 2, alignItems: 'center', justifyContent: 'center' },
-  clearOfflineText: { color: '#486655', fontFamily: SANS, fontSize: 11, lineHeight: 15, textDecorationLine: 'underline' },
-  voiceNotice: { marginHorizontal: 18, marginBottom: 4, color: '#5b6570', fontFamily: SANS, fontSize: 11, lineHeight: 15, textAlign: 'center' },
-  cachedNotice: { color: '#718092', fontFamily: SANS, fontSize: 11, lineHeight: 15, textAlign: 'center', paddingHorizontal: 16, paddingVertical: 4 },
-  queuedLabel: { color: '#9a6c18', fontFamily: SANS, fontSize: 9.5, lineHeight: 13 },
+  clearOfflineText: { color: '#486655', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15, textDecorationLine: 'underline' },
+  voiceNotice: { marginHorizontal: 18, marginBottom: 4, color: '#5b6570', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15, textAlign: 'center' },
+  cachedNotice: { color: '#718092', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15, textAlign: 'center', paddingHorizontal: 16, paddingVertical: 4 },
+  queuedLabel: { color: '#9a6c18', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.5, lineHeight: 13 },
   attentionButton: { minHeight: 44, paddingHorizontal: 4, justifyContent: 'center' },
-  attentionLabel: { color: '#a1372d', fontFamily: SANS, fontSize: 10, lineHeight: 14, textDecorationLine: 'underline' },
+  attentionLabel: { color: '#a1372d', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10, lineHeight: 14, textDecorationLine: 'underline' },
   messageRow: { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 7 },
   farmerRow: { alignItems: 'flex-start', justifyContent: 'flex-end' },
   farmerBubble: { maxWidth: '79%', paddingHorizontal: 13, paddingTop: 8, paddingBottom: 6, borderRadius: 20, backgroundColor: '#eaf2e4', boxShadow: '0px 2px 8px rgba(40, 57, 39, 0.06)', elevation: 1 },
   farmerBubbleCompact: { maxWidth: '77%', paddingHorizontal: 10, paddingTop: 7, paddingBottom: 5, borderRadius: 18 },
-  farmerText: { color: INK, fontFamily: SERIF, fontSize: 15.5, lineHeight: 20, letterSpacing: -0.23 },
+  farmerText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 20, letterSpacing: -0.23 },
   farmerTextCompact: { fontSize: 14, lineHeight: 18 },
   farmerMeta: { marginTop: 2, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 4 },
-  timestamp: { color: '#63798a', fontFamily: SANS, fontSize: 10.5, lineHeight: 14 },
+  timestamp: { color: '#63798a', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14 },
   messageAvatar: { width: 31, height: 31, borderRadius: 17, marginTop: 1 },
   messageAvatarCompact: { width: 28, height: 28 },
   assistantAvatar: { width: 34, height: 34, marginTop: 1, borderRadius: 20, backgroundColor: '#edf3e8', borderWidth: 1, borderColor: '#fff', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 2px 8px rgba(40, 57, 39, 0.08)', elevation: 1 },
@@ -1135,12 +1134,12 @@ const styles = StyleSheet.create({
   assistantMessageWrap: { flex: 1, minWidth: 0, alignItems: 'flex-start' },
   assistantBubble: { width: '100%', maxWidth: 355, paddingHorizontal: 13, paddingVertical: 9, borderRadius: 18, borderWidth: 1, borderColor: '#f3efe6', backgroundColor: '#fffefa', boxShadow: '0px 3px 10px rgba(30, 54, 37, 0.06)', elevation: 1 },
   assistantBubbleCompact: { paddingHorizontal: 11, paddingVertical: 8, borderRadius: 16 },
-  assistantText: { color: '#111e3a', fontFamily: SERIF, fontSize: 15.5, lineHeight: 20.5, letterSpacing: -0.2 },
+  assistantText: { color: '#111e3a', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 20.5, letterSpacing: -0.2 },
   assistantTextCompact: { fontSize: 14.3, lineHeight: 18.2 },
-  assistantTimestamp: { color: '#718092', fontFamily: SANS, fontSize: 10.5, lineHeight: 14, marginLeft: 13, marginTop: 2 },
+  assistantTimestamp: { color: '#718092', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14, marginLeft: 13, marginTop: 2 },
   assistantFooter: { flexDirection: 'row', alignItems: 'center', gap: 12, marginLeft: 13, marginTop: 2 },
   listenButton: { minWidth: 48, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 5 },
-  listenText: { color: GREEN, fontFamily: SANS, fontSize: 10.5, lineHeight: 14 },
+  listenText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14 },
   quickActions: { marginHorizontal: 16, marginTop: 3, marginBottom: 7, flexDirection: 'row', gap: 6 },
   quickActionsCompact: { marginHorizontal: 13, marginBottom: 6, gap: 4 },
   quickCard: { flex: 1, minWidth: 0, height: 41, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 1, paddingHorizontal: 1, borderRadius: 15, borderWidth: 1, borderColor: '#f0ecdf', backgroundColor: '#fffefa', boxShadow: '0px 2px 7px rgba(30, 54, 37, 0.06)', elevation: 1 },
@@ -1149,13 +1148,13 @@ const styles = StyleSheet.create({
   quickIcon: { width: 17, height: 26, borderRadius: 9, flexShrink: 0, backgroundColor: '#edf3e8', alignItems: 'center', justifyContent: 'center' },
   quickIconCompact: { width: 15, height: 23, borderRadius: 8 },
   quickIconGold: { backgroundColor: '#fff0d1' },
-  quickTitle: { flex: 1, minWidth: 0, color: INK, fontFamily: SERIF, fontSize: 8.7, lineHeight: 12, letterSpacing: -0.2 },
+  quickTitle: { flex: 1, minWidth: 0, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 8.7, lineHeight: 12, letterSpacing: -0.2 },
   quickTitleCompact: { fontSize: 8, lineHeight: 11 },
   composer: { minHeight: 54, marginHorizontal: 14, paddingHorizontal: 7, paddingVertical: 5, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 30, borderWidth: 1, borderColor: '#f1ede2', backgroundColor: '#fffefa', boxShadow: '0px 3px 10px rgba(30, 54, 37, 0.08)', elevation: 2 },
   composerCompact: { minHeight: 49, marginHorizontal: 12, paddingHorizontal: 5, gap: 4 },
   sparkleCircle: { width: 39, height: 39, borderRadius: 22, flexShrink: 0, backgroundColor: '#edf3e8', alignItems: 'center', justifyContent: 'center' },
   sparkleCircleCompact: { width: 34, height: 34 },
-  messageInput: { flex: 1, minWidth: 0, minHeight: 38, maxHeight: 76, paddingHorizontal: 2, paddingVertical: 6, color: INK, fontFamily: SERIF, fontSize: 14.5, lineHeight: 18, outlineStyle: 'none' as never },
+  messageInput: { flex: 1, minWidth: 0, minHeight: 38, maxHeight: 76, paddingHorizontal: 2, paddingVertical: 6, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14.5, lineHeight: 18, outlineStyle: 'none' as never },
   microphoneButton: { width: 44, height: 44, flexShrink: 0, alignItems: 'center', justifyContent: 'center' },
   microphoneButtonActive: { backgroundColor: '#edf3e8', borderRadius: 18 },
   sendButton: { width: 42, height: 42, flexShrink: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: GREEN },
@@ -1167,22 +1166,22 @@ const styles = StyleSheet.create({
   tabButton: { flex: 1, alignItems: 'stretch', justifyContent: 'center' },
   tabActive: { height: 53, borderRadius: 17, alignItems: 'center', justifyContent: 'center', gap: 0 },
   tabActiveSelected: { backgroundColor: '#edf3e8' },
-  tabLabel: { color: '#687589', fontFamily: SANS, fontSize: 10.5, lineHeight: 14 },
+  tabLabel: { color: '#687589', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14 },
   tabLabelActive: { color: INK, fontWeight: '600' },
   notFound: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  notFoundText: { color: MUTED, fontFamily: SANS, fontSize: 15 },
+  notFoundText: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15 },
   modalLayer: { flex: 1, alignItems: 'flex-end', paddingTop: 52, paddingHorizontal: 16 },
   modalBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(11, 28, 22, 0.22)' },
   profileCard: { width: 220, padding: 16, borderRadius: 16, backgroundColor: PAPER, boxShadow: '0px 5px 16px rgba(0, 0, 0, 0.18)', elevation: 8 },
-  profileTitle: { color: INK, fontFamily: SERIF, fontSize: 17, fontWeight: '700' },
-  profilePhone: { color: MUTED, fontFamily: SANS, fontSize: 12, marginTop: 3 },
+  profileTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, fontWeight: '700' },
+  profilePhone: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, marginTop: 3 },
   profileAction: { marginTop: 12, minHeight: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#dce6d8' },
-  profileActionText: { color: GREEN, fontFamily: SANS, fontSize: 14, fontWeight: '600' },
+  profileActionText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '600' },
   offlineModalLayer: { flex: 1, justifyContent: 'center', paddingHorizontal: 20 },
   offlinePromptCard: { padding: 18, borderRadius: 18, backgroundColor: PAPER, boxShadow: '0px 5px 16px rgba(0, 0, 0, 0.18)', elevation: 8 },
-  offlinePromptText: { marginTop: 8, color: MUTED, fontFamily: SANS, fontSize: 13, lineHeight: 19 },
+  offlinePromptText: { marginTop: 8, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13, lineHeight: 19 },
   offlineSaveButton: { marginTop: 16, minHeight: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: GREEN },
-  offlineSaveText: { color: PAPER, fontFamily: SANS, fontSize: 14, fontWeight: '700' },
+  offlineSaveText: { color: PAPER, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '700' },
   offlineCancelButton: { marginTop: 9, minHeight: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#dce6d8' },
   logoutAction: { backgroundColor: '#eaf1e7' },
 });

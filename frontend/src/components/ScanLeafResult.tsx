@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -7,9 +8,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../hooks/useHydrationSafeWindowDimensions';
 import type { ImageSourcePropType } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,8 +23,6 @@ const CARD = '#fffefa';
 const INK = '#103832';
 const GREEN = '#245d40';
 const MUTED = '#596a7d';
-const SERIF = 'Georgia';
-const SANS = 'Arial';
 
 type TabName = 'Home' | 'Tasks' | 'Chat' | 'Scan' | 'Profile';
 type Action = { title: string; detail: string; icon: ScanResultIconName };
@@ -132,7 +131,7 @@ export default function ScanLeafResult({
   onFarmLog,
   onTabPress,
 }: Props) {
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useHydrationSafeWindowDimensions();
   const phone = width < 600;
   const compact = width < 400 || height < 760;
   const veryCompact = width < 370 || height < 690;
@@ -166,7 +165,9 @@ export default function ScanLeafResult({
     ? 'Add to farm log'
     : analysis.problem_sync === 'failed'
       ? retrying ? 'Saving to farm log…' : 'Retry farm log'
-      : 'View farm log';
+      : analysis.problem_sync === 'awaiting_confirmation' || analysis.problem_sync === 'declined'
+        ? retrying ? 'Recording issue…' : 'Record issue in farm log'
+        : 'View farm log';
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
@@ -298,15 +299,23 @@ export default function ScanLeafResult({
             </View>
             <View style={styles.statusCopy}>
               <Text style={[styles.statusTitle, !isRecorded && styles.statusTitlePending]}>
-                {isRecorded ? 'Recorded in your farm log' : analysis.problem_sync === 'failed' ? 'Farm log sync needs attention' : 'No farm problem was recorded'}
+                {isRecorded
+                  ? 'Recorded in your farm log'
+                  : analysis.problem_sync === 'failed'
+                    ? 'Farm log sync needs attention'
+                    : analysis.problem_sync === 'awaiting_confirmation' || analysis.problem_sync === 'declined'
+                      ? 'Your scan is saved'
+                      : 'No farm problem was recorded'}
               </Text>
-                  <Text numberOfLines={1} style={styles.statusDetail}>
+              <Text numberOfLines={3} style={styles.statusDetail}>
                 {analysis.problem_sync === 'created'
                   ? 'This issue has been saved as an open farm problem for follow-up.'
                   : analysis.problem_sync === 'reused'
                     ? 'A matching open farm problem is already saved for follow-up.'
                     : analysis.problem_sync === 'failed'
                       ? 'The analysis is saved. Try again to finish recording the farm problem.'
+                    : analysis.problem_sync === 'awaiting_confirmation' || analysis.problem_sync === 'declined'
+                      ? 'This is an AI estimate. Choose “Record issue” only if you want it added to this farm’s open problems.'
                       : 'Healthy or uncertain results are kept in your analysis history without opening a farm problem.'}
               </Text>
             </View>
@@ -397,7 +406,7 @@ export function ScanLeafCapture({
   onRetry,
   onTabPress,
 }: CaptureProps) {
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useHydrationSafeWindowDimensions();
   const phone = width < 600;
   const compact = width < 400 || height < 760;
   const photoHeight = (Math.min(width, 480) - 38) / 2.55;
@@ -517,7 +526,9 @@ export function ScanLeafCapture({
               {item.model_details.problem_sync === 'created' || item.model_details.problem_sync === 'reused' ? (
                 <Text style={styles.historyRecorded}>Linked to a farm problem.</Text>
               ) : null}
-              {item.model_details.problem_sync === 'failed' ? (
+              {item.model_details.problem_sync === 'failed'
+                || item.model_details.problem_sync === 'awaiting_confirmation'
+                || item.model_details.problem_sync === 'declined' ? (
                 <View style={styles.historyRetry}>
                   {retryError?.resultId === item.id ? <Text accessibilityRole="alert" style={styles.captureError}>{retryError.message}</Text> : null}
                   <Pressable
@@ -526,7 +537,13 @@ export function ScanLeafCapture({
                     onPress={() => onRetry(item.id)}
                     style={({ pressed }) => [styles.retryButton, pressed && styles.pressed, retryingId !== null && styles.disabledButton]}
                   >
-                    <Text style={styles.retryButtonText}>{retryingId === item.id ? 'Retrying…' : 'Retry farm log sync'}</Text>
+                    <Text style={styles.retryButtonText}>
+                      {retryingId === item.id
+                        ? 'Recording…'
+                        : item.model_details.problem_sync === 'failed'
+                          ? 'Retry farm log sync'
+                          : 'Record issue in farm log'}
+                    </Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -577,9 +594,9 @@ const styles = StyleSheet.create({
   headerPhone: { height: 50 },
   backButton: { position: 'absolute', left: 19, top: 10, zIndex: 1, width: 30, height: 30, borderRadius: 18, backgroundColor: '#edf0e5', alignItems: 'center', justifyContent: 'center' },
   headerCopy: { position: 'absolute', left: 57, right: 18, top: 0, alignItems: 'center', pointerEvents: 'none' },
-  pageTitle: { color: INK, fontFamily: SERIF, fontSize: 22, lineHeight: 27, fontWeight: '700', letterSpacing: -0.45, textAlign: 'center' },
+  pageTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 22, lineHeight: 27, fontWeight: '700', letterSpacing: -0.45, textAlign: 'center' },
   pageTitleCompact: { fontSize: 21, lineHeight: 25 },
-  pageSubtitle: { color: MUTED, fontFamily: SANS, fontSize: 11.5, lineHeight: 16, textAlign: 'center' },
+  pageSubtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11.5, lineHeight: 16, textAlign: 'center' },
   pageSubtitleCompact: { fontSize: 10.8, lineHeight: 15 },
   scroll: { flex: 1, minHeight: 0 },
   content: { paddingHorizontal: 19, paddingTop: 6, paddingBottom: 10, gap: 6 },
@@ -588,50 +605,50 @@ const styles = StyleSheet.create({
   photoFrame: { width: '100%', overflow: 'hidden', borderRadius: 15, borderWidth: 1, borderColor: '#fff', backgroundColor: '#e5ebd9', boxShadow: '0px 3px 12px rgba(35, 53, 33, 0.1)', elevation: 2 },
   photo: { width: '100%', height: '100%' },
   photoPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  photoPlaceholderText: { color: GREEN, fontFamily: SANS, fontSize: 12 },
-  photoPlaceholderTitle: { color: INK, fontFamily: SERIF, fontSize: 15, lineHeight: 19, fontWeight: '700' },
+  photoPlaceholderText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12 },
+  photoPlaceholderTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15, lineHeight: 19, fontWeight: '700' },
   photoFocus: { position: 'absolute', right: 7, bottom: 7, width: 39, height: 39, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,254,250,0.96)' },
   capturePhotoFrame: { borderStyle: 'dashed', borderWidth: 1.5, borderColor: '#d5decb', boxShadow: 'none', elevation: 0 },
   captureCard: { padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fff', backgroundColor: CARD, boxShadow: '0px 3px 12px rgba(35, 53, 33, 0.075)', elevation: 2 },
-  captureHeading: { color: INK, fontFamily: SERIF, fontSize: 15, lineHeight: 19, fontWeight: '700' },
-  captureBody: { marginTop: 4, color: MUTED, fontFamily: SANS, fontSize: 11, lineHeight: 15 },
+  captureHeading: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15, lineHeight: 19, fontWeight: '700' },
+  captureBody: { marginTop: 4, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15 },
   captureActions: { flexDirection: 'row', gap: 8, marginTop: 11 },
   captureActionButton: { minHeight: 44, flex: 1, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 13, borderWidth: 1, borderColor: '#cbd9cb', backgroundColor: '#fbfcf7' },
-  captureActionText: { color: GREEN, fontFamily: SANS, fontSize: 12, lineHeight: 16, fontWeight: '600' },
-  captureMeta: { marginTop: 9, color: MUTED, fontFamily: SANS, fontSize: 10, lineHeight: 13, textAlign: 'center' },
+  captureActionText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '600' },
+  captureMeta: { marginTop: 9, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10, lineHeight: 13, textAlign: 'center' },
   selectedPhoto: { marginTop: 10, paddingTop: 9, flexDirection: 'row', alignItems: 'center', gap: 8, borderTopWidth: 1, borderTopColor: '#eee9de' },
   selectedPhotoCopy: { flex: 1, minWidth: 0 },
-  selectedPhotoName: { color: INK, fontFamily: SERIF, fontSize: 12, lineHeight: 16, fontWeight: '700' },
-  selectedPhotoMeta: { color: MUTED, fontFamily: SANS, fontSize: 9, lineHeight: 12 },
+  selectedPhotoName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  selectedPhotoMeta: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9, lineHeight: 12 },
   analyzeButton: { minHeight: 42, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 12, backgroundColor: GREEN },
-  analyzeText: { color: CARD, fontFamily: SANS, fontSize: 11.5, lineHeight: 15, fontWeight: '600' },
+  analyzeText: { color: CARD, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11.5, lineHeight: 15, fontWeight: '600' },
   connectionNote: { marginTop: 10, paddingTop: 8, flexDirection: 'row', alignItems: 'center', gap: 7, borderTopWidth: 1, borderTopColor: '#eee9de' },
-  connectionText: { flex: 1, color: '#9a5b12', fontFamily: SANS, fontSize: 10, lineHeight: 14 },
-  captureError: { marginTop: 8, color: '#a53327', fontFamily: SANS, fontSize: 11, lineHeight: 15 },
+  connectionText: { flex: 1, color: '#9a5b12', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10, lineHeight: 14 },
+  captureError: { marginTop: 8, color: '#a53327', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15 },
   guidanceCard: { padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#fff', backgroundColor: '#f2f5ed' },
   guidanceHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  guidanceBody: { marginTop: 5, color: MUTED, fontFamily: SANS, fontSize: 11, lineHeight: 15 },
-  privacyNote: { marginTop: 6, color: '#7b8490', fontFamily: SANS, fontSize: 9.5, lineHeight: 13 },
+  guidanceBody: { marginTop: 5, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15 },
+  privacyNote: { marginTop: 6, color: '#7b8490', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.5, lineHeight: 13 },
   historyHeading: { marginTop: 3, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  historyMessage: { color: '#a53327', fontFamily: SANS, fontSize: 10.5, lineHeight: 14 },
+  historyMessage: { color: '#a53327', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14 },
   historyCard: { padding: 10, borderRadius: 14, borderWidth: 1, borderColor: '#f0ede5', backgroundColor: CARD },
   historyTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyTitle: { flex: 1, color: INK, fontFamily: SERIF, fontSize: 12, lineHeight: 15, fontWeight: '700' },
-  historyOutcome: { color: MUTED, fontFamily: SANS, fontSize: 9, lineHeight: 12, textTransform: 'capitalize' },
-  historyDate: { marginTop: 3, color: MUTED, fontFamily: SANS, fontSize: 9.5, lineHeight: 13 },
-  historyRecorded: { marginTop: 4, color: GREEN, fontFamily: SANS, fontSize: 9.5, lineHeight: 13 },
+  historyTitle: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 15, fontWeight: '700' },
+  historyOutcome: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9, lineHeight: 12, textTransform: 'capitalize' },
+  historyDate: { marginTop: 3, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.5, lineHeight: 13 },
+  historyRecorded: { marginTop: 4, color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.5, lineHeight: 13 },
   historyRetry: { marginTop: 6, gap: 4 },
   retryButton: { minHeight: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 11, borderWidth: 1, borderColor: GREEN, backgroundColor: PAPER },
-  retryButtonText: { color: GREEN, fontFamily: SANS, fontSize: 11, lineHeight: 14, fontWeight: '600' },
+  retryButtonText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 14, fontWeight: '600' },
   issueCard: { minHeight: 63, paddingHorizontal: 13, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 17, borderWidth: 1, borderColor: '#fff', backgroundColor: CARD, boxShadow: '0px 3px 12px rgba(35, 53, 33, 0.075)', elevation: 2 },
   issueCardCompact: { minHeight: 61, paddingVertical: 4 },
   issueCopy: { flex: 1, minWidth: 0 },
   issueEyebrow: { height: 17, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  issueLabel: { color: '#a75208', fontFamily: SERIF, fontSize: 11.5, lineHeight: 15, fontWeight: '700' },
+  issueLabel: { color: '#a75208', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11.5, lineHeight: 15, fontWeight: '700' },
   issueLabelGreen: { color: GREEN },
-  issueTitle: { color: '#102f35', fontFamily: SERIF, fontSize: 24, lineHeight: 27, fontWeight: '700', letterSpacing: -0.45 },
+  issueTitle: { color: '#102f35', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 24, lineHeight: 27, fontWeight: '700', letterSpacing: -0.45 },
   issueTitleCompact: { fontSize: 21.5, lineHeight: 24 },
-  issueDescription: { color: MUTED, fontFamily: SANS, fontSize: 10.4, lineHeight: 13 },
+  issueDescription: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.4, lineHeight: 13 },
   arrowCircle: { width: 28, height: 28, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1eee7', backgroundColor: CARD, boxShadow: '0px 1px 4px rgba(0,0,0,0.06)' },
   confidenceCard: { minHeight: 63, padding: 6, flexDirection: 'row', alignItems: 'stretch', borderRadius: 17, borderWidth: 1, borderColor: '#fff', backgroundColor: CARD, boxShadow: '0px 3px 12px rgba(35, 53, 33, 0.075)', elevation: 2 },
   confidenceCardCompact: { minHeight: 60, padding: 5 },
@@ -641,31 +658,31 @@ const styles = StyleSheet.create({
   metricHeading: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   metricIconCircle: { width: 30, height: 30, flexShrink: 0, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: '#edf2e8' },
   metricText: { flex: 1, minWidth: 0 },
-  metricLabel: { color: INK, fontFamily: SERIF, fontSize: 10.4, lineHeight: 13, fontWeight: '700' },
+  metricLabel: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.4, lineHeight: 13, fontWeight: '700' },
   metricLabelNarrow: { fontSize: 9.5 },
-  metricValue: { color: INK, fontFamily: SERIF, fontSize: 14.5, lineHeight: 18, fontWeight: '700' },
+  metricValue: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14.5, lineHeight: 18, fontWeight: '700' },
   confidenceTrackRow: { marginTop: 6, paddingLeft: 3, paddingRight: 2, flexDirection: 'row', alignItems: 'center', gap: 7 },
   confidenceTrack: { height: 7, flex: 1, overflow: 'hidden', borderRadius: 5, backgroundColor: '#d9ddd2' },
   confidenceFill: { height: '100%', borderRadius: 5, backgroundColor: '#2f6647' },
-  confidenceNumber: { width: 26, color: INK, fontFamily: SANS, fontSize: 10.5, lineHeight: 14, textAlign: 'right' },
+  confidenceNumber: { width: 26, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14, textAlign: 'right' },
   verticalRule: { width: 1, marginHorizontal: 6, backgroundColor: '#e6e1d5' },
-  symptomsText: { marginTop: 2, color: MUTED, fontFamily: SANS, fontSize: 9.8, lineHeight: 12 },
+  symptomsText: { marginTop: 2, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.8, lineHeight: 12 },
   actionsCard: { paddingHorizontal: 7, paddingTop: 5, paddingBottom: 5, borderRadius: 17, borderWidth: 1, borderColor: '#fff', backgroundColor: CARD, boxShadow: '0px 3px 12px rgba(35, 53, 33, 0.075)', elevation: 2 },
   actionsCardCompact: { paddingTop: 5, paddingBottom: 5 },
   actionsHeading: { minHeight: 20, paddingHorizontal: 3, marginBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  actionsTitle: { color: INK, fontFamily: SERIF, fontSize: 16, lineHeight: 21, fontWeight: '700', letterSpacing: -0.25 },
+  actionsTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16, lineHeight: 21, fontWeight: '700', letterSpacing: -0.25 },
   actionsTitleCompact: { fontSize: 15, lineHeight: 19 },
   actionRows: { gap: 3 },
   actionRow: { minHeight: 35, paddingHorizontal: 5, flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 13, borderWidth: 1, borderColor: '#f2efe7', backgroundColor: CARD, boxShadow: '0px 2px 8px rgba(35, 53, 33, 0.045)' },
   actionRowCompact: { minHeight: 32 },
   actionRowLast: { minHeight: 36 },
   actionNumber: { width: 26, height: 26, flexShrink: 0, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#edf2e8' },
-  actionNumberText: { color: INK, fontFamily: SERIF, fontSize: 13, lineHeight: 17, fontWeight: '700' },
+  actionNumberText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13, lineHeight: 17, fontWeight: '700' },
   actionIcon: { width: 37, height: 34, alignItems: 'center', justifyContent: 'center' },
   actionCopy: { flex: 1, minWidth: 0 },
-  actionTitle: { color: '#142e3b', fontFamily: SERIF, fontSize: 11.2, lineHeight: 14.5, fontWeight: '700' },
+  actionTitle: { color: '#142e3b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11.2, lineHeight: 14.5, fontWeight: '700' },
   actionTitleNarrow: { fontSize: 9.6, lineHeight: 12.5 },
-  actionDetail: { color: MUTED, fontFamily: SANS, fontSize: 9.8, lineHeight: 12.5 },
+  actionDetail: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.8, lineHeight: 12.5 },
   arrowCircleSmall: { width: 24, height: 24, flexShrink: 0, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1eee7', backgroundColor: CARD },
   statusCard: { minHeight: 35, paddingHorizontal: 8, paddingVertical: 3, flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 15, borderWidth: 1, borderColor: '#fff' },
   statusRecorded: { backgroundColor: '#eef3e8' },
@@ -674,35 +691,35 @@ const styles = StyleSheet.create({
   statusIconRecorded: { backgroundColor: '#356646' },
   statusIconPending: { backgroundColor: '#ffedc9' },
   statusCopy: { flex: 1, minWidth: 0 },
-  statusTitle: { color: INK, fontFamily: SERIF, fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  statusTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
   statusTitlePending: { color: '#a75208' },
-  statusDetail: { color: '#536a6b', fontFamily: SANS, fontSize: 8.8, lineHeight: 11.2 },
-  retryError: { color: '#a53327', fontFamily: SANS, fontSize: 11, lineHeight: 15, paddingHorizontal: 3 },
+  statusDetail: { color: '#536a6b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 8.8, lineHeight: 11.2 },
+  retryError: { color: '#a53327', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 11, lineHeight: 15, paddingHorizontal: 3 },
   noticeCard: { minHeight: 42, paddingHorizontal: 8, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 16, borderWidth: 1, borderColor: '#fff', backgroundColor: '#fff4dc' },
   noticeCardCompact: { minHeight: 42 },
   noticeIconCircle: { width: 27, height: 27, flexShrink: 0, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffedc9' },
   noticeCopy: { flex: 1, minWidth: 0 },
-  noticeTitle: { color: '#a75209', fontFamily: SERIF, fontSize: 10.8, lineHeight: 13, fontWeight: '700' },
-  noticeText: { color: '#62717e', fontFamily: SANS, fontSize: 9.4, lineHeight: 11.8 },
+  noticeTitle: { color: '#a75209', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.8, lineHeight: 13, fontWeight: '700' },
+  noticeText: { color: '#62717e', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.4, lineHeight: 11.8 },
   bottomSpacer: { flexGrow: 1, minHeight: 0 },
   buttonRow: { flexDirection: 'row', gap: 6, marginTop: 1 },
   secondaryButton: { flex: 1, minWidth: 0, minHeight: 44, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, borderRadius: 13, borderWidth: 1, borderColor: '#1e654f', backgroundColor: PAPER },
-  secondaryButtonText: { color: INK, fontFamily: SERIF, fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  secondaryButtonText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
   primaryButton: { flex: 1, minWidth: 0, minHeight: 44, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 13, backgroundColor: '#20543b', boxShadow: '0px 2px 5px rgba(31, 69, 45, 0.16)', elevation: 2 },
-  primaryButtonText: { color: CARD, fontFamily: SERIF, fontSize: 12, lineHeight: 16, fontWeight: '700' },
+  primaryButtonText: { color: CARD, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
   pressed: { opacity: 0.82 },
   disabledButton: { opacity: 0.55 },
   tabBar: { minHeight: 52, marginHorizontal: -1, paddingHorizontal: 8, paddingTop: 3, paddingBottom: 2, flexDirection: 'row', alignItems: 'center', borderTopLeftRadius: 25, borderTopRightRadius: 25, borderWidth: 1, borderBottomWidth: 0, borderColor: '#f1eee7', backgroundColor: 'rgba(255,254,250,0.98)', boxShadow: '0px -2px 10px rgba(48,55,44,0.065)', elevation: 4 },
   tabButton: { flex: 1, minWidth: 0, alignItems: 'stretch', justifyContent: 'center' },
   tabContent: { height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center', gap: 0 },
   tabContentActive: { backgroundColor: '#edf3e8' },
-  tabLabel: { color: '#53637b', fontFamily: SANS, fontSize: 9.5, lineHeight: 12 },
+  tabLabel: { color: '#53637b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9.5, lineHeight: 12 },
   tabLabelActive: { color: INK, fontWeight: '600' },
   modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: 'rgba(11,28,22,0.28)' },
   actionModal: { width: '100%', maxWidth: 330, padding: 22, alignItems: 'center', borderRadius: 20, backgroundColor: CARD, boxShadow: '0px 6px 20px rgba(0,0,0,0.18)', elevation: 8 },
   modalIconCircle: { width: 48, height: 48, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: '#edf2e8' },
-  modalTitle: { marginTop: 12, color: INK, fontFamily: SERIF, fontSize: 19, lineHeight: 24, fontWeight: '700', textAlign: 'center' },
-  modalDescription: { marginTop: 6, color: MUTED, fontFamily: SANS, fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  modalTitle: { marginTop: 12, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 24, fontWeight: '700', textAlign: 'center' },
+  modalDescription: { marginTop: 6, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   modalButton: { minWidth: 100, minHeight: 42, marginTop: 18, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', borderRadius: 13, backgroundColor: GREEN },
-  modalButtonText: { color: CARD, fontFamily: SANS, fontSize: 14, lineHeight: 18, fontWeight: '600' },
+  modalButtonText: { color: CARD, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, lineHeight: 18, fontWeight: '600' },
 });

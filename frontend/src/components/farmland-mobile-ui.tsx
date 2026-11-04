@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   actionButton: { backgroundColor: '#eaf2e6' },
   headerCopy: { flex: 1, minWidth: 0, alignItems: 'center', paddingHorizontal: 4 },
-  headerTitle: { color: '#101820', fontFamily: 'Georgia', fontSize: 20, lineHeight: 25, fontWeight: '700' },
+  headerTitle: { color: '#101820', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 20, lineHeight: 25, fontWeight: '700' },
   headerSubtitle: { color: MUTED, fontSize: 11, lineHeight: 14, marginTop: 1, textAlign: 'center' },
   bottomNav: {
     minHeight: 63,

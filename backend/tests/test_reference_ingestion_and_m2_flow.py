@@ -5,7 +5,7 @@ Farmers, farmlands, and conflicting rows below are generated test fixtures in
 an isolated SQLite database (TEST ONLY); no synthetic agronomic claim is added.
 """
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import patch
 from uuid import uuid4
@@ -20,7 +20,7 @@ from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
 from app.main import app
 from app.models import AgriculturalKnowledge, Base, Crop, CropVariety, Farmer, Farmland
-from app.services import m2_advisor
+from app.services import m2_advisor, source_captures
 from app.services.m1_catalog_import import crop_row_id, import_crop_catalog
 from app.services.m2_portal_policy import BILINGUAL_POLICY_ID, knowledge_row_id
 from app.services.m2_source_import import import_barc_snapshot, import_portal_knowledge
@@ -28,8 +28,10 @@ from app.services.m2_source_import import import_barc_snapshot, import_portal_kn
 import json
 from pathlib import Path
 
-EVALUATED_ON = date(2026, 10, 8)
-FARM_TODAY = date(2026, 10, 10)
+EVALUATED_ON = date.fromisoformat(
+    source_captures.capture_entry("portal/prod_tech_36.json")["retrieved_at"][:10]
+)
+FARM_TODAY = EVALUATED_ON + timedelta(days=1)
 SNAPSHOT = json.loads(
     (Path(__file__).resolve().parents[1] / "app/data/m2_knowledge_sources/barc_potato_comilla_snapshot.json").read_text(
         encoding="utf-8"
@@ -84,8 +86,8 @@ def test_ingestion_twice_is_idempotent_with_stable_ids(db):
 
     assert first_catalog.crops_created == 4 and second_catalog.crops_unchanged == 4
     assert second_catalog.varieties_created == 0 and second_catalog.varieties_unchanged == first_catalog.varieties_created
-    assert first.created == 308 and first.conflicts == []
-    assert second.created == second.refreshed == 0 and second.unchanged == 308
+    assert first.created == 2041 and first.conflicts == []
+    assert second.created == second.refreshed == 0 and second.unchanged == 2041
     assert ids_before == ids_after
     assert first_catalog.crop_ids == second_catalog.crop_ids
     assert first_catalog.crop_ids["potato"] == crop_row_id("potato")
@@ -299,7 +301,7 @@ def test_request_body_cannot_override_the_saved_m1_profile(api):
     assert response.json()["status"] == "profile_incomplete"
 
 
-@pytest.mark.parametrize("today", [date(2026, 10, 1), date(2027, 4, 7)])
+@pytest.mark.parametrize("today", [EVALUATED_ON - timedelta(days=1), EVALUATED_ON + timedelta(days=181)])
 def test_future_and_expired_evidence_is_not_used(api, today):
     farm = api.farmland(district="Cumilla", upazila="Adarsha Sadar", soil_type="Loam", land_type="high")
     with patch.object(m2_advisor, "_farm_today", return_value=today):

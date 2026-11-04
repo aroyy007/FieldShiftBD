@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useEffect, useState } from 'react';
 import {
   Image,
@@ -6,10 +7,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import { useAppContext } from '../context/AppProvider';
 import { ArrowRightIcon, BrandPlantIcon, FeatureIcon } from '../components/icons';
@@ -20,8 +20,6 @@ const GREEN = '#07583f';
 const INK = '#0a392f';
 const MUTED = '#65717b';
 const PALE_GREEN = '#f1f5e9';
-const SERIF_FONT = Platform.select({ web: 'Georgia', default: 'serif' }) ?? 'serif';
-const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 'sans-serif';
 
 type Language = 'en' | 'bn';
 
@@ -33,6 +31,7 @@ const COPY = {
     features: ['Crop\nadvice', 'Daily\ntasks', 'Weather\nupdates', 'Leaf\nscanning'],
     getStarted: 'Get started',
     signIn: 'I already have an account',
+    explore: 'Explore NASA rainfall history',
   },
   bn: {
     tagline: 'AI কৃষি সহকারী',
@@ -41,6 +40,7 @@ const COPY = {
     features: ['ফসলের\nপরামর্শ', 'দৈনিক\nকাজ', 'আবহাওয়ার\nখবর', 'পাতা\nস্ক্যান'],
     getStarted: 'শুরু করুন',
     signIn: 'আমার অ্যাকাউন্ট আছে',
+    explore: 'NASA বৃষ্টির ইতিহাস দেখুন',
   },
 } as const;
 
@@ -49,26 +49,8 @@ const FEATURES: FeatureIconName[] = ['crop', 'tasks', 'weather', 'scan'];
 export default function Index() {
   const { user } = useAppContext();
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
   const [language, setLanguage] = useState<Language>('en');
   const copy = COPY[language];
-  const pageScale = Math.min(width / 393, 1);
-  const availableHeight = Math.max(
-    height - (Platform.OS === 'web' ? 0 : insets.top + insets.bottom),
-    1,
-  );
-  const compactPageStyle = pageScale < 1 ? {
-    width: width / pageScale,
-    maxWidth: width / pageScale,
-    height: availableHeight / pageScale,
-    flexGrow: 0,
-    flexShrink: 0,
-    alignSelf: 'flex-start' as const,
-    marginLeft: -(width / pageScale - width) / 2,
-    marginTop: -(availableHeight / pageScale - availableHeight) / 2,
-    transform: [{ scale: pageScale }],
-  } : undefined;
 
   useEffect(() => {
     if (user) router.replace('/farmlands' as Href);
@@ -80,9 +62,8 @@ export default function Index() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
-        scrollEnabled={pageScale === 1}
       >
-        <View style={[styles.page, compactPageStyle]}>
+        <View style={styles.page}>
           <View style={styles.mainContent}>
             <View style={styles.introGroup}>
               <View style={styles.header}>
@@ -155,6 +136,9 @@ export default function Index() {
               >
                 <Text style={styles.signInButtonText}>{copy.signIn}</Text>
               </Pressable>
+              <Pressable accessibilityRole="button" onPress={() => router.push(`/advisory?language=${language}` as Href)} style={styles.signInButton}>
+                <Text style={styles.signInButtonText}>{copy.explore}</Text>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -215,7 +199,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     color: INK,
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 23,
@@ -223,7 +207,7 @@ const styles = StyleSheet.create({
   },
   brandTagline: {
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 12.5,
     lineHeight: 16,
   },
@@ -257,7 +241,7 @@ const styles = StyleSheet.create({
   },
   languageText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -276,7 +260,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: '#073c32',
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 40,
     fontWeight: '700',
     lineHeight: 41,
@@ -285,7 +269,7 @@ const styles = StyleSheet.create({
   heroDescription: {
     marginTop: 8,
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 17.5,
     fontWeight: '400',
     lineHeight: 22,
@@ -322,7 +306,7 @@ const styles = StyleSheet.create({
   },
   featureLabel: {
     color: '#102e2e',
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 15.5,
     fontWeight: '400',
     lineHeight: 18,
@@ -341,7 +325,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#fffdf7',
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 23,
     fontWeight: '700',
     lineHeight: 29,
@@ -368,7 +352,7 @@ const styles = StyleSheet.create({
   },
   signInButtonText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16,
     lineHeight: 21,
     textAlign: 'center',

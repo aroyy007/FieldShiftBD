@@ -1,4 +1,11 @@
 import { ApiClientError, apiRequest } from './api-client';
+import type {
+  DataProvenanceEvidence as DataProvenanceContract,
+  RotationComparison as RotationComparisonContract,
+  VarietyCalendarReference as VarietyCalendarReferenceContract,
+} from '../modules/shared/contracts.generated';
+
+export type RotationComparison = RotationComparisonContract;
 
 export type KnowledgeReference = {
   source_name: string;
@@ -101,6 +108,36 @@ export type HarvestGuidance = {
   guidance: string[];
   uncertainty_notes: string[];
   knowledge_refs: KnowledgeReference[];
+};
+
+export type VarietyCalendarReference = VarietyCalendarReferenceContract;
+
+export type PlantingWindowEvidence = {
+  status: 'available' | 'insufficient_data' | 'unavailable';
+  message_bn: string;
+  message_en: string;
+  farmland_id: string;
+  season_id: string;
+  crop_name: string;
+  annual_comparison: null | {
+    status: 'available' | 'insufficient_data';
+    baseline_period: string | null;
+    recent_period: string | null;
+    baseline: { median_onset_day: number | null; sample_size: number; onset_day_offsets: number[]; excluded_years: number[] };
+    recent: { median_onset_day: number | null; sample_size: number; onset_day_offsets: number[]; excluded_years: number[] };
+    observed_shift_days: number | null;
+    mann_whitney: { u_statistic: number | null; p_value: number | null; rank_biserial_effect: number | null };
+    sensitivity: { threshold_mm: number; status: string; observed_shift_days: number | null; baseline_sample_size: number; recent_sample_size: number }[];
+    definition: Record<string, unknown>;
+    limitation: string;
+  };
+  recommended_shift_days: number | null;
+  gdd_summary: null | { method: string; annual_values: { year: number; total_degree_days: number | null; valid_days: number; expected_days: number }[]; valid_year_count: number; baseline_valid_years: number; recent_valid_years: number; baseline_mean: number | null; recent_mean: number | null };
+  planting_calendar: Record<string, unknown> | null;
+  variety_calendar_reference: VarietyCalendarReference | null;
+  data_provenance: DataProvenanceContract;
+  limitations_bn: string[];
+  limitations_en: string[];
 };
 
 type ApiError = Error & { status?: number };

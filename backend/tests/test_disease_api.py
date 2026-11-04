@@ -13,7 +13,9 @@ from app.api.routes_disease import (
     get_module3_gateway,
 )
 from app.core.auth import get_current_farmer_id
+from app.core.database import get_db
 from app.main import app
+from app.models.foundation import ConsentRecord
 from app.schemas.farm_state import FarmStateRead, ProblemCreate, ProblemRead
 from app.services.disease_inference import DiseasePrediction
 from app.services.gemini_verification import (
@@ -97,6 +99,25 @@ def install_test_adapters(client, farmland_id, predictor, gemini_verifier=None):
     return gateway
 
 
+def add_disease_problem_consent(client):
+    farmer_id = app.dependency_overrides[get_current_farmer_id]()
+    db = next(app.dependency_overrides[get_db]())
+    consent = ConsentRecord(
+        farmer_id=farmer_id,
+        purpose="disease_problem_sync",
+        version=1,
+        decision="granted",
+        policy_version="disease-problem-sync-2026-11-v1",
+        channel="explicit_tap",
+        idempotency_key="disease-consent-test-" + uuid4().hex,
+        request_fingerprint="a" * 64,
+        captured_at=datetime.now(timezone.utc),
+    )
+    db.add(consent)
+    db.commit()
+    return consent.id
+
+
 
 def test_module3_http_adapter_reads_state_and_posts_problem_contract(client_and_farm):
     client, farmland_id, season_id, _ = client_and_farm
@@ -158,7 +179,7 @@ def test_module3_http_adapter_reads_state_and_posts_problem_contract(client_and_
     assert len(requests) == 2
 
 
-def test_disease_result_creates_then_reuses_module3_problem(client_and_farm):
+def test_disease_result_waits_for_farmer_confirmation_before_module3_problem(client_and_farm):
     client, farmland_id, _, _ = client_and_farm
     predictor = FakePredictor("Rice_Blast", 0.91)
     gateway = install_test_adapters(client, farmland_id, predictor)
@@ -169,23 +190,111 @@ def test_disease_result_creates_then_reuses_module3_problem(client_and_farm):
 
     assert first.status_code == 201
     assert first.json()["outcome"] == "possible_disease"
-    assert first.json()["problem_sync"] == "created"
-    assert first.json()["farm_problem"]["source"] == "disease_detection"
-    assert first.json()["farm_problem"]["status"] == "open"
-    assert first.json()["farm_problem"]["category"] == "rice_blast"
-    assert first.json()["farm_problem"]["season_id"] == first.json()["disease_result"]["season_id"]
-    assert first.json()["disease_result"]["model_details"]["farm_problem_id"] == first.json()["farm_problem"]["id"]
-    assert str(first.json()["disease_result"]["id"]) in first.json()["farm_problem"]["description"]
+    assert first.json()["problem_sync"] == "awaiting_confirmation"
+    assert first.json()["farm_problem"] is None
+    assert first.json()["disease_result"]["model_details"]["problem_sync"] == "awaiting_confirmation"
 
     assert second.status_code == 201
-    assert second.json()["problem_sync"] == "reused"
-    assert second.json()["farm_problem"]["id"] == first.json()["farm_problem"]["id"]
-    assert gateway.create_calls == 1
+    assert second.json()["problem_sync"] == "awaiting_confirmation"
+    assert second.json()["farm_problem"] is None
+    assert gateway.create_calls == 0
     assert predictor.calls == 2
 
     history = client.get(url)
     assert history.status_code == 200
     assert len(history.json()) == 2
+
+    result_id = first.json()["disease_result"]["id"]
+    consent_id = str(add_disease_problem_consent(client))
+    sync_url = f"/farmlands/{farmland_id}/disease-results/{result_id}/sync-problem"
+    confirmed = client.post(
+        sync_url,
+        json={
+            "contract_version": "1.0.0",
+            "disease_result_id": result_id,
+            "farmland_id": str(farmland_id),
+            "idempotency_key": f"disease-sync:{result_id}",
+            "mode": "deferred_confirmation",
+            "assessment": "possible_issue",
+            "possible_issue": first.json()["disease_result"]["possible_issue"],
+            "confidence": 0.91,
+            "farmer_confirmation": "confirmed",
+            "consent_receipt_id": consent_id,
+            "requested_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["problem_sync"] == "created"
+    assert confirmed.json()["farm_problem"]["source"] == "disease_detection"
+    assert confirmed.json()["farm_problem"]["category"] == "rice_blast"
+    assert confirmed.json()["farm_problem"]["season_id"] == first.json()["disease_result"]["season_id"]
+    assert str(result_id) in confirmed.json()["farm_problem"]["description"]
+    assert confirmed.json()["disease_result"]["model_details"]["problem_sync_consent_id"] == consent_id
+    assert gateway.create_calls == 1
+    repeated = client.post(sync_url, json={
+        "contract_version": "1.0.0", "disease_result_id": result_id,
+        "farmland_id": str(farmland_id), "idempotency_key": f"disease-sync:{result_id}",
+        "mode": "deferred_confirmation", "assessment": "possible_issue",
+        "possible_issue": first.json()["disease_result"]["possible_issue"], "confidence": 0.91,
+        "farmer_confirmation": "confirmed", "consent_receipt_id": consent_id,
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+    })
+    assert repeated.status_code == 200
+    assert repeated.json()["farm_problem"]["id"] == confirmed.json()["farm_problem"]["id"]
+    assert gateway.create_calls == 1
+
+
+def test_disease_problem_sync_requires_confirmation_and_active_consent(client_and_farm):
+    client, farmland_id, _, _ = client_and_farm
+    gateway = install_test_adapters(client, farmland_id, FakePredictor("Rice_Blast", 0.91))
+    scan = client.post(
+        f"/farmlands/{farmland_id}/disease-results", files={"image": png_upload()}
+    ).json()
+    result_id = scan["disease_result"]["id"]
+    url = f"/farmlands/{farmland_id}/disease-results/{result_id}/sync-problem"
+    payload = {
+        "contract_version": "1.0.0",
+        "disease_result_id": result_id,
+        "farmland_id": str(farmland_id),
+        "idempotency_key": f"disease-sync:{result_id}",
+        "mode": "deferred_confirmation",
+        "assessment": "possible_issue",
+        "possible_issue": scan["disease_result"]["possible_issue"],
+        "confidence": 0.91,
+        "farmer_confirmation": "confirmed",
+        "consent_receipt_id": str(uuid4()),
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    response = client.post(url, json=payload)
+
+    assert response.status_code == 403
+    assert gateway.create_calls == 0
+
+
+def test_farmer_can_decline_problem_sync_without_creating_a_problem(client_and_farm):
+    client, farmland_id, _, _ = client_and_farm
+    gateway = install_test_adapters(client, farmland_id, FakePredictor("Rice_Blast", 0.91))
+    scan = client.post(
+        f"/farmlands/{farmland_id}/disease-results", files={"image": png_upload()}
+    ).json()
+    saved = scan["disease_result"]
+
+    response = client.post(
+        f"/farmlands/{farmland_id}/disease-results/{saved['id']}/sync-problem",
+        json={
+            "contract_version": "1.0.0", "disease_result_id": saved["id"],
+            "farmland_id": str(farmland_id), "idempotency_key": f"disease-sync:{saved['id']}",
+            "mode": "deferred_confirmation", "assessment": "possible_issue",
+            "possible_issue": saved["possible_issue"], "confidence": saved["confidence"],
+            "farmer_confirmation": "denied", "requested_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["problem_sync"] == "declined"
+    assert response.json()["farm_problem"] is None
+    assert gateway.create_calls == 0
 
 
 def test_failed_module3_write_can_be_retried_without_reanalysis(client_and_farm):
@@ -195,22 +304,35 @@ def test_failed_module3_write_can_be_retried_without_reanalysis(client_and_farm)
         farmland_id,
         FakePredictor("Rice_Blast", 0.91),
     )
-    gateway.fail_create = True
     result_response = client.post(
         "/farmlands/" + str(farmland_id) + "/disease-results",
         files={"image": png_upload()},
     )
     assert result_response.status_code == 201
     saved_result = result_response.json()["disease_result"]
-    assert result_response.json()["problem_sync"] == "failed"
+    assert result_response.json()["problem_sync"] == "awaiting_confirmation"
 
-    gateway.fail_create = False
     retry_url = (
         "/farmlands/" + str(farmland_id) + "/disease-results/"
         + saved_result["id"] + "/sync-problem"
     )
-    retried = client.post(retry_url)
-    retried_again = client.post(retry_url)
+    consent_id = str(add_disease_problem_consent(client))
+    payload = {
+        "contract_version": "1.0.0", "disease_result_id": saved_result["id"],
+        "farmland_id": str(farmland_id), "idempotency_key": f"disease-sync:{saved_result['id']}",
+        "mode": "deferred_confirmation", "assessment": "possible_issue",
+        "possible_issue": saved_result["possible_issue"], "confidence": 0.91, "farmer_confirmation": "confirmed",
+        "consent_receipt_id": consent_id,
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+    }
+    gateway.fail_create = True
+    failed = client.post(retry_url, json=payload)
+    assert failed.status_code == 200
+    assert failed.json()["problem_sync"] == "failed"
+    assert failed.json()["disease_result"]["model_details"]["problem_sync_consent_id"] == consent_id
+    gateway.fail_create = False
+    retried = client.post(retry_url, json=payload)
+    retried_again = client.post(retry_url, json=payload)
 
     assert retried.status_code == 200
     assert retried.json()["problem_sync"] == "created"
@@ -324,8 +446,9 @@ def test_gemini_and_local_agreement_records_possible_issue(client_and_farm):
     assert response.json()["outcome"] == "possible_disease"
     assert response.json()["verification"]["status"] == "verified_issue"
     assert response.json()["verification"]["visible_signs"] == "Irregular brown lesions are visible."
-    assert response.json()["problem_sync"] == "created"
-    assert gateway.create_calls == 1
+    assert response.json()["problem_sync"] == "awaiting_confirmation"
+    assert response.json()["farm_problem"] is None
+    assert gateway.create_calls == 0
     assert verifier.calls == [("RGB", "Rice")]
 
 

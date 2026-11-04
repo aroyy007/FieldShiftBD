@@ -242,6 +242,99 @@
       "title": "AdaptiveRecommendation",
       "type": "object"
     },
+    "AnnualOnsetComparisonEvidence": {
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/OnsetPeriodEvidence"
+        },
+        "baseline_period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Baseline Period"
+        },
+        "definition": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Definition",
+          "type": "object"
+        },
+        "limitation": {
+          "title": "Limitation",
+          "type": "string"
+        },
+        "mann_whitney": {
+          "$ref": "#/$defs/MannWhitneyEvidence"
+        },
+        "observed_shift_days": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed Shift Days"
+        },
+        "recent": {
+          "$ref": "#/$defs/OnsetPeriodEvidence"
+        },
+        "recent_period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recent Period"
+        },
+        "sensitivity": {
+          "items": {
+            "$ref": "#/$defs/OnsetSensitivityEvidence"
+          },
+          "title": "Sensitivity",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "definition",
+        "baseline_period",
+        "recent_period",
+        "baseline",
+        "recent",
+        "observed_shift_days",
+        "mann_whitney",
+        "sensitivity",
+        "limitation"
+      ],
+      "title": "AnnualOnsetComparisonEvidence",
+      "type": "object"
+    },
     "ApiError": {
       "additionalProperties": false,
       "properties": {
@@ -299,6 +392,135 @@
         "retriable"
       ],
       "title": "ApiError",
+      "type": "object"
+    },
+    "CalendarCareReference": {
+      "properties": {
+        "condition_bn": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition Bn"
+        },
+        "condition_en": {
+          "title": "Condition En",
+          "type": "string"
+        },
+        "day_range": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CalendarDayRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "detail_bn": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail Bn"
+        },
+        "detail_en": {
+          "title": "Detail En",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "timing_basis": {
+          "enum": [
+            "days_after_transplanting",
+            "observed_conditions",
+            "observed_stage"
+          ],
+          "title": "Timing Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "timing_basis",
+        "condition_en",
+        "detail_en"
+      ],
+      "title": "CalendarCareReference",
+      "type": "object"
+    },
+    "CalendarDayRange": {
+      "properties": {
+        "max": {
+          "minimum": 0,
+          "title": "Max",
+          "type": "integer"
+        },
+        "min": {
+          "minimum": 0,
+          "title": "Min",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "title": "CalendarDayRange",
+      "type": "object"
+    },
+    "CalendarGddReference": {
+      "properties": {
+        "candidate_method_reference_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Method Reference Id"
+        },
+        "cap_temperature_c": {
+          "default": null,
+          "title": "Cap Temperature C",
+          "type": "null"
+        },
+        "reviewed_base_temperature_c": {
+          "default": null,
+          "title": "Reviewed Base Temperature C",
+          "type": "null"
+        },
+        "status": {
+          "const": "not_cultivar_validated",
+          "title": "Status",
+          "type": "string"
+        },
+        "target_degree_days": {
+          "default": null,
+          "title": "Target Degree Days",
+          "type": "null"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "CalendarGddReference",
       "type": "object"
     },
     "ClimateAssetManifest": {
@@ -423,6 +645,86 @@
         "quality_status"
       ],
       "title": "ClimateAssetManifest",
+      "type": "object"
+    },
+    "ClimateCoverageEvidence": {
+      "properties": {
+        "expected_observations": {
+          "title": "Expected Observations",
+          "type": "integer"
+        },
+        "missing_observations": {
+          "title": "Missing Observations",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "partial",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "units": {
+          "title": "Units",
+          "type": "string"
+        },
+        "valid_observations": {
+          "title": "Valid Observations",
+          "type": "integer"
+        },
+        "variable": {
+          "title": "Variable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable",
+        "units",
+        "status",
+        "expected_observations",
+        "valid_observations",
+        "missing_observations"
+      ],
+      "title": "ClimateCoverageEvidence",
+      "type": "object"
+    },
+    "ClimateSamplingPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Longitude",
+          "type": "number"
+        },
+        "source_url": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Source Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "description",
+        "source_url"
+      ],
+      "title": "ClimateSamplingPoint",
       "type": "object"
     },
     "ClimateVariableCoverage": {
@@ -612,6 +914,124 @@
         "solar_mj_m2_day"
       ],
       "title": "DailyClimateObservation",
+      "type": "object"
+    },
+    "DataProvenanceEvidence": {
+      "properties": {
+        "cache_status": {
+          "title": "Cache Status",
+          "type": "string"
+        },
+        "coverage_by_variable": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ClimateCoverageEvidence"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage By Variable"
+        },
+        "dataset": {
+          "title": "Dataset",
+          "type": "string"
+        },
+        "district_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "District Code"
+        },
+        "retrieved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Retrieved At"
+        },
+        "sampling_point": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sampling Point"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "spatial_resolution_m": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial Resolution M"
+        },
+        "spatial_scale": {
+          "title": "Spatial Scale",
+          "type": "string"
+        },
+        "temporal_end": {
+          "format": "date",
+          "title": "Temporal End",
+          "type": "string"
+        },
+        "temporal_start": {
+          "format": "date",
+          "title": "Temporal Start",
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Variables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "source_url",
+        "dataset",
+        "variables",
+        "temporal_start",
+        "temporal_end",
+        "spatial_scale",
+        "cache_status",
+        "retrieved_at"
+      ],
+      "title": "DataProvenanceEvidence",
       "type": "object"
     },
     "DiseaseProblemSyncReceipt": {
@@ -805,6 +1225,73 @@
       "title": "DiseaseProblemSyncRequest",
       "type": "object"
     },
+    "DistrictCacheEntry": {
+      "additionalProperties": false,
+      "description": "Local index presence only; selected evidence still requires validation.",
+      "properties": {
+        "district_code": {
+          "pattern": "^\\d{4}$",
+          "title": "District Code",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "name_bn": {
+          "title": "Name Bn",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "cached",
+            "missing",
+            "unreadable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "district_code",
+        "name",
+        "name_bn",
+        "status"
+      ],
+      "title": "DistrictCacheEntry",
+      "type": "object"
+    },
+    "DistrictCacheInventory": {
+      "additionalProperties": false,
+      "properties": {
+        "cached_count": {
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Cached Count",
+          "type": "integer"
+        },
+        "districts": {
+          "items": {
+            "$ref": "#/$defs/DistrictCacheEntry"
+          },
+          "maxItems": 64,
+          "title": "Districts",
+          "type": "array"
+        },
+        "requires_validation_on_load": {
+          "const": true,
+          "default": true,
+          "title": "Requires Validation On Load",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "districts",
+        "cached_count"
+      ],
+      "title": "DistrictCacheInventory",
+      "type": "object"
+    },
     "DistrictClimateBundle": {
       "additionalProperties": false,
       "properties": {
@@ -915,6 +1402,17 @@
           ],
           "title": "Quality Status",
           "type": "string"
+        },
+        "sampling_point": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClimateSamplingPoint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -927,6 +1425,53 @@
         "assets"
       ],
       "title": "DistrictClimateBundleManifest",
+      "type": "object"
+    },
+    "DistrictClimateEvidence": {
+      "properties": {
+        "annual_comparison": {
+          "$ref": "#/$defs/AnnualOnsetComparisonEvidence"
+        },
+        "data_provenance": {
+          "$ref": "#/$defs/DataProvenanceEvidence"
+        },
+        "definition_review_status": {
+          "const": "exploratory_pending_review",
+          "default": "exploratory_pending_review",
+          "title": "Definition Review Status",
+          "type": "string"
+        },
+        "limitations_bn": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations Bn",
+          "type": "array"
+        },
+        "limitations_en": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations En",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "provisional",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "annual_comparison",
+        "data_provenance",
+        "limitations_bn",
+        "limitations_en"
+      ],
+      "title": "DistrictClimateEvidence",
       "type": "object"
     },
     "FarmProfileSnapshot": {
@@ -1153,6 +1698,19 @@
           "default": null,
           "title": "Longitude"
         },
+        "previous_crop": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previous Crop"
+        },
         "soil_type": {
           "anyOf": [
             {
@@ -1224,6 +1782,70 @@
         "area_unit"
       ],
       "title": "FarmlandProfile",
+      "type": "object"
+    },
+    "MannWhitneyEvidence": {
+      "properties": {
+        "p_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "P Value"
+        },
+        "rank_biserial_effect": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rank Biserial Effect"
+        },
+        "u_statistic": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "U Statistic"
+        }
+      },
+      "required": [
+        "u_statistic",
+        "p_value",
+        "rank_biserial_effect"
+      ],
+      "title": "MannWhitneyEvidence",
+      "type": "object"
+    },
+    "MonthDayWindow": {
+      "properties": {
+        "end": {
+          "pattern": "^\\d{2}-\\d{2}$",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "pattern": "^\\d{2}-\\d{2}$",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "MonthDayWindow",
       "type": "object"
     },
     "ObservedSymptom": {
@@ -1358,6 +1980,146 @@
         "p_value"
       ],
       "title": "OnsetComparison",
+      "type": "object"
+    },
+    "OnsetPeriodEvidence": {
+      "properties": {
+        "excluded_years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Excluded Years",
+          "type": "array"
+        },
+        "median_onset_day": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Median Onset Day"
+        },
+        "missing_coverage_years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Missing Coverage Years",
+          "type": "array"
+        },
+        "no_usable_onset_years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "No Usable Onset Years",
+          "type": "array"
+        },
+        "onset_day_offsets": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Onset Day Offsets",
+          "type": "array"
+        },
+        "sample_size": {
+          "title": "Sample Size",
+          "type": "integer"
+        },
+        "truncated_confirmation_years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Truncated Confirmation Years",
+          "type": "array"
+        },
+        "years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Years",
+          "type": "array"
+        }
+      },
+      "required": [
+        "years",
+        "onset_day_offsets",
+        "median_onset_day",
+        "excluded_years",
+        "missing_coverage_years",
+        "no_usable_onset_years",
+        "sample_size"
+      ],
+      "title": "OnsetPeriodEvidence",
+      "type": "object"
+    },
+    "OnsetSensitivityEvidence": {
+      "properties": {
+        "baseline_median_onset_day": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Baseline Median Onset Day"
+        },
+        "baseline_sample_size": {
+          "title": "Baseline Sample Size",
+          "type": "integer"
+        },
+        "observed_shift_days": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed Shift Days"
+        },
+        "recent_median_onset_day": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recent Median Onset Day"
+        },
+        "recent_sample_size": {
+          "title": "Recent Sample Size",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "insufficient_data"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "threshold_mm": {
+          "title": "Threshold Mm",
+          "type": "number"
+        }
+      },
+      "required": [
+        "threshold_mm",
+        "status",
+        "baseline_median_onset_day",
+        "recent_median_onset_day",
+        "observed_shift_days",
+        "baseline_sample_size",
+        "recent_sample_size"
+      ],
+      "title": "OnsetSensitivityEvidence",
       "type": "object"
     },
     "PlantingWindowAdvisory": {
@@ -1634,6 +2396,17 @@
     "RotationComparison": {
       "additionalProperties": false,
       "properties": {
+        "active_season": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SeasonSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "alternatives": {
           "items": {
             "items": {
@@ -1642,9 +2415,30 @@
             "type": "array"
           },
           "maxItems": 3,
-          "minItems": 1,
           "title": "Alternatives",
           "type": "array"
+        },
+        "climate_evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DistrictClimateEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "climate_status": {
+          "default": "not_configured",
+          "enum": [
+            "not_configured",
+            "unavailable",
+            "provisional",
+            "insufficient_data"
+          ],
+          "title": "Climate Status",
+          "type": "string"
         },
         "contract_version": {
           "const": "1.0.0",
@@ -1661,31 +2455,155 @@
             "type": "string"
           },
           "maxItems": 12,
-          "minItems": 1,
           "title": "Current Sequence",
           "type": "array"
+        },
+        "current_sequence_basis": {
+          "default": "not_recorded",
+          "enum": [
+            "active_and_completed_seasons",
+            "active_season_only",
+            "completed_seasons_only",
+            "not_recorded"
+          ],
+          "title": "Current Sequence Basis",
+          "type": "string"
         },
         "evidence": {
           "items": {
             "$ref": "#/$defs/SourceProvenance"
           },
           "maxItems": 100,
-          "minItems": 1,
           "title": "Evidence",
           "type": "array"
+        },
+        "farmer_reported_previous_crop": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Farmer Reported Previous Crop"
         },
         "farmland_id": {
           "format": "uuid",
           "title": "Farmland Id",
           "type": "string"
+        },
+        "message_bn": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message Bn"
+        },
+        "message_en": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message En"
+        },
+        "not_assessed_bn": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Not Assessed Bn",
+          "type": "array"
+        },
+        "not_assessed_en": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Not Assessed En",
+          "type": "array"
+        },
+        "recorded_history": {
+          "items": {
+            "$ref": "#/$defs/RotationHistoryEntry"
+          },
+          "maxItems": 100,
+          "title": "Recorded History",
+          "type": "array"
+        },
+        "scope_notes_bn": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Scope Notes Bn",
+          "type": "array"
+        },
+        "scope_notes_en": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Scope Notes En",
+          "type": "array"
+        },
+        "selection_allowed": {
+          "default": false,
+          "title": "Selection Allowed",
+          "type": "boolean"
+        },
+        "status": {
+          "default": "available",
+          "enum": [
+            "available",
+            "insufficient_evidence",
+            "outside_documented_scope"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "strategies": {
+          "items": {
+            "$ref": "#/$defs/RotationStrategy"
+          },
+          "maxItems": 3,
+          "title": "Strategies",
+          "type": "array"
+        },
+        "unknowns_bn": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Unknowns Bn",
+          "type": "array"
+        },
+        "unknowns_en": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Unknowns En",
+          "type": "array"
         }
       },
       "required": [
         "contract_version",
         "farmland_id",
-        "current_sequence",
-        "alternatives",
-        "evidence",
         "created_at"
       ],
       "title": "RotationComparison",
@@ -1773,6 +2691,313 @@
         "source"
       ],
       "title": "RotationHistoryEntry",
+      "type": "object"
+    },
+    "RotationSequenceStep": {
+      "additionalProperties": false,
+      "properties": {
+        "calendar_evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RotationStepCalendarEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "crop_code": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Crop Code",
+          "type": "string"
+        },
+        "crop_name_bn": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Crop Name Bn",
+          "type": "string"
+        },
+        "crop_name_en": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Crop Name En",
+          "type": "string"
+        },
+        "crop_role": {
+          "default": "crop",
+          "enum": [
+            "crop",
+            "green_manure"
+          ],
+          "title": "Crop Role",
+          "type": "string"
+        },
+        "cultivation_method": {
+          "default": "unspecified",
+          "enum": [
+            "transplanted",
+            "wet_seeded",
+            "unspecified"
+          ],
+          "title": "Cultivation Method",
+          "type": "string"
+        },
+        "practice_note_bn": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Practice Note Bn"
+        },
+        "practice_note_en": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Practice Note En"
+        },
+        "season_code": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Season Code",
+          "type": "string"
+        },
+        "season_label_bn": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Season Label Bn",
+          "type": "string"
+        },
+        "season_label_en": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Season Label En",
+          "type": "string"
+        },
+        "variety_names": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Variety Names",
+          "type": "array"
+        }
+      },
+      "required": [
+        "crop_code",
+        "crop_name_en",
+        "crop_name_bn",
+        "season_code",
+        "season_label_en",
+        "season_label_bn"
+      ],
+      "title": "RotationSequenceStep",
+      "type": "object"
+    },
+    "RotationStepCalendarEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "gaps_bn": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Gaps Bn",
+          "type": "array"
+        },
+        "gaps_en": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Gaps En",
+          "type": "array"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/VarietyCalendarReference"
+          },
+          "maxItems": 10,
+          "title": "References",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "source_reference_available",
+            "not_available",
+            "cultivation_method_mismatch"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "RotationStepCalendarEvidence",
+      "type": "object"
+    },
+    "RotationStrategy": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability_status": {
+          "const": "matches_documented_scope",
+          "title": "Applicability Status",
+          "type": "string"
+        },
+        "calendar_feasibility_status": {
+          "const": "insufficient_reviewed_evidence",
+          "default": "insufficient_reviewed_evidence",
+          "title": "Calendar Feasibility Status",
+          "type": "string"
+        },
+        "documented_scope_bn": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Documented Scope Bn",
+          "type": "string"
+        },
+        "documented_scope_en": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Documented Scope En",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "name_bn": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name Bn",
+          "type": "string"
+        },
+        "name_en": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name En",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/RotationSequenceStep"
+          },
+          "maxItems": 12,
+          "minItems": 2,
+          "title": "Steps",
+          "type": "array"
+        },
+        "strategy_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Strategy Id",
+          "type": "string"
+        },
+        "tradeoffs": {
+          "items": {
+            "$ref": "#/$defs/RotationTradeoff"
+          },
+          "maxItems": 20,
+          "title": "Tradeoffs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "strategy_id",
+        "name_en",
+        "name_bn",
+        "applicability_status",
+        "documented_scope_en",
+        "documented_scope_bn",
+        "steps",
+        "evidence_ids"
+      ],
+      "title": "RotationStrategy",
+      "type": "object"
+    },
+    "RotationTradeoff": {
+      "additionalProperties": false,
+      "properties": {
+        "detail_bn": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Detail Bn",
+          "type": "string"
+        },
+        "detail_en": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Detail En",
+          "type": "string"
+        },
+        "dimension": {
+          "enum": [
+            "sequence_length",
+            "legume",
+            "green_manure"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "evidence_status": {
+          "enum": [
+            "source_documented",
+            "derived_from_sequence",
+            "not_assessed"
+          ],
+          "title": "Evidence Status",
+          "type": "string"
+        },
+        "label_bn": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Label Bn",
+          "type": "string"
+        },
+        "label_en": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Label En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "evidence_status",
+        "label_en",
+        "label_bn",
+        "detail_en",
+        "detail_bn"
+      ],
+      "title": "RotationTradeoff",
       "type": "object"
     },
     "SeasonSnapshot": {
@@ -2290,6 +3515,174 @@
       ],
       "title": "TaskDiffOperation",
       "type": "object"
+    },
+    "VarietyCalendarReference": {
+      "properties": {
+        "activation_allowed": {
+          "const": false,
+          "default": false,
+          "title": "Activation Allowed",
+          "type": "boolean"
+        },
+        "care_references": {
+          "items": {
+            "$ref": "#/$defs/CalendarCareReference"
+          },
+          "title": "Care References",
+          "type": "array"
+        },
+        "cultivation_method": {
+          "const": "transplanted",
+          "default": "transplanted",
+          "title": "Cultivation Method",
+          "type": "string"
+        },
+        "duration_reference_event": {
+          "const": "not_stated",
+          "default": "not_stated",
+          "title": "Duration Reference Event",
+          "type": "string"
+        },
+        "excluded_ambiguities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Ambiguities",
+          "type": "array"
+        },
+        "gdd_reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CalendarGddReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "geographic_scope_bn": {
+          "title": "Geographic Scope Bn",
+          "type": "string"
+        },
+        "geographic_scope_en": {
+          "title": "Geographic Scope En",
+          "type": "string"
+        },
+        "harvest_window": {
+          "$ref": "#/$defs/MonthDayWindow"
+        },
+        "limitations_bn": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations Bn",
+          "type": "array"
+        },
+        "limitations_en": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations En",
+          "type": "array"
+        },
+        "profile_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profile Id"
+        },
+        "reported_life_duration_days": {
+          "title": "Reported Life Duration Days",
+          "type": "integer"
+        },
+        "review_status": {
+          "const": "source_verified_pending_agronomy_review",
+          "default": "source_verified_pending_agronomy_review",
+          "title": "Review Status",
+          "type": "string"
+        },
+        "season": {
+          "title": "Season",
+          "type": "string"
+        },
+        "seedbed_window": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MonthDayWindow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "seedling_age_days": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CalendarDayRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_accessed": {
+          "format": "date",
+          "title": "Source Accessed",
+          "type": "string"
+        },
+        "source_name": {
+          "title": "Source Name",
+          "type": "string"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "transplanting_window": {
+          "$ref": "#/$defs/MonthDayWindow"
+        },
+        "variety_name": {
+          "title": "Variety Name",
+          "type": "string"
+        },
+        "variety_name_bn": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variety Name Bn"
+        }
+      },
+      "required": [
+        "variety_name",
+        "season",
+        "transplanting_window",
+        "reported_life_duration_days",
+        "harvest_window",
+        "geographic_scope_bn",
+        "geographic_scope_en",
+        "source_name",
+        "source_url",
+        "source_accessed",
+        "limitations_bn",
+        "limitations_en"
+      ],
+      "title": "VarietyCalendarReference",
+      "type": "object"
     }
   },
   "$id": "https://fieldshiftbd.dev/contracts/challenge-v1.schema.json",
@@ -2372,6 +3765,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/DiseaseProblemSyncRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "district_cache_inventory": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DistrictCacheInventory"
         },
         {
           "type": "null"

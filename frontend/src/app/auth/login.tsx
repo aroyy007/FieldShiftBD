@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useState } from 'react';
 import {
   Image,
@@ -7,9 +8,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -29,8 +30,6 @@ const GREEN = '#07583f';
 const INK = '#0a392f';
 const MUTED = '#65717b';
 const PALE_GREEN = '#eef4e6';
-const SERIF_FONT = Platform.select({ web: 'Georgia', default: 'serif' }) ?? 'serif';
-const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 'sans-serif';
 const FOOTER_IMAGE = require('../../../assets/images/verification-rice-field.png');
 
 export default function Login() {
@@ -38,7 +37,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useHydrationSafeWindowDimensions();
   const router = useRouter();
   const { login, loadError } = useAppContext();
   const compact = width < 380 || height < 660;
@@ -275,13 +274,13 @@ const styles = StyleSheet.create({
   },
   brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
   compactBrand: { transform: [{ translateX: 8 }] },
-  brandName: { color: INK, fontFamily: SERIF_FONT, fontSize: 20, fontWeight: '700', lineHeight: 24, letterSpacing: -0.55 },
-  brandTagline: { color: MUTED, fontFamily: SANS_FONT, fontSize: 12.5, lineHeight: 16 },
+  brandName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 20, fontWeight: '700', lineHeight: 24, letterSpacing: -0.55 },
+  brandTagline: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.5, lineHeight: 16 },
   intro: { marginTop: 13, marginBottom: 0, paddingHorizontal: 4 },
   compactIntro: { marginTop: 15, paddingHorizontal: 2 },
   tinyIntro: { marginTop: 16 },
-  title: { color: '#073c32', fontFamily: SERIF_FONT, fontWeight: '700', letterSpacing: -1.15 },
-  subtitle: { maxWidth: 350, marginTop: 5, color: MUTED, fontFamily: SANS_FONT, fontSize: 17.5, lineHeight: 22, letterSpacing: -0.2 },
+  title: { color: '#073c32', fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', letterSpacing: -1.15 },
+  subtitle: { maxWidth: 350, marginTop: 5, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17.5, lineHeight: 22, letterSpacing: -0.2 },
   compactSubtitle: { marginTop: 4, fontSize: 16.5, lineHeight: 22 },
   tinySubtitle: { fontSize: 15.5, lineHeight: 21 },
   fields: { marginTop: 15, gap: 10 },
@@ -301,16 +300,16 @@ const styles = StyleSheet.create({
   compactFieldIcon: { width: 40, height: 40 },
   tinyFieldIcon: { width: 37, height: 37 },
   fieldContent: { flex: 1, minWidth: 0 },
-  fieldLabel: { marginBottom: 3, color: INK, fontFamily: SERIF_FONT, fontSize: 16.5, fontWeight: '700', lineHeight: 19, letterSpacing: -0.24 },
+  fieldLabel: { marginBottom: 3, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16.5, fontWeight: '700', lineHeight: 19, letterSpacing: -0.24 },
   compactFieldLabel: { fontSize: 15.5, lineHeight: 18 },
   inputShell: { height: 38, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#dedfdd', borderRadius: 12, backgroundColor: 'rgba(255,254,250,0.74)', overflow: 'hidden' },
   compactInputShell: { height: 36, borderRadius: 11 },
   countryCode: { width: 82, height: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
   compactCountryCode: { width: 72, gap: 5 },
-  countryCodeText: { color: INK, fontFamily: SANS_FONT, fontSize: 16.5, fontWeight: '500' },
+  countryCodeText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16.5, fontWeight: '500' },
   compactInputText: { fontSize: 15 },
   inputDivider: { width: 1, height: '72%', backgroundColor: '#e3e4e1' },
-  input: { flex: 1, minWidth: 0, height: '100%', paddingHorizontal: 12, paddingVertical: 0, color: INK, fontFamily: SANS_FONT, fontSize: 16.5, lineHeight: 21 },
+  input: { flex: 1, minWidth: 0, height: '100%', paddingHorizontal: 12, paddingVertical: 0, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16.5, lineHeight: 21 },
   compactInput: { paddingHorizontal: 9, fontSize: 15.5 },
   tinyInput: { paddingHorizontal: 6, fontSize: 14 },
   passwordInput: { paddingRight: 2 },
@@ -318,31 +317,31 @@ const styles = StyleSheet.create({
   compactPasswordToggle: { width: 40 },
   forgotButton: { minHeight: 24, marginTop: 8, alignSelf: 'flex-end', justifyContent: 'center' },
   compactForgotButton: { marginTop: 4, minHeight: 22 },
-  forgotText: { color: '#07583f', fontFamily: SERIF_FONT, fontSize: 15.5, fontWeight: '700', lineHeight: 22 },
+  forgotText: { color: '#07583f', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, fontWeight: '700', lineHeight: 22 },
   compactForgotText: { fontSize: 14.5, lineHeight: 21 },
-  message: { marginTop: 1, marginBottom: 4, color: '#a1372d', fontFamily: SANS_FONT, fontSize: 12.5, lineHeight: 17 },
+  message: { marginTop: 1, marginBottom: 4, color: '#a1372d', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.5, lineHeight: 17 },
   submittingButton: { opacity: 0.72 },
   primaryButton: { height: 50, marginTop: 10, borderRadius: 29, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' },
   compactPrimaryButton: { height: 48, marginTop: 9 },
   tinyPrimaryButton: { height: 44, marginTop: 7 },
   primaryGradient: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  primaryButtonText: { color: PAPER, fontFamily: SERIF_FONT, fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  primaryButtonText: { color: PAPER, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 22, fontWeight: '700', lineHeight: 28 },
   arrowBubble: { position: 'absolute', right: 6, top: 4, width: 42, height: 42, borderRadius: 22, backgroundColor: '#fffef9', alignItems: 'center', justifyContent: 'center' },
   compactArrowBubble: { width: 40, height: 40, top: 4 },
   dividerRow: { height: 18, marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 14 },
   compactDividerRow: { height: 16, marginTop: 9 },
   tinyDividerRow: { height: 14, marginTop: 8 },
   dividerLine: { height: 1, flex: 1, backgroundColor: '#c9cbc4' },
-  dividerText: { color: '#68727b', fontFamily: SANS_FONT, fontSize: 15.5, lineHeight: 20 },
+  dividerText: { color: '#68727b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 20 },
   codeButton: { height: 46, marginTop: 8, borderWidth: 1.4, borderColor: GREEN, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, backgroundColor: 'rgba(255,253,247,0.55)' },
   compactCodeButton: { height: 44, marginTop: 3, gap: 11 },
   tinyCodeButton: { height: 42, marginTop: 6, gap: 8 },
-  codeButtonText: { color: INK, fontFamily: SERIF_FONT, fontSize: 18, fontWeight: '700', lineHeight: 24, letterSpacing: -0.35 },
+  codeButtonText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, fontWeight: '700', lineHeight: 24, letterSpacing: -0.35 },
   compactCodeButtonText: { fontSize: 16, lineHeight: 22, letterSpacing: -0.25 },
   tinyCodeButtonText: { fontSize: 14, lineHeight: 18, letterSpacing: -0.15 },
   accountRow: { marginTop: 12, alignItems: 'center' },
   compactAccountRow: { marginTop: 8 },
-  accountText: { color: '#576778', fontFamily: SERIF_FONT, fontSize: 15.5, lineHeight: 23, textAlign: 'center' },
+  accountText: { color: '#576778', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 23, textAlign: 'center' },
   compactAccountText: { fontSize: 14, lineHeight: 21 },
   accountLink: { color: '#076044', fontWeight: '700' },
   pressed: { opacity: 0.82 },

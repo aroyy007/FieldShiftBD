@@ -143,15 +143,25 @@
     "M2": {
       "name": "Crop Advisor & Season Lifecycle",
       "router_imports": [
-        "app.api.routes_m2_advisor:router"
+        "app.api.routes_m2_advisor:router",
+        "app.api.routes_m2_advisor:public_router"
       ],
       "owned_models": [
         "app.models.season.CropRecommendation",
         "app.models.season.Season",
         "app.models.season.SeasonPlan",
-        "app.models.season.GrowthStage"
+        "app.models.season.GrowthStage",
+        "app.contracts.challenge.v1.RotationComparison"
       ],
       "interfaces": [
+        {
+          "method": "get",
+          "path": "/advisory"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/calendar-references"
+        },
         {
           "method": "post",
           "path": "/advisor/farmlands/{farmland_id}/recommendations"
@@ -177,6 +187,14 @@
           "path": "/advisor/farmlands/{farmland_id}/seasons"
         },
         {
+          "method": "post",
+          "path": "/advisor/farmlands/{farmland_id}/rotation-comparisons"
+        },
+        {
+          "method": "get",
+          "path": "/advisor/farmlands/{farmland_id}/planting-window"
+        },
+        {
           "method": "get",
           "path": "/advisor/seasons/{season_id}/plan"
         },
@@ -195,6 +213,10 @@
         {
           "method": "post",
           "path": "/advisor/seasons/{season_id}/close"
+        },
+        {
+          "method": "get",
+          "path": "/advisory/districts"
         }
       ],
       "depends_on": [
@@ -230,6 +252,24 @@
             "message"
           ],
           "request_required": []
+        },
+        {
+          "method": "post",
+          "path": "/advisor/farmlands/{farmland_id}/rotation-comparisons",
+          "success_status": "200",
+          "response_schema": "RotationComparison",
+          "response_required": [
+            "contract_version",
+            "created_at",
+            "farmland_id"
+          ],
+          "enum_values": {
+            "RotationComparison.status": [
+              "available",
+              "insufficient_evidence",
+              "outside_documented_scope"
+            ]
+          }
         }
       ]
     },
@@ -612,6 +652,7 @@
       "invariants": [
         "disease result belongs to its authenticated farm",
         "low-confidence/healthy results do not create a problem",
+        "possible disease results create a problem only after explicit farmer confirmation and active consent",
         "M3 is the problem-state owner",
         "repeated issue sync reuses the existing open problem"
       ],
@@ -630,6 +671,8 @@
           "enum_values": {
             "DiseaseProblemSyncResponse.problem_sync": [
               "not_required",
+              "awaiting_confirmation",
+              "declined",
               "created",
               "reused",
               "failed"

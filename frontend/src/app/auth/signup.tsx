@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useState } from 'react';
 import {
   Platform,
@@ -6,9 +7,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import {
@@ -29,8 +30,6 @@ const GREEN = '#07583f';
 const INK = '#0a392f';
 const MUTED = '#65717b';
 const PALE_GREEN = '#f0f5e9';
-const SERIF_FONT = Platform.select({ web: 'Georgia', default: 'serif' }) ?? 'serif';
-const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 'sans-serif';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -40,7 +39,7 @@ export default function Signup() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const router = useRouter();
   const { register } = useAppContext();
 
@@ -322,7 +321,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     color: INK,
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 24,
@@ -330,7 +329,7 @@ const styles = StyleSheet.create({
   },
   brandTagline: {
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 12.5,
     lineHeight: 16,
   },
@@ -341,7 +340,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#073c32',
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontWeight: '700',
     lineHeight: 40,
     letterSpacing: -1.1,
@@ -351,7 +350,7 @@ const styles = StyleSheet.create({
     maxWidth: 350,
     marginTop: 3,
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16.5,
     fontWeight: '400',
     lineHeight: 22,
@@ -403,7 +402,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     marginBottom: 3,
     color: INK,
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16.5,
     fontWeight: '700',
     lineHeight: 19,
@@ -433,7 +432,7 @@ const styles = StyleSheet.create({
   },
   countryCodeText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16,
     fontWeight: '500',
   },
@@ -449,7 +448,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 0,
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16,
     lineHeight: 20,
   },
@@ -491,7 +490,7 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 14.5,
     lineHeight: 20,
   },
@@ -502,7 +501,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginBottom: 7,
     color: '#b3261e',
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 12.5,
     lineHeight: 17,
   },
@@ -518,7 +517,7 @@ const styles = StyleSheet.create({
   submittingButton: { opacity: 0.72 },
   primaryButtonText: {
     color: PAPER,
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 19,
     fontWeight: '700',
     lineHeight: 24,
@@ -549,7 +548,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     color: '#8a939b',
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 14,
     lineHeight: 18,
   },
@@ -564,7 +563,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 15.5,
     lineHeight: 19,
     textAlign: 'center',

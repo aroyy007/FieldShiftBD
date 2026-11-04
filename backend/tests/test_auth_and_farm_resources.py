@@ -57,6 +57,7 @@ def test_farmland_resources_and_village_persist_and_reach_m2_and_chat(client_and
             "water_source": "Pond",
             "irrigation_available": True,
             "land_type": "low",
+            "previous_crop": "Mustard",
         },
     )
     assert update.status_code == 200, update.text
@@ -64,6 +65,7 @@ def test_farmland_resources_and_village_persist_and_reach_m2_and_chat(client_and
     assert saved["village_or_locality"] == "East Village"
     assert saved["equipment"] == ["Pump", "tractor"]
     assert saved["budget_amount"] == "13500.50"
+    assert saved["previous_crop"] == "Mustard"
 
     from app.core.database import get_db
     from app.models.core import Farmland
@@ -75,6 +77,8 @@ def test_farmland_resources_and_village_persist_and_reach_m2_and_chat(client_and
     assert farmland is not None
     m2_profile = profile_from_farmland(db, farmland)
     assert m2_profile.equipment == ["Pump", "tractor"]
+    assert m2_profile.previous_crop is not None
+    assert m2_profile.previous_crop.crop_name == "Mustard"
 
     second_farm = Farmland(
         farmer_id=farmland.farmer_id,

@@ -1,0 +1,46 @@
+FieldShift BD
+Copyright 2026 FieldShiftBD contributors
+
+Unless an asset or file is identified below or carries its own notice, the
+original FieldShift BD source code and documentation are licensed under the
+Apache License, Version 2.0. See LICENSE.
+
+Third-party models and data
+---------------------------
+
+1. Disease model checkpoint
+
+   backend/model/crop_veg_plant_disease_model.pth is distributed separately
+   under the upstream model card's Creative Commons Attribution-NonCommercial
+   4.0 International license (CC BY-NC 4.0). Credit Saon110 and follow the
+   model card. This asset is not licensed under Apache-2.0. Commercial use is
+   not permitted by its upstream license.
+
+2. NASA POWER climate caches
+
+   Normalized climate cache assets under backend/data/climate/cache/ are
+   derived from the NASA POWER Daily API. The Registry of Open Data on AWS
+   lists NASA POWER as CC BY 4.0 and requests citation. Credit the NASA POWER
+   Project and retain the source/product provenance in the cache manifests.
+   The NASA POWER acknowledgement is at:
+   https://power.larc.nasa.gov/docs/acknowledgements/
+   The registry entry is at:
+   https://registry.opendata.aws/nasa-power/
+
+3. BARC Crop Zoning portal captures
+
+   Source captures under backend/app/data/source_captures/barc_crop_zoning/
+   reproduce material from the Bangladesh Agricultural Research Council
+   Crop Zoning portal. Its copyright policy permits reproduction without
+   specific permission when material is reproduced accurately, is not used in
+   a derogatory or misleading context, and prominently acknowledges the
+   source. The captured policy and source manifest are included in that
+   directory. Source: https://portal.cropzoning.gov.bd/.
+
+4. Other third-party material
+
+   The Apache-2.0 license for original project code does not relicense
+   third-party dependencies, source captures, datasets, fonts, images, or
+   other assets. Follow the license and attribution stated by each source.
+   NASA source attribution does not imply NASA review or endorsement of
+   FieldShift BD.

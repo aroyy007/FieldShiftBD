@@ -8,6 +8,13 @@ Baseline was `336bf6c`. The shared contract, deterministic fakes, safe-off runti
 
 ## 2. Foundation gates and deliverables
 
+**2026-11-01 domain progress:** Crop Advisor now includes an authenticated,
+read-only BRRI rotation-pattern preview with generated shared types and bilingual
+rendering. It matches only the source's irrigated high/medium-high, clay/clay-loam
+context, and shows missing or out-of-scope inputs explicitly. NASA scoring,
+dated rotation calendars, ranking and confirmed selection remain open domain
+work. This preview does not satisfy the final plan's complete rotation gate.
+
 | Gate | Implement before sharing the base | Responsible role / proof |
 |---|---|---|
 | B00 Baseline | **Implemented.** Baseline `336bf6c`; isolated PostgreSQL 16 test DB; root/backend `.env.example` placeholders; unrelated pre-existing work preserved. | Backend baseline and full unit suite; frontend lint/typecheck; clean disposable DB used. Migration verification is restricted to a database name containing `test`. |

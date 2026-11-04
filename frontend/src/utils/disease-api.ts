@@ -3,7 +3,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { ApiClientError, apiRequest } from '../services/api-client';
 
 export type DiseaseOutcome = 'healthy' | 'uncertain' | 'possible_disease';
-export type ProblemSyncStatus = 'not_required' | 'created' | 'reused' | 'failed';
+export type ProblemSyncStatus =
+  | 'not_required'
+  | 'awaiting_confirmation'
+  | 'declined'
+  | 'created'
+  | 'reused'
+  | 'failed';
 export type DiseaseVerificationStatus =
   | 'not_configured'
   | 'verified_healthy'
@@ -68,6 +74,8 @@ export type DiseaseProblemSync = {
   message: string;
 };
 
+type DiseaseConsentResponse = { consent_record_id: string };
+
 async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     return await apiRequest<T>(path, init);
@@ -112,13 +120,46 @@ export async function getDiseaseResults(farmlandId: string): Promise<DiseaseResu
   );
 }
 
-export async function retryDiseaseProblemSync(
+export async function confirmDiseaseProblemSync(
   farmlandId: string,
-  diseaseResultId: string,
+  diseaseResult: DiseaseResult,
 ): Promise<DiseaseProblemSync> {
+  const diseaseResultId = diseaseResult.id;
+  const requestedAt = new Date().toISOString();
+  const consent = await requestJson<DiseaseConsentResponse>('/challenge/consents', {
+    method: 'POST',
+    headers: {
+      'Idempotency-Key': `disease-consent-${diseaseResultId}-${Date.now()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contract_version: '1.0.0',
+      purpose: 'disease_problem_sync',
+      decision: 'granted',
+      policy_version: 'disease-problem-sync-2026-11-v1',
+      channel: 'explicit_tap',
+      captured_at: requestedAt,
+    }),
+  });
   return requestJson<DiseaseProblemSync>(
     '/farmlands/' + encodeURIComponent(farmlandId)
       + '/disease-results/' + encodeURIComponent(diseaseResultId) + '/sync-problem',
-    { method: 'POST' },
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contract_version: '1.0.0',
+        disease_result_id: diseaseResultId,
+        farmland_id: farmlandId,
+        idempotency_key: `disease-sync-${diseaseResultId}`,
+        mode: 'deferred_confirmation',
+        assessment: 'possible_issue',
+        possible_issue: diseaseResult.possible_issue,
+        confidence: diseaseResult.confidence,
+        farmer_confirmation: 'confirmed',
+        consent_receipt_id: consent.consent_record_id,
+        requested_at: requestedAt,
+      }),
+    },
   );
 }

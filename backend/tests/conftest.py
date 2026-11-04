@@ -39,6 +39,7 @@ def compile_jsonb_for_sqlite(type_, compiler, **kwargs):
 from app.core.auth import get_current_farmer_id
 from app.core.database import get_db
 from app.main import app
+from app.services.foundation import ChallengeRuntime
 from app.models import (
     Base,
     Crop,
@@ -49,6 +50,28 @@ from app.models import (
     Season,
     SeasonPlan,
 )
+
+
+_BASE_RUNTIME = app.state.challenge_runtime
+_BASE_SWITCHES = _BASE_RUNTIME.switches
+_BASE_ADAPTERS = dict(_BASE_RUNTIME.adapters)
+_BASE_OFFLINE_MODE = _BASE_RUNTIME.offline_mode
+
+
+@pytest.fixture(autouse=True)
+def isolate_application_challenge_runtime():
+    """Prevent one test's runtime switch changes leaking into later tests."""
+
+    def fresh_runtime():
+        return ChallengeRuntime(
+            switches=_BASE_SWITCHES,
+            adapters=dict(_BASE_ADAPTERS),
+            offline_mode=_BASE_OFFLINE_MODE,
+        )
+
+    app.state.challenge_runtime = fresh_runtime()
+    yield
+    app.state.challenge_runtime = fresh_runtime()
 
 
 @pytest.fixture

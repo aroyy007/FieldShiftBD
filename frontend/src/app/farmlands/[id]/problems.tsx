@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useState } from 'react';
 import {
   ImageBackground,
@@ -7,9 +8,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { FieldBottomNav, FieldIcon, FieldScreenHeader } from '../../../components/field-screen-ui';
@@ -69,7 +70,7 @@ export default function FarmProblems() {
 
 function FarmProblemsScreen({ farmId }: { farmId: string | undefined }) {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const compact = width < 350;
   const { farmlands, addProblem, updateProblemStatus } = useAppContext();
   const farm = farmlands.find(item => item.id === farmId);
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
   heroShade: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(19,45,27,.07)' },
   heroCopy: { position: 'absolute', top: 0, bottom: 0, left: 0, width: '75%', paddingHorizontal: 10, paddingTop: 8, backgroundColor: PAPER, borderTopRightRadius: 43, borderBottomRightRadius: 39 },
   heroCopyCompact: { width: '78%', paddingHorizontal: 8 },
-  heroTitle: { color: INK, fontFamily: 'Georgia', fontSize: 26, lineHeight: 31, fontWeight: '700' },
+  heroTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 26, lineHeight: 31, fontWeight: '700' },
   heroTitleCompact: { fontSize: 20, lineHeight: 24 },
   heroCrop: { color: INK, fontSize: 13, lineHeight: 16, fontWeight: '600' },
   heroMeta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 5 },
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   statIconYellow: { backgroundColor: '#ffedc7' },
   statIconGreen: { backgroundColor: '#dfeedd' },
   statCopy: { alignItems: 'center', minWidth: 0 },
-  statValue: { color: INK, fontFamily: 'Georgia', fontSize: 18, lineHeight: 22, fontWeight: '700' },
+  statValue: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, lineHeight: 22, fontWeight: '700' },
   statValueCompact: { fontSize: 15 },
   statLabel: { color: GREEN, fontSize: 10, lineHeight: 13 },
   statLabelCompact: { fontSize: 8 },
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
   problemImageCompact: { width: 58, height: 66 },
   problemCopy: { flex: 1, minWidth: 0 },
   problemTitleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 3 },
-  problemTitle: { flex: 1, color: INK, fontFamily: 'Georgia', fontSize: 15.5, lineHeight: 19, fontWeight: '700' },
+  problemTitle: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 19, fontWeight: '700' },
   problemTitleCompact: { fontSize: 13.5, lineHeight: 16 },
   problemDescription: { color: MUTED, fontSize: 11, lineHeight: 15, marginTop: 3 },
   problemDescriptionCompact: { fontSize: 9.5, lineHeight: 12 },
@@ -461,7 +462,7 @@ const styles = StyleSheet.create({
   resolvedTag: { minHeight: 24, flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 7, borderRadius: 13, backgroundColor: '#e0efdc' },
   resolvedTagText: { color: GREEN, fontSize: 9.5 },
   completedDate: { flex: 1, color: MUTED, fontSize: 9.5, textAlign: 'right' },
-  recommendTitle: { color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 24, fontWeight: '700', marginTop: 12, marginBottom: 7 },
+  recommendTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 24, fontWeight: '700', marginTop: 12, marginBottom: 7 },
   recommendTitleCompact: { fontSize: 15, lineHeight: 18 },
   recommendedRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
   recommendedCard: { flex: 1, minWidth: 0, minHeight: 77, flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 8, borderRadius: 14 },
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
   modalBackdrop: { flex: 1, justifyContent: 'center', paddingHorizontal: 20, backgroundColor: 'rgba(18,33,27,.42)' },
   modalCard: { width: '100%', maxWidth: 460, alignSelf: 'center', padding: 18, borderRadius: 20, backgroundColor: PAPER },
   modalHeading: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 },
-  modalTitle: { flex: 1, color: INK, fontFamily: 'Georgia', fontSize: 20, lineHeight: 26, fontWeight: '700' },
+  modalTitle: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 20, lineHeight: 26, fontWeight: '700' },
   closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#efeee7' },
   modalFilterRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: 1, borderTopColor: BORDER },
   modalFilterText: { flex: 1, color: INK, fontSize: 14 },

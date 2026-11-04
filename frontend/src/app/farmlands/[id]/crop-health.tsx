@@ -9,7 +9,11 @@ import * as ImagePicker from 'expo-image-picker';
 
 import ScanLeafResult, { ScanLeafCapture } from '../../../components/ScanLeafResult';
 import { useAppContext } from '../../../context/AppProvider';
-import { analyzeDiseaseImage, getDiseaseResults, retryDiseaseProblemSync } from '../../../utils/disease-api';
+import {
+  analyzeDiseaseImage,
+  confirmDiseaseProblemSync,
+  getDiseaseResults,
+} from '../../../utils/disease-api';
 import type {
   DiseaseAnalysis,
   DiseaseResult,
@@ -198,10 +202,17 @@ function CropHealthScreen({ farmId, previewMode: previewRequested }: { farmId: s
 
   const retryProblemSync = async (diseaseResultId: string) => {
     if (!farmId) return;
+    const savedResult = analysis?.disease_result.id === diseaseResultId
+      ? analysis.disease_result
+      : history.find(item => item.id === diseaseResultId);
+    if (!savedResult) {
+      setProblemRetryError({ resultId: diseaseResultId, message: 'This saved scan is no longer available. Refresh the scan history and try again.' });
+      return;
+    }
     setProblemRetryingId(diseaseResultId);
     setProblemRetryError(null);
     try {
-      const result = await retryDiseaseProblemSync(farmId, diseaseResultId);
+      const result = await confirmDiseaseProblemSync(farmId, savedResult);
       if (result.farm_problem) {
         await refreshFarmland(farmId).catch(() => undefined);
       }
@@ -255,7 +266,11 @@ function CropHealthScreen({ farmId, previewMode: previewRequested }: { farmId: s
         onBack={() => router.replace(`/farmlands/${farmId}` as Href)}
         onRetake={() => void takePhoto()}
         onFarmLog={() => {
-          if (analysis.problem_sync === 'failed') {
+          if (
+            analysis.problem_sync === 'failed'
+            || analysis.problem_sync === 'awaiting_confirmation'
+            || analysis.problem_sync === 'declined'
+          ) {
             void retryProblemSync(analysis.disease_result.id);
             return;
           }

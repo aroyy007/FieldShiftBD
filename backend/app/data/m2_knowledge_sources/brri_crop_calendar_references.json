@@ -1,0 +1,417 @@
+{
+  "catalog_version": "brri-rice-calendar-references-v1",
+  "review_status": "source_verified_pending_agronomy_review",
+  "activation_allowed": false,
+  "accessed_on": "2026-11-01",
+  "gdd_method_references": [
+    {
+      "method_reference_id": "brri-sultana-2019-aman-gdd",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-brri/2024/12/2ce90d9a86c245259ca2b160a2464781.pdf",
+      "doi": "10.3329/brj.v23i2.48251",
+      "publication_year": 2019,
+      "accessed_on": "2026-11-01",
+      "pdf_page_index": 92,
+      "base_temperature_c": 10,
+      "cap_temperature_c": null,
+      "method": "daily_tmax_tmin_mean_minus_base",
+      "reference_event": "transplanting",
+      "study_scope_en": "Gazipur, Aman 2016; experimental lines and BRRI dhan49 check. Not cultivar validation for the profiles below.",
+      "power_t2m_mapping_reviewed": false,
+      "limitation_en": "No cultivar-specific target or upper cap is established here. Do not automatically apply this study to Boro or Aus. Daily POWER T2M is not the same input definition as the paper's Tmax/Tmin mean.",
+      "journal_printed_page": 89
+    }
+  ],
+  "profiles": [
+    {
+      "profile_id": "bd-rice-brri-dhan80-aman-reference-v1",
+      "crop_code": "rice",
+      "variety_name": "BRRI dhan80",
+      "variety_name_bn": "ব্রি ধান৮০",
+      "season_code": "aman",
+      "review_status": "source_verified_pending_agronomy_review",
+      "source": {
+        "source_id": "brri-riceprofile-variety-90",
+        "name": "BRRI Rice Profile — BRRI dhan80",
+        "url": "https://riceprofile.brri.gov.bd/varieties/90",
+        "accessed_on": "2026-11-01",
+        "published_on": null
+      },
+      "scope": {
+        "published_scope_en": "Generally almost all regions of Bangladesh; high and medium-high land; rainfed transplanted Aman.",
+        "published_scope_bn": "সাধারণত বাংলাদেশের প্রায় সকল অঞ্চল; উঁচু ও মধ্যম উঁচু জমি; বৃষ্টিনির্ভর রোপা আমন।",
+        "land_types": [
+          "high",
+          "medium_high"
+        ],
+        "irrigation_context": "rainfed_with_conditional_supplemental_irrigation",
+        "exclusions": [],
+        "field_suitability_established": false
+      },
+      "seedbed_window": {
+        "start": "07-05",
+        "end": "07-25"
+      },
+      "transplanting_window": {
+        "start": "07-30",
+        "end": "08-20"
+      },
+      "seedling_age_days": {
+        "min": 25,
+        "max": 30
+      },
+      "harvest_window": {
+        "start": "11-11",
+        "end": "11-30"
+      },
+      "reported_life_duration_days": 130,
+      "duration_reference_event": "not_stated",
+      "gdd": {
+        "status": "not_cultivar_validated",
+        "reviewed_base_temperature_c": null,
+        "cap_temperature_c": null,
+        "target_degree_days": null,
+        "candidate_method_reference_id": "brri-sultana-2019-aman-gdd"
+      },
+      "care_references": [
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 12,
+            "max": 15
+          },
+          "condition_en": "One manual-weeding option; do not combine all alternative weed-control practices as mandatory tasks.",
+          "detail_en": "First manual weeding window.",
+          "detail_bn": "চারা রোপণের 12–15 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।"
+        },
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 30,
+            "max": 35
+          },
+          "condition_en": "Manual-weeding option.",
+          "detail_en": "Second manual weeding window.",
+          "detail_bn": "চারা রোপণের 30–35 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।"
+        },
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 40,
+            "max": 45
+          },
+          "condition_en": "Only if needed.",
+          "detail_en": "Optional additional manual weeding.",
+          "detail_bn": "চারা রোপণের 40–45 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "প্রয়োজন হলে"
+        },
+        {
+          "kind": "supplemental_irrigation",
+          "timing_basis": "observed_conditions",
+          "day_range": null,
+          "condition_en": "Rain is insufficient for timely transplanting, or drought occurs between booting and milk stages.",
+          "detail_en": "The page gives conditional supplemental-irrigation guidance, not a daily schedule or a field water amount.",
+          "condition_bn": "সময়মতো চারা রোপণের জন্য পর্যাপ্ত বৃষ্টি না হলে, অথবা কাইচথোড় থেকে দুধ অবস্থার মধ্যে অনাবৃষ্টিজনিত খরা দেখা দিলে।",
+          "detail_bn": "উৎসে শর্তসাপেক্ষ সম্পূরক সেচের কথা আছে; প্রতিদিনের সূচি বা এই জমির পানির পরিমাণ নির্ধারণ করা নেই।"
+        }
+      ],
+      "excluded_ambiguities": [
+        "Fertilizer line contains more nutrient labels than numeric entries; no dose imported.",
+        "No dated full phenological-stage sequence, GDD target, cap, or NASA onset-shift rule is stated."
+      ],
+      "activation_allowed": false,
+      "cultivation_method": "transplanted"
+    },
+    {
+      "profile_id": "bd-rice-brri-dhan100-boro-reference-v1",
+      "crop_code": "rice",
+      "variety_name": "BRRI dhan100",
+      "variety_name_bn": "ব্রি ধান১০০",
+      "season_code": "boro",
+      "review_status": "source_verified_pending_agronomy_review",
+      "source": {
+        "source_id": "brri-riceprofile-variety-107",
+        "name": "BRRI Rice Profile — BRRI dhan100",
+        "url": "https://riceprofile.brri.gov.bd/varieties/107",
+        "accessed_on": "2026-11-01",
+        "published_on": null
+      },
+      "scope": {
+        "published_scope_en": "Generally almost all regions of Bangladesh; irrigated high, medium-high and medium-low land. Sowing and transplanting windows vary by agro-region and ecosystem.",
+        "published_scope_bn": "সাধারণত বাংলাদেশের প্রায় সকল অঞ্চল; সেচনির্ভর উঁচু, মধ্যম উঁচু ও মধ্যম নিচু জমি। বপন ও রোপণের সময় কৃষি অঞ্চল ও ইকোসিস্টেমভেদে ভিন্ন হতে পারে।",
+        "land_types": [
+          "high",
+          "medium_high",
+          "medium_low"
+        ],
+        "irrigation_context": "irrigated",
+        "exclusions": [],
+        "field_suitability_established": false
+      },
+      "seedbed_window": {
+        "start": "11-15",
+        "end": "11-29"
+      },
+      "transplanting_window": {
+        "start": "12-20",
+        "end": "01-10"
+      },
+      "seedling_age_days": {
+        "min": 35,
+        "max": 40
+      },
+      "harvest_window": {
+        "start": "04-13",
+        "end": "04-28"
+      },
+      "reported_life_duration_days": 148,
+      "duration_reference_event": "not_stated",
+      "gdd": {
+        "status": "not_cultivar_validated",
+        "reviewed_base_temperature_c": null,
+        "cap_temperature_c": null,
+        "target_degree_days": null,
+        "candidate_method_reference_id": null
+      },
+      "care_references": [
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 12,
+            "max": 15
+          },
+          "condition_en": "One manual-weeding option; alternative practices are not cumulative requirements.",
+          "detail_en": "First manual weeding window.",
+          "detail_bn": "চারা রোপণের 12–15 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।"
+        },
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 30,
+            "max": 35
+          },
+          "condition_en": "Manual-weeding option.",
+          "detail_en": "Second manual weeding window.",
+          "detail_bn": "চারা রোপণের 30–35 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।"
+        },
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 40,
+            "max": 45
+          },
+          "condition_en": "Only if needed.",
+          "detail_en": "Optional additional manual weeding.",
+          "detail_bn": "চারা রোপণের 40–45 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "প্রয়োজন হলে"
+        },
+        {
+          "kind": "irrigation_reference",
+          "timing_basis": "observed_stage",
+          "day_range": null,
+          "condition_en": "Stage and local water observations must be confirmed.",
+          "detail_en": "The page describes AWD from 15 days after transplanting until booting, standing water from booting through full flowering, and stopping/draining 10–15 days before maturity depending on location. It supplies no field water-depth threshold or fixed stage dates.",
+          "condition_bn": "ফসলের ধাপ ও স্থানীয় পানির অবস্থা যাচাই করতে হবে।",
+          "detail_bn": "উৎসে রোপণের ১৫ দিন পর থেকে কাইচথোড় পর্যন্ত এডব্লিউডি সেচ, কাইচথোড় থেকে পুরো ফুল আসা পর্যন্ত দাঁড়ানো পানি, এবং স্থানভেদে পাকার ১০–১৫ দিন আগে সেচ বন্ধ ও পানি বের করার কথা আছে। নির্দিষ্ট ধাপের তারিখ বা পানির গভীরতার সীমা দেওয়া নেই।"
+        }
+      ],
+      "excluded_ambiguities": [
+        "Do not treat this irrigated Boro calendar as a rain-onset-limited planting rule.",
+        "No cultivar-specific GDD parameters, complete dated stages, or NASA climate-shift policy established."
+      ],
+      "activation_allowed": false,
+      "cultivation_method": "transplanted"
+    },
+    {
+      "profile_id": "bd-rice-brri-dhan48-aus-reference-v1",
+      "crop_code": "rice",
+      "variety_name": "BRRI dhan48",
+      "variety_name_bn": "ব্রি ধান৪৮",
+      "season_code": "aus",
+      "review_status": "source_verified_pending_agronomy_review",
+      "source": {
+        "source_id": "brri-riceprofile-variety-2",
+        "name": "BRRI Rice Profile — BRRI dhan48",
+        "url": "https://riceprofile.brri.gov.bd/varieties/2",
+        "accessed_on": "2026-11-01",
+        "published_on": null
+      },
+      "scope": {
+        "published_scope_en": "Medium-high to medium-low land; generally Bangladesh regions excluding drought-prone areas; transplanted Aus.",
+        "published_scope_bn": "মাঝারি উঁচু থেকে মাঝারি নিচু জমি; সাধারণত খরাপ্রবণ এলাকা ছাড়া বাংলাদেশের সকল অঞ্চল; রোপা আউশ।",
+        "land_types": [
+          "medium_high",
+          "medium_low"
+        ],
+        "irrigation_context": "rainfed_with_conditional_supplemental_irrigation",
+        "exclusions": [
+          "drought_prone_areas"
+        ],
+        "field_suitability_established": false
+      },
+      "seedbed_window": {
+        "start": "04-15",
+        "end": "04-30"
+      },
+      "transplanting_window": {
+        "start": "05-01",
+        "end": "05-15"
+      },
+      "seedling_age_days": {
+        "min": 15,
+        "max": 20
+      },
+      "harvest_window": {
+        "start": "08-14",
+        "end": "09-04"
+      },
+      "reported_life_duration_days": 110,
+      "duration_reference_event": "not_stated",
+      "gdd": {
+        "status": "not_cultivar_validated",
+        "reviewed_base_temperature_c": null,
+        "cap_temperature_c": null,
+        "target_degree_days": null,
+        "candidate_method_reference_id": null
+      },
+      "care_references": [
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 12,
+            "max": 15
+          },
+          "condition_en": "Manual-weeding option.",
+          "detail_en": "First manual weeding window; the ambiguous second manual window is excluded.",
+          "detail_bn": "চারা রোপণের 12–15 দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।"
+        },
+        {
+          "kind": "supplemental_irrigation",
+          "timing_basis": "observed_conditions",
+          "day_range": null,
+          "condition_en": "Rain is insufficient for timely land preparation/transplanting, or rain is absent during vegetative growth.",
+          "detail_en": "The source describes conditional supplemental irrigation; it does not establish a daily field irrigation schedule.",
+          "condition_bn": "সময়মতো জমি তৈরি ও চারা রোপণের জন্য পর্যাপ্ত বৃষ্টি না হলে, অথবা অঙ্গজ বৃদ্ধি পর্যায়ে বৃষ্টি না হলে।",
+          "detail_bn": "উৎসে শর্তসাপেক্ষ সম্পূরক সেচের কথা আছে; এই জমির প্রতিদিনের সেচসূচি নির্ধারণ করা নেই।"
+        }
+      ],
+      "excluded_ambiguities": [
+        "Second manual-weeding window is printed as 30–30 days; excluded pending clarification.",
+        "Reported life duration has no explicit reference event; do not derive operational harvest dates by adding it to transplanting.",
+        "No cultivar-specific GDD parameters, complete dated stages, or NASA climate-shift policy established."
+      ],
+      "activation_allowed": false,
+      "cultivation_method": "transplanted"
+    },
+    {
+      "profile_id": "bd-rice-brri-dhan31-aman-reference-v1",
+      "crop_code": "rice",
+      "variety_name": "BRRI dhan31",
+      "variety_name_bn": "ব্রি ধান৩১",
+      "season_code": "aman",
+      "cultivation_method": "transplanted",
+      "review_status": "source_verified_pending_agronomy_review",
+      "source": {
+        "source_id": "brri-riceprofile-variety-42",
+        "name": "BRRI Rice Profile — BRRI dhan31",
+        "url": "https://riceprofile.brri.gov.bd/varieties/42",
+        "accessed_on": "2026-11-01",
+        "published_on": null
+      },
+      "scope": {
+        "published_scope_en": "Generally almost all regions of Bangladesh; high and medium-high land; transplanted Aman. The variety is mildly photoperiod-sensitive.",
+        "published_scope_bn": "সাধারণত বাংলাদেশের প্রায় সকল অঞ্চল; উঁচু ও মধ্যম উঁচু জমি; রোপা আমন। জাতটি মৃদু আলোকসংবেদনশীল।",
+        "land_types": [
+          "high",
+          "medium_high"
+        ],
+        "irrigation_context": "rainfed_with_conditional_supplemental_irrigation",
+        "exclusions": [],
+        "field_suitability_established": false
+      },
+      "seedbed_window": {
+        "start": "06-29",
+        "end": "07-14"
+      },
+      "transplanting_window": {
+        "start": "07-23",
+        "end": "08-14"
+      },
+      "seedling_age_days": {
+        "min": 25,
+        "max": 30
+      },
+      "harvest_window": {
+        "start": "11-09",
+        "end": "11-24"
+      },
+      "reported_life_duration_days": 140,
+      "duration_reference_event": "not_stated",
+      "gdd": {
+        "status": "not_cultivar_validated",
+        "reviewed_base_temperature_c": null,
+        "cap_temperature_c": null,
+        "target_degree_days": null,
+        "candidate_method_reference_id": "brri-sultana-2019-aman-gdd"
+      },
+      "care_references": [
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 12,
+            "max": 15
+          },
+          "condition_en": "One manual-weeding option; alternative practices are not cumulative requirements.",
+          "detail_en": "First manual weeding window.",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প; অন্য পদ্ধতিগুলো একসঙ্গে বাধ্যতামূলক নয়।",
+          "detail_bn": "চারা রোপণের ১২–১৫ দিনের মধ্যে হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।"
+        },
+        {
+          "kind": "manual_weeding",
+          "timing_basis": "days_after_transplanting",
+          "day_range": {
+            "min": 30,
+            "max": 35
+          },
+          "condition_en": "Manual-weeding option.",
+          "detail_en": "Second manual weeding window.",
+          "condition_bn": "হাত দিয়ে আগাছা দমনের একটি বিকল্প।",
+          "detail_bn": "চারা রোপণের ৩০–৩৫ দিনের মধ্যে দ্বিতীয়বার হাত দিয়ে আগাছা দমনের প্রকাশিত সময়সীমা।"
+        },
+        {
+          "kind": "supplemental_irrigation",
+          "timing_basis": "observed_conditions",
+          "day_range": null,
+          "condition_en": "Rain is insufficient for timely transplanting, or drought occurs between booting and milk stages.",
+          "detail_en": "Conditional supplemental-irrigation reference; no daily field schedule or water amount is supplied.",
+          "condition_bn": "সময়মতো চারা রোপণের জন্য পর্যাপ্ত বৃষ্টি না হলে, অথবা কাইচথোড় থেকে দুধ অবস্থার মধ্যে অনাবৃষ্টিজনিত খরা দেখা দিলে।",
+          "detail_bn": "শর্তসাপেক্ষ সম্পূরক সেচের তথ্য; প্রতিদিনের সূচি বা জমির পানির পরিমাণ নির্ধারণ করা নেই।"
+        }
+      ],
+      "excluded_ambiguities": [
+        "The variety is mildly photoperiod-sensitive; a simple GDD-only maturity or onset-shift rule is not established.",
+        "This calendar describes transplanted Aman, not wet-seeded establishment.",
+        "No full dated stage schedule, GDD target/cap, or NASA adjustment policy is established.",
+        "Fertilizer line has more nutrient labels than numeric entries; no dose imported."
+      ],
+      "activation_allowed": false
+    }
+  ],
+  "use_limits": [
+    "These profiles are source references pending agronomic review, not approved season-plan knowledge.",
+    "No field suitability, NASA-adjusted window, irrigation necessity today, quantified soil benefit, crop switching or season activation is authorized by this catalog.",
+    "Source pages show copyright notices; no explicit open redistribution license or publication/update date was identified in the inspected profile text."
+  ]
+}

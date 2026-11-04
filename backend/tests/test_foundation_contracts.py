@@ -16,6 +16,8 @@ from app.contracts.challenge.v1 import (
     PlantingWindowAdvisory,
     ProposedAction,
     RotationComparison,
+    RotationSequenceStep,
+    RotationStrategy,
     SourceProvenance,
     TaskDiff,
 )
@@ -174,6 +176,36 @@ def test_advisory_and_rotation_outputs_are_evidence_backed_and_bounded():
             "farmland_id": str(uuid4()),
             "current_sequence": ["rice_aman", "lentil"],
             "alternatives": [["rice_aman", "mustard"], ["rice_aman", "maize"]],
+            "strategies": [
+                RotationStrategy(
+                    strategy_id=f"synthetic-{crop}",
+                    name_en=f"SYNTHETIC {crop} example",
+                    name_bn=f"SYNTHETIC {crop} example",
+                    applicability_status="matches_documented_scope",
+                    documented_scope_en="SYNTHETIC test scope only",
+                    documented_scope_bn="SYNTHETIC test scope only",
+                    steps=[
+                        RotationSequenceStep(
+                            crop_code="rice_aman",
+                            crop_name_en="SYNTHETIC rice",
+                            crop_name_bn="SYNTHETIC rice",
+                            season_code="aman",
+                            season_label_en="SYNTHETIC Aman",
+                            season_label_bn="SYNTHETIC Aman",
+                        ),
+                        RotationSequenceStep(
+                            crop_code=crop,
+                            crop_name_en=f"SYNTHETIC {crop}",
+                            crop_name_bn=f"SYNTHETIC {crop}",
+                            season_code="rabi",
+                            season_label_en="SYNTHETIC Rabi",
+                            season_label_bn="SYNTHETIC Rabi",
+                        ),
+                    ],
+                    evidence_ids=["synthetic-test-only"],
+                )
+                for crop in ("mustard", "maize")
+            ],
             "evidence": [provenance.model_dump(mode="json")],
             "created_at": "2026-10-29T00:00:00Z",
         }
@@ -184,6 +216,7 @@ def test_advisory_and_rotation_outputs_are_evidence_backed_and_bounded():
     assert len(advisory.comparison.recent_years) == 13
     assert len(advisory.sms_summary) <= 160
     assert len(rotation.alternatives) == 2
+    assert len(rotation.strategies) == 2
 
     invalid = advisory.model_dump(mode="json")
     invalid["sms_summary"] = "x" * 161
