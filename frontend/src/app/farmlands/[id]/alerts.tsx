@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   heroImage: { flex: 1, justifyContent: 'center' },
   heroImageStyle: { borderRadius: 16 },
   heroCopy: { width: '65%', height: '100%', justifyContent: 'center', paddingLeft: 12, paddingRight: 3, backgroundColor: 'rgba(255,253,247,0.96)', borderTopRightRadius: 40, borderBottomRightRadius: 52 },
-  heroFarmName: { color: INK, fontFamily: 'Georgia', fontWeight: '700', fontSize: 26, lineHeight: 30 },
+  heroFarmName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 26, lineHeight: 30 },
   heroCrop: { color: INK, fontSize: 12, lineHeight: 16, fontWeight: '600' },
   heroMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 5 },
   heroMetaText: { color: MUTED, fontSize: 10, lineHeight: 13, flexShrink: 1 },
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   urgentStat: { backgroundColor: '#fff0df' },
   statIconCircle: { width: 24, height: 24, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dcebd7' },
   urgentIconCircle: { backgroundColor: '#ffe3c7' },
-  statNumber: { color: INK, fontFamily: 'Georgia', fontSize: 18, lineHeight: 20, fontWeight: '700' },
+  statNumber: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 18, lineHeight: 20, fontWeight: '700' },
   statLabel: { color: GREEN, fontSize: 9, lineHeight: 11, textAlign: 'center' },
   urgentText: { color: '#cf3810' },
   segment: { minHeight: 36, flexDirection: 'row', alignItems: 'stretch', borderRadius: 22, borderWidth: 1, borderColor: '#dddcd4', overflow: 'hidden', backgroundColor: '#fbfaf5' },
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
   resolvedIconWrap: { backgroundColor: '#deedda', width: 46, height: 46 },
   cardMain: { flex: 1, minWidth: 0, justifyContent: 'center' },
   cardMainWithAction: { paddingRight: 82 },
-  cardTitle: { color: INK, fontFamily: 'Georgia', fontSize: 12, lineHeight: 15, fontWeight: '700' },
+  cardTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 15, fontWeight: '700' },
   cardBody: { color: MUTED, fontSize: 10, lineHeight: 13, marginTop: 2 },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 6 },
   badge: { height: 21, flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 4, borderRadius: 8 },

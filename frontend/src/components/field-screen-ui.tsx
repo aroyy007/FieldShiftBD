@@ -1,5 +1,7 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View} from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../hooks/useHydrationSafeWindowDimensions';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
@@ -127,7 +129,7 @@ export function FieldScreenHeader({
   backHref?: Href;
 }) {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   return (
     <View style={[styles.header, Platform.OS === 'web' && styles.headerWeb]}>
       <Pressable
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
   },
   headerAction: { backgroundColor: '#eaf2e6' },
   headerCopy: { flex: 1, minWidth: 0, alignItems: 'center', paddingHorizontal: 4 },
-  headerTitle: { color: '#101820', fontFamily: 'Georgia', fontSize: 20, lineHeight: 25, fontWeight: '700' },
+  headerTitle: { color: '#101820', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 20, lineHeight: 25, fontWeight: '700' },
   headerSubtitle: { color: MUTED, fontSize: 12, lineHeight: 16, marginTop: 1 },
   headerSubtitleCompact: { fontSize: 10, lineHeight: 13 },
   headerSubtitleNarrow: { fontSize: 9, lineHeight: 12 },

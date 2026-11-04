@@ -76,3 +76,32 @@ def test_public_advisory_returns_season_choices_without_guessing(client_and_farm
     assert response.status_code == 200
     assert response.json()["status"] == "needs_selection"
     assert set(response.json()["season_choices"]) == {"aman", "aus", "boro"}
+
+
+def test_public_advisory_does_not_apply_aman_onset_definition_to_other_rice_seasons(
+    client_and_farm, monkeypatch, tmp_path
+):
+    from app.api import routes_m2_advisor
+    from app.services import district_advisory
+
+    client, _, _, _ = client_and_farm
+    monkeypatch.setattr(routes_m2_advisor.settings, "CLIMATE_CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(
+        district_advisory,
+        "load_district_climate_evidence",
+        lambda *_: (_ for _ in ()).throw(AssertionError("unsupported seasons must not reuse Aman onset")),
+    )
+
+    for season in ("aus", "boro"):
+        response = client.get(
+            "/advisory", params={"district": "Rajshahi", "crop": "rice", "season": season}
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["status"] == "insufficient_data"
+        assert body["season"] == season
+        assert body["annual_comparison"] is None
+        assert body["recommended_shift_days"] is None
+        assert body["gdd_summary"] is None
+        assert body["calendar_references"]
+        assert "monsoon" in body["message_en"].lower() or "rainfall" in body["message_en"].lower()

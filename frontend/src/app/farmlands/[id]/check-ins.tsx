@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useState } from 'react';
 import {
   ImageBackground,
@@ -7,9 +8,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { FieldBottomNav, FieldIcon, FieldScreenHeader } from '../../../components/field-screen-ui';
@@ -65,7 +66,7 @@ export default function CheckIns() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const farmId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const compact = width < 375;
   const { farmlands, addCheckIn, updateTaskStatus } = useAppContext();
   const farm = farmlands.find(item => item.id === farmId);
@@ -268,9 +269,9 @@ const styles = StyleSheet.create({
   heroShade: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(19, 45, 27, .04)' },
   heroCopy: { position: 'absolute', top: 0, left: 0, bottom: 0, width: '70%', paddingLeft: 10, paddingRight: 6, paddingTop: 6, backgroundColor: PAPER, borderTopRightRadius: 42, borderBottomRightRadius: 36 },
   heroCopyCompact: { width: '74%', paddingLeft: 8 },
-  heroTitle: { color: INK, fontFamily: 'Georgia', fontWeight: '700', fontSize: 24, lineHeight: 28 },
+  heroTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 24, lineHeight: 28 },
   heroTitleCompact: { fontSize: 22, lineHeight: 26 },
-  heroSubhead: { color: INK, fontFamily: 'Georgia', fontSize: 13, lineHeight: 16, fontWeight: '700' },
+  heroSubhead: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13, lineHeight: 16, fontWeight: '700' },
   heroSubheadCompact: { fontSize: 12 },
   heroDescription: { color: MUTED, fontSize: 10, lineHeight: 13, marginTop: 2 },
   heroDescriptionCompact: { fontSize: 9.5, lineHeight: 12 },
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   weekBadge: { height: 23, minWidth: 59, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, borderRadius: 15, backgroundColor: '#eaf2e6' },
   weekText: { color: GREEN_DARK, fontSize: 9, fontWeight: '600' },
   card: { paddingHorizontal: 8, paddingVertical: 6, marginBottom: 7, borderWidth: 1, borderColor: BORDER, borderRadius: 17, backgroundColor: CARD, boxShadow: '0px 1px 5px rgba(79, 80, 55, 0.05)' },
-  sectionTitle: { color: INK, fontFamily: 'Georgia', fontSize: 17, lineHeight: 21, fontWeight: '700' },
+  sectionTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, lineHeight: 21, fontWeight: '700' },
   sectionTitleCompact: { fontSize: 16, lineHeight: 20 },
   choiceRows: { marginTop: 1 },
   choiceRow: { minHeight: 28, flexDirection: 'row', alignItems: 'center', gap: 5, borderBottomWidth: 1, borderBottomColor: '#efeee8' },
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   weatherWash: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(190, 219, 241, .82)' },
   weatherIcon: { width: 37, paddingTop: 3, alignItems: 'center' },
   weatherCopy: { flex: 1, minWidth: 0, paddingRight: 4 },
-  weatherTitle: { color: INK, fontFamily: 'Georgia', fontSize: 14, lineHeight: 17, fontWeight: '700' },
+  weatherTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, lineHeight: 17, fontWeight: '700' },
   weatherText: { color: '#173958', fontSize: 9, lineHeight: 12, marginTop: 1 },
   weatherHint: { color: '#4d6277', fontSize: 8.5, lineHeight: 11, marginTop: 2 },
   weatherAction: { position: 'absolute', right: 7, bottom: 6, minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 7, borderRadius: 16, backgroundColor: GREEN },
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
   modalBackdrop: { flex: 1, justifyContent: 'center', paddingHorizontal: 20, backgroundColor: 'rgba(18, 33, 27, .42)' },
   historyModal: { width: '100%', maxWidth: 460, maxHeight: '76%', alignSelf: 'center', padding: 18, borderRadius: 20, backgroundColor: PAPER },
   modalHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12 },
-  modalTitle: { color: INK, fontFamily: 'Georgia', fontSize: 21, fontWeight: '700' },
+  modalTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 21, fontWeight: '700' },
   modalSubtitle: { marginTop: 3, color: MUTED, fontSize: 12 },
   closeButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#efeee7' },
   historyList: { flexGrow: 0 },

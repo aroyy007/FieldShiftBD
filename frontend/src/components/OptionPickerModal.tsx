@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 12, paddingBottom: 18 },
   scrim: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(16, 24, 32, 0.38)' },
   sheet: { maxHeight: '80%', padding: 14, borderRadius: 18, backgroundColor: PAPER },
-  title: { color: INK, fontFamily: 'Georgia', fontSize: 19, lineHeight: 24, fontWeight: '700', marginBottom: 8 },
+  title: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, lineHeight: 24, fontWeight: '700', marginBottom: 8 },
   search: { minHeight: 42, paddingHorizontal: 12, marginBottom: 6, borderWidth: 1, borderColor: '#e2e0d8', borderRadius: 10, backgroundColor: '#f8f7f2', color: INK, fontSize: 15 },
   list: { flexGrow: 0 },
   empty: { paddingVertical: 14, color: '#52677a', fontSize: 14 },

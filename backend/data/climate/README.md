@@ -26,3 +26,11 @@ publishing any derived or source asset.
 
 The checked-in fixtures under `backend/tests/fixtures/foundation/` are
 synthetic test data and are not climate evidence.
+
+BRRI Aman calendar research is recorded in
+[`AMAN_CALENDAR_SOURCE_REVIEW.md`](AMAN_CALENDAR_SOURCE_REVIEW.md), with a
+machine-readable but explicitly unreviewed candidate at
+[`candidates/aman_brri_dhan80.json`](candidates/aman_brri_dhan80.json). These
+research files are not production cache bundles or approved agricultural
+knowledge. Do not import them as recommendations until the documented expert
+review is complete.

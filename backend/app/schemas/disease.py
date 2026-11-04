@@ -9,7 +9,9 @@ from app.schemas.farm_state import ProblemRead
 
 DiseaseOutcome = Literal["healthy", "uncertain", "possible_disease"]
 ConfidenceLevel = Literal["low", "moderate", "high"]
-ProblemSyncStatus = Literal["not_required", "created", "reused", "failed"]
+ProblemSyncStatus = Literal[
+    "not_required", "awaiting_confirmation", "declined", "created", "reused", "failed"
+]
 VerificationStatus = Literal[
     "not_configured",
     "verified_healthy",

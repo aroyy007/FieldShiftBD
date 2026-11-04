@@ -80,7 +80,7 @@ test('farmland mapping uses persisted M1, M3, and M6-compatible values only', ()
     id: 'farm-1', name: 'North Field', division: 'Dhaka', district: 'Gazipur',
     upazila: null, village_or_locality: null, land_area_sqm: '8093.7128448',
     land_area_display_unit: 'acre', soil_type: 'Clay loam',
-    irrigation_available: true, water_source: 'Tube well',
+    irrigation_available: true, water_source: 'Tube well', previous_crop: 'Mustard',
   }, {
     active_season: { id: 'season-1', crop_name: 'Aman Rice', planting_date: '2026-07-01', expected_harvest_date: '2026-11-01' },
     current_growth_stage: { id: 'stage-2', name: 'Vegetative', sequence: 2, start_day: 12, end_day: 34 },
@@ -103,6 +103,7 @@ test('farmland mapping uses persisted M1, M3, and M6-compatible values only', ()
 
   assert.equal(farm.id, 'farm-1');
   assert.equal(farm.crop, 'Aman Rice');
+  assert.equal(farm.previousCrop, 'Mustard');
   assert.equal(farm.acreage, 2);
   assert.equal(farm.growthStage, 'Vegetative');
   assert.equal(farm.tasks[0].id, 'task-1');

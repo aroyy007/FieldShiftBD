@@ -16,6 +16,12 @@ datasets:
 
 A ResNet50-based model achieving 96.39% accuracy for classifying 94 different crop disease conditions across 10 major crop types in Bangladesh.
 
+## License and attribution
+
+This checkpoint is redistributed unchanged from [Saon110's Hugging Face model repository](https://huggingface.co/Saon110/bd-crop-vegetable-plant-disease-model). Its model card declares the [Creative Commons Attribution-NonCommercial 4.0 International license (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/). Credit Saon110 and link to the model card when reusing it. The license does not permit commercial use. The training dataset has separate terms; this repository does not include that dataset.
+
+The checkpoint in this folder is stored with Git LFS. The accuracy figures below are claims from the upstream model card and have not been independently validated by FieldShift on representative field images. FieldShift uses the result for image screening, not as a confirmed diagnosis.
+
 ## Model Details
 
 - **Architecture**: ResNet50 with custom classifier (2048→512→94)

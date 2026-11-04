@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
@@ -7,9 +8,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -27,8 +28,6 @@ const GREEN = '#07583f';
 const INK = '#0a392f';
 const MUTED = '#65717b';
 const PALE_GREEN = '#eef4e6';
-const SERIF_FONT = Platform.select({ web: 'Georgia', default: 'serif' }) ?? 'serif';
-const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 'sans-serif';
 const FOOTER_IMAGE = require('../../../assets/images/verification-rice-field.png');
 
 export default function VerifyPhone() {
@@ -36,7 +35,7 @@ export default function VerifyPhone() {
   const [secondsLeft, setSecondsLeft] = useState(52);
   const [deliveryMethod, setDeliveryMethod] = useState<'sms' | 'call'>('sms');
   const [error, setError] = useState('');
-  const { height, width } = useWindowDimensions();
+  const { height, width } = useHydrationSafeWindowDimensions();
   const router = useRouter();
   const { user } = useAppContext();
   const { phone: phoneParam } = useLocalSearchParams<{ phone?: string }>();
@@ -298,23 +297,23 @@ const styles = StyleSheet.create({
     }),
   },
   brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
-  brandName: { color: INK, fontFamily: SERIF_FONT, fontSize: 21, fontWeight: '700', lineHeight: 25, letterSpacing: -0.55 },
-  brandTagline: { color: MUTED, fontFamily: SANS_FONT, fontSize: 13, lineHeight: 17 },
+  brandName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 21, fontWeight: '700', lineHeight: 25, letterSpacing: -0.55 },
+  brandTagline: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13, lineHeight: 17 },
   intro: { marginTop: 18, alignItems: 'center' },
   compactIntro: { marginTop: 12 },
   tinyIntro: { marginTop: 7 },
-  title: { color: '#073c32', fontFamily: SERIF_FONT, fontWeight: '700', lineHeight: 1.13, letterSpacing: -1.05, textAlign: 'center' },
-  subtitle: { marginTop: 5, color: MUTED, fontFamily: SANS_FONT, fontSize: 17.5, fontWeight: '400', lineHeight: 23, letterSpacing: -0.12, textAlign: 'center' },
+  title: { color: '#073c32', fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', lineHeight: 1.13, letterSpacing: -1.05, textAlign: 'center' },
+  subtitle: { marginTop: 5, color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17.5, fontWeight: '400', lineHeight: 23, letterSpacing: -0.12, textAlign: 'center' },
   compactSubtitle: { marginTop: 3, fontSize: 15.5, lineHeight: 21 },
   tinySubtitle: { marginTop: 2, fontSize: 14, lineHeight: 18 },
   phoneLine: { marginTop: 9, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14 },
   compactPhoneLine: { marginTop: 6, gap: 9 },
   tinyPhoneLine: { marginTop: 4, gap: 7 },
-  phoneNumber: { flexShrink: 0, color: '#0a2925', fontFamily: SERIF_FONT, fontSize: 21.5, fontWeight: '700', lineHeight: 28, letterSpacing: -0.35 },
+  phoneNumber: { flexShrink: 0, color: '#0a2925', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 21.5, fontWeight: '700', lineHeight: 28, letterSpacing: -0.35 },
   compactPhoneNumber: { fontSize: 20, lineHeight: 26, letterSpacing: -0.4 },
   tinyPhoneNumber: { fontSize: 18, lineHeight: 22, letterSpacing: -0.45 },
   editButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 2 },
-  editText: { color: GREEN, fontFamily: SANS_FONT, fontSize: 17, fontWeight: '700', lineHeight: 22, textDecorationLine: 'underline' },
+  editText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, fontWeight: '700', lineHeight: 22, textDecorationLine: 'underline' },
   otpRow: { height: 60, marginTop: 14, marginHorizontal: 6, flexDirection: 'row', gap: 8, position: 'relative' },
   compactOtpRow: { height: 55, marginTop: 16, gap: 7 },
   tinyOtpRow: { height: 49, marginTop: 12, gap: 6, marginHorizontal: 2 },
@@ -322,39 +321,39 @@ const styles = StyleSheet.create({
   compactOtpCell: { borderRadius: 12 },
   tinyOtpCell: { borderRadius: 10 },
   otpCellActive: { borderColor: GREEN, borderWidth: 2 },
-  otpDigit: { color: INK, fontFamily: SANS_FONT, fontSize: 24, fontWeight: '500', lineHeight: 30 },
+  otpDigit: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 24, fontWeight: '500', lineHeight: 30 },
   otpCaret: { width: 2, height: 24, borderRadius: 1, backgroundColor: INK },
   otpInput: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.02, color: 'transparent', backgroundColor: 'transparent', fontSize: 22, borderWidth: 0, padding: 0, textAlign: 'center' },
   resendRow: { minHeight: 24, marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 11 },
   compactResendRow: { minHeight: 22, marginTop: 12, gap: 8 },
   tinyResendRow: { minHeight: 20, marginTop: 8, gap: 4, flexWrap: 'nowrap' },
-  resendPrompt: { color: MUTED, fontFamily: SANS_FONT, fontSize: 16.5, lineHeight: 23, letterSpacing: -0.28 },
+  resendPrompt: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16.5, lineHeight: 23, letterSpacing: -0.28 },
   resendButton: { minHeight: 36, justifyContent: 'center' },
-  resendText: { color: GREEN, fontFamily: SANS_FONT, fontSize: 16.5, fontWeight: '700', lineHeight: 23, letterSpacing: -0.25 },
+  resendText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16.5, fontWeight: '700', lineHeight: 23, letterSpacing: -0.25 },
   compactResendText: { fontSize: 14.5, lineHeight: 20, letterSpacing: -0.2 },
   tinyResendText: { fontSize: 12.5, lineHeight: 18, letterSpacing: -0.3 },
-  errorText: { marginTop: 2, color: '#b3261e', fontFamily: SANS_FONT, fontSize: 12.5, lineHeight: 17, textAlign: 'center' },
+  errorText: { marginTop: 2, color: '#b3261e', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.5, lineHeight: 17, textAlign: 'center' },
   primaryButton: { height: 50, marginTop: 15, borderRadius: 29, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' },
   compactPrimaryButton: { height: 48, marginTop: 17 },
   tinyPrimaryButton: { height: 44, marginTop: 12 },
   primaryGradient: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  primaryButtonText: { color: PAPER, fontFamily: SERIF_FONT, fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  primaryButtonText: { color: PAPER, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 22, fontWeight: '700', lineHeight: 28 },
   arrowBubble: { position: 'absolute', right: 6, top: 4, width: 42, height: 42, borderRadius: 22, backgroundColor: '#fffef9', alignItems: 'center', justifyContent: 'center' },
   dividerRow: { height: 18, marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 14 },
   compactDividerRow: { height: 16, marginTop: 11 },
   tinyDividerRow: { height: 14, marginTop: 8 },
   dividerLine: { height: 1, flex: 1, backgroundColor: '#c9cbc4' },
-  dividerText: { color: '#68727b', fontFamily: SANS_FONT, fontSize: 15.5, lineHeight: 20 },
+  dividerText: { color: '#68727b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 20 },
   callButton: { height: 48, marginTop: 12, borderWidth: 1.4, borderColor: GREEN, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: 'rgba(255,253,247,0.55)' },
   compactCallButton: { height: 44, marginTop: 10 },
   tinyCallButton: { height: 42, marginTop: 8 },
-  callButtonText: { color: INK, fontFamily: SERIF_FONT, fontSize: 20, fontWeight: '700', lineHeight: 26, letterSpacing: -0.35 },
+  callButtonText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 20, fontWeight: '700', lineHeight: 26, letterSpacing: -0.35 },
   securitySpacer: { height: 0 },
   expandedSecuritySpacer: { flexGrow: 1, minHeight: 12 },
   securityNote: { minHeight: 70, marginTop: 12, paddingHorizontal: 15, paddingVertical: 9, flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 20, backgroundColor: PALE_GREEN },
   compactSecurityNote: { minHeight: 60, marginTop: 10, paddingHorizontal: 12, paddingVertical: 7, gap: 10, borderRadius: 18 },
   tinySecurityNote: { minHeight: 56, marginTop: 8, paddingHorizontal: 10, paddingVertical: 6, gap: 8, borderRadius: 16 },
-  securityText: { flex: 1, color: INK, fontFamily: SANS_FONT, fontSize: 17, lineHeight: 24, letterSpacing: -0.18 },
+  securityText: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, lineHeight: 24, letterSpacing: -0.18 },
   compactSecurityText: { fontSize: 15.5, lineHeight: 21 },
   tinySecurityText: { fontSize: 14, lineHeight: 19 },
   pressed: { opacity: 0.82 },

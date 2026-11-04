@@ -75,6 +75,8 @@ export type Farmland = {
   equipment?: string[];
   budgetAmount?: number | null;
   budgetCurrency?: string | null;
+  /** Optional farmer-reported crop from the last season; not verified season history. */
+  previousCrop?: string | null;
   activeSeasonId?: string | null;
   plantingDate?: string | null;
   expectedHarvestDate?: string | null;

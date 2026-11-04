@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useEffect, useState } from 'react';
 import {
   Image,
@@ -19,8 +20,6 @@ const GREEN = '#07583f';
 const INK = '#0a392f';
 const MUTED = '#65717b';
 const PALE_GREEN = '#f1f5e9';
-const SERIF_FONT = Platform.select({ web: 'Georgia', default: 'serif' }) ?? 'serif';
-const SANS_FONT = Platform.select({ web: 'Arial', default: 'sans-serif' }) ?? 'sans-serif';
 
 type Language = 'en' | 'bn';
 
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     color: INK,
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 23,
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
   },
   brandTagline: {
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 12.5,
     lineHeight: 16,
   },
@@ -242,7 +241,7 @@ const styles = StyleSheet.create({
   },
   languageText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -261,7 +260,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: '#073c32',
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 40,
     fontWeight: '700',
     lineHeight: 41,
@@ -270,7 +269,7 @@ const styles = StyleSheet.create({
   heroDescription: {
     marginTop: 8,
     color: MUTED,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 17.5,
     fontWeight: '400',
     lineHeight: 22,
@@ -307,7 +306,7 @@ const styles = StyleSheet.create({
   },
   featureLabel: {
     color: '#102e2e',
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 15.5,
     fontWeight: '400',
     lineHeight: 18,
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#fffdf7',
-    fontFamily: SERIF_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 23,
     fontWeight: '700',
     lineHeight: 29,
@@ -353,7 +352,7 @@ const styles = StyleSheet.create({
   },
   signInButtonText: {
     color: INK,
-    fontFamily: SANS_FONT,
+    fontFamily: ENGLISH_FONT_FAMILY,
     fontSize: 16,
     lineHeight: 21,
     textAlign: 'center',

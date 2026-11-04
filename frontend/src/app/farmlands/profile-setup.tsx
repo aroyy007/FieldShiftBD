@@ -1,3 +1,4 @@
+import { ENGLISH_FONT_FAMILY } from '@/theme/fonts';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Href,
@@ -13,9 +14,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
+import { useHydrationSafeWindowDimensions } from '../../hooks/useHydrationSafeWindowDimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg';
 import { BrandPlantIcon } from '../../components/icons';
@@ -30,8 +31,6 @@ const PAPER = '#fffdf7';
 const INK = '#083a33';
 const GREEN = '#17643b';
 const MUTED = '#687587';
-const SERIF = 'Georgia';
-const SANS = 'Arial';
 
 type FarmProfileValues = {
   location: string;
@@ -83,7 +82,7 @@ const PROFILE_FIELDS: { key: keyof FarmProfileValues; label: string }[] = [
 export default function FarmProfileSetup() {
   const router = useRouter();
   const { user, profile, farmlands, logout, updateFarmland, updateFarmerProfile } = useAppContext();
-  const { width } = useWindowDimensions();
+  const { width } = useHydrationSafeWindowDimensions();
   const compact = width < 380;
   const farm = farmlands[0];
   const farmlandId = farm?.id;
@@ -570,8 +569,8 @@ const styles = StyleSheet.create({
   page: { flex: 1, minHeight: 0, overflow: 'hidden', width: '100%', maxWidth: 480, alignSelf: 'center', backgroundColor: PAPER },
   header: { minHeight: 49, marginTop: 3, paddingHorizontal: 19, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  brandName: { color: INK, fontFamily: SERIF, fontWeight: '700', fontSize: 18, lineHeight: 22, letterSpacing: -0.35 },
-  brandTagline: { color: MUTED, fontFamily: SANS, fontSize: 12.5, lineHeight: 16 },
+  brandName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 18, lineHeight: 22, letterSpacing: -0.35 },
+  brandTagline: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.5, lineHeight: 16 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 13 },
   bellButton: { width: 37, height: 42, alignItems: 'center', justifyContent: 'center' },
   avatarButton: { width: 42, height: 42, borderRadius: 22, padding: 2, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e9e6d8' },
@@ -579,9 +578,9 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, minHeight: 0 },
   scrollContent: { paddingHorizontal: 17, paddingTop: 9, paddingBottom: 8, gap: 8 },
   intro: { paddingHorizontal: 4, marginBottom: 1 },
-  title: { color: INK, fontFamily: SERIF, fontSize: 29, fontWeight: '700', lineHeight: 35, letterSpacing: -0.8 },
+  title: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 29, fontWeight: '700', lineHeight: 35, letterSpacing: -0.8 },
   titleCompact: { fontSize: 27, lineHeight: 33 },
-  subtitle: { color: MUTED, fontFamily: SANS, fontSize: 15, lineHeight: 19, letterSpacing: -0.12 },
+  subtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15, lineHeight: 19, letterSpacing: -0.12 },
   progressCard: { minHeight: 98, overflow: 'hidden', borderRadius: 18, borderWidth: 1, borderColor: '#fff', backgroundColor: '#fffefa', boxShadow: '0px 3px 12px rgba(30,54,37,0.07)', elevation: 2 },
   progressImage: { flex: 1, minHeight: 98, justifyContent: 'center' },
   progressImageAsset: { resizeMode: 'cover', opacity: 0.94 },
@@ -590,18 +589,18 @@ const styles = StyleSheet.create({
   progressHeading: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   progressIconCircle: { width: 39, height: 39, borderRadius: 22, backgroundColor: 'rgba(237,244,228,0.94)', alignItems: 'center', justifyContent: 'center' },
   progressCopy: { minWidth: 0, flexShrink: 1 },
-  progressTitle: { color: INK, fontFamily: SERIF, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.45 },
-  progressSubtitle: { color: MUTED, fontFamily: SANS, fontSize: 13.5, lineHeight: 18 },
-  progressPercent: { color: '#095d43', fontFamily: SERIF, fontWeight: '700', fontSize: 28, lineHeight: 32, marginTop: 1, marginLeft: 5 },
+  progressTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.45 },
+  progressSubtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13.5, lineHeight: 18 },
+  progressPercent: { color: '#095d43', fontFamily: ENGLISH_FONT_FAMILY, fontWeight: '700', fontSize: 28, lineHeight: 32, marginTop: 1, marginLeft: 5 },
   progressTrack: { height: 9, marginHorizontal: 1, borderRadius: 8, backgroundColor: 'rgba(159,174,149,0.37)', overflow: 'hidden' },
   progressFill: { width: '72%', height: '100%', borderRadius: 8, backgroundColor: '#176b3d' },
   summaryCard: { paddingHorizontal: 7, paddingTop: 7, paddingBottom: 7, gap: 4, borderRadius: 17, borderWidth: 1, borderColor: '#fff', backgroundColor: 'rgba(255,254,250,0.94)', boxShadow: '0px 3px 12px rgba(30,54,37,0.06)', elevation: 2 },
   summaryHeader: { minHeight: 25, paddingHorizontal: 3, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4, marginBottom: 1 },
   summaryHeading: { flexDirection: 'row', alignItems: 'center', gap: 7, flexShrink: 1 },
-  sectionTitle: { color: INK, fontFamily: SERIF, fontSize: 15.5, lineHeight: 20, fontWeight: '700', letterSpacing: -0.55 },
+  sectionTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15.5, lineHeight: 20, fontWeight: '700', letterSpacing: -0.55 },
   sectionTitleCompact: { fontSize: 14.5, lineHeight: 18 },
   editLink: { minHeight: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0, paddingLeft: 1 },
-  editLinkText: { color: MUTED, fontFamily: SANS, fontSize: 9, lineHeight: 13 },
+  editLinkText: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 9, lineHeight: 13 },
   editLinkTextCompact: { fontSize: 8.5 },
   summaryRow: { flexDirection: 'row', gap: 5, minHeight: 41 },
   summaryRowCompact: { minHeight: 43 },
@@ -609,15 +608,15 @@ const styles = StyleSheet.create({
   infoCardWide: { flex: 1 },
   infoIconCircle: { width: 29, height: 29, flexShrink: 0, borderRadius: 16, backgroundColor: '#eef4e6', alignItems: 'center', justifyContent: 'center' },
   infoCopy: { flex: 1, minWidth: 0 },
-  infoLabel: { color: '#162c32', fontFamily: SANS, fontSize: 10.8, lineHeight: 13, fontWeight: '500' },
-  infoValue: { color: MUTED, fontFamily: SANS, fontSize: 10.4, lineHeight: 12.5 },
+  infoLabel: { color: '#162c32', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.8, lineHeight: 13, fontWeight: '500' },
+  infoValue: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.4, lineHeight: 12.5 },
   cropSection: { paddingHorizontal: 8, paddingTop: 8, paddingBottom: 7, gap: 6, borderRadius: 17, borderWidth: 1, borderColor: '#fff', backgroundColor: 'rgba(255,254,250,0.96)', boxShadow: '0px 3px 12px rgba(30,54,37,0.06)', elevation: 2 },
   cropSectionHeading: { flexDirection: 'row', alignItems: 'flex-start', gap: 7 },
   cropSectionIcon: { width: 25, alignItems: 'center', paddingTop: 2 },
   cropHeadingCopy: { flex: 1, minWidth: 0 },
-  cropHeading: { color: INK, fontFamily: SERIF, fontSize: 17, lineHeight: 20, fontWeight: '700', letterSpacing: -0.4 },
+  cropHeading: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 17, lineHeight: 20, fontWeight: '700', letterSpacing: -0.4 },
   cropHeadingCompact: { fontSize: 15.5, lineHeight: 18 },
-  cropSubtitle: { color: MUTED, fontFamily: SANS, fontSize: 12.2, lineHeight: 16, marginTop: 2 },
+  cropSubtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12.2, lineHeight: 16, marginTop: 2 },
   cropOptions: { flexDirection: 'row', gap: 6 },
   cropCard: { flex: 1, minWidth: 0, overflow: 'hidden', borderRadius: 14, borderWidth: 1, borderColor: '#f1eee5', backgroundColor: '#fffefa' },
   cropCardSelected: { borderWidth: 2, borderColor: '#17643b' },
@@ -627,42 +626,42 @@ const styles = StyleSheet.create({
   cropImageAsset: { resizeMode: 'cover' },
   selectedMark: { width: 24, height: 24, marginTop: 4, marginRight: 4, borderRadius: 13, borderWidth: 1.4, borderColor: '#fff', backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
   cropCopy: { minHeight: 43, paddingHorizontal: 6, paddingTop: 4, paddingBottom: 5 },
-  cropName: { color: INK, fontFamily: SERIF, fontSize: 14.4, lineHeight: 18, fontWeight: '700', letterSpacing: -0.3 },
+  cropName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14.4, lineHeight: 18, fontWeight: '700', letterSpacing: -0.3 },
   cropNameCompact: { fontSize: 13.1, lineHeight: 16 },
-  cropDescription: { color: MUTED, fontFamily: SANS, fontSize: 10.7, lineHeight: 13 },
+  cropDescription: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.7, lineHeight: 13 },
   cropDescriptionCompact: { fontSize: 9.8, lineHeight: 12 },
   continueButton: { minHeight: 46, marginHorizontal: 6, paddingLeft: 15, paddingRight: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 27, backgroundColor: '#145b3a', boxShadow: '0px 3px 8px rgba(12,72,46,0.14)', elevation: 2 },
-  continueText: { flex: 1, color: PAPER, fontFamily: SERIF, fontSize: 19, fontWeight: '700', lineHeight: 25, textAlign: 'center', marginLeft: 30 },
+  continueText: { flex: 1, color: PAPER, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 19, fontWeight: '700', lineHeight: 25, textAlign: 'center', marginLeft: 30 },
   continueArrow: { width: 36, height: 36, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: PAPER },
   editButton: { minHeight: 42, marginHorizontal: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 23, borderWidth: 1.2, borderColor: '#17643b', backgroundColor: 'rgba(255,253,247,0.9)' },
-  editButtonText: { color: INK, fontFamily: SANS, fontSize: 15, lineHeight: 20, fontWeight: '500' },
+  editButtonText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 15, lineHeight: 20, fontWeight: '500' },
   tabBar: { minHeight: 56, marginHorizontal: 8, marginBottom: 2, paddingHorizontal: 6, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,254,250,0.97)', borderRadius: 18, borderWidth: 1, borderColor: '#fff', boxShadow: '0px -2px 12px rgba(48,55,44,0.08)', elevation: 4 },
   tabButton: { flex: 1, minWidth: 0, alignItems: 'stretch', justifyContent: 'center' },
   tabActive: { minHeight: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', gap: 0 },
   tabActiveSelected: { backgroundColor: '#edf3e8' },
-  tabLabel: { color: '#53637b', fontFamily: SANS, fontSize: 10.5, lineHeight: 14 },
+  tabLabel: { color: '#53637b', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 10.5, lineHeight: 14 },
   tabLabelActive: { color: INK, fontWeight: '600' },
   modalRoot: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22 },
   modalScrim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(11,28,22,0.34)' },
   editModal: { width: '100%', maxWidth: 430, maxHeight: '88%', padding: 18, borderRadius: 20, backgroundColor: PAPER, boxShadow: '0px 8px 28px rgba(0,0,0,0.2)', elevation: 10 },
-  modalTitle: { color: INK, fontFamily: SERIF, fontSize: 22, fontWeight: '700', lineHeight: 28 },
-  modalSubtitle: { color: MUTED, fontFamily: SANS, fontSize: 14, lineHeight: 20, marginTop: 3, marginBottom: 10 },
+  modalTitle: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 22, fontWeight: '700', lineHeight: 28 },
+  modalSubtitle: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, lineHeight: 20, marginTop: 3, marginBottom: 10 },
   editFields: { flexGrow: 0 },
   editField: { marginBottom: 9 },
-  editFieldLabel: { color: INK, fontFamily: SANS, fontSize: 13, fontWeight: '600', marginBottom: 4 },
-  pickerValue: { color: INK, fontFamily: SANS, fontSize: 14, lineHeight: 40 },
-  editFieldInput: { minHeight: 42, paddingHorizontal: 11, borderRadius: 11, borderWidth: 1, borderColor: '#dfe5d8', color: INK, backgroundColor: '#fffefa', fontFamily: SANS, fontSize: 14 },
+  editFieldLabel: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 13, fontWeight: '600', marginBottom: 4 },
+  pickerValue: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, lineHeight: 40 },
+  editFieldInput: { minHeight: 42, paddingHorizontal: 11, borderRadius: 11, borderWidth: 1, borderColor: '#dfe5d8', color: INK, backgroundColor: '#fffefa', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14 },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 9, marginTop: 9 },
   modalCancel: { minHeight: 42, minWidth: 84, alignItems: 'center', justifyContent: 'center', borderRadius: 22, borderWidth: 1, borderColor: '#cbd4c8' },
-  modalCancelText: { color: INK, fontFamily: SANS, fontSize: 14, fontWeight: '600' },
+  modalCancelText: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '600' },
   modalSave: { minHeight: 42, minWidth: 120, alignItems: 'center', justifyContent: 'center', borderRadius: 22, backgroundColor: GREEN },
   modalSaveDisabled: { opacity: 0.6 },
-  modalSaveText: { color: '#fff', fontFamily: SANS, fontSize: 14, fontWeight: '600' },
-  saveError: { color: '#b42318', fontFamily: SANS, fontSize: 12, lineHeight: 16, marginTop: 8 },
+  modalSaveText: { color: '#fff', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '600' },
+  saveError: { color: '#b42318', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, marginTop: 8 },
   profileMenu: { position: 'absolute', top: 62, right: 18, width: 220, padding: 15, borderRadius: 16, backgroundColor: PAPER, boxShadow: '0px 5px 16px rgba(0,0,0,0.18)', elevation: 8 },
-  profileMenuName: { color: INK, fontFamily: SERIF, fontSize: 16, fontWeight: '700' },
-  profileMenuPhone: { color: MUTED, fontFamily: SANS, fontSize: 12, marginTop: 2, marginBottom: 10 },
+  profileMenuName: { color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 16, fontWeight: '700' },
+  profileMenuPhone: { color: MUTED, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, marginTop: 2, marginBottom: 10 },
   menuAction: { minHeight: 42, justifyContent: 'center', borderTopWidth: 1, borderColor: '#eeeadd' },
-  menuActionText: { color: GREEN, fontFamily: SANS, fontSize: 14, fontWeight: '600' },
-  logoutText: { color: '#b54537', fontFamily: SANS, fontSize: 14, fontWeight: '600' },
+  menuActionText: { color: GREEN, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '600' },
+  logoutText: { color: '#b54537', fontFamily: ENGLISH_FONT_FAMILY, fontSize: 14, fontWeight: '600' },
 });

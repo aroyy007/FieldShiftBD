@@ -60,9 +60,10 @@ def load_district_climate_evidence(root: Path, district_input: str) -> DistrictC
 def public_advisory(root: Path, district_input: str, crop: str, season: str | None) -> PublicPlantingWindowEvidence:
     district = district_for_input(district_input)
     references = published_calendar_references(crop, season)
+    season_key = season.casefold().strip() if season else None
     common = {
         "district_code": district.code, "district_name": district.name,
-        "district_name_bn": district.name_bn, "season": season.casefold().strip() if season else None,
+        "district_name_bn": district.name_bn, "season": season_key,
         "calendar_references": references,
         "sms_bn": "প্রকাশিত জাতের ক্যালেন্ডার দেখুন। স্থানীয় অবস্থা যাচাই করুন; রোপণের তারিখ বদলের সুপারিশ এখনও যাচাই হয়নি।",
         "sms_en": "Check the published variety calendar and local conditions. A climate-based planting-date adjustment is not yet validated.",
@@ -71,6 +72,31 @@ def public_advisory(root: Path, district_input: str, crop: str, season: str | No
         return PublicPlantingWindowEvidence(
             status="needs_selection", message_bn="আমন, আউশ বা বোরো মৌসুম বেছে নিন।",
             message_en="Choose Aman, Aus or Boro to view published references and climate context.", **common,
+        )
+    if season_key != "aman":
+        # The current rainfall-onset definition is an exploratory monsoon/Aman
+        # definition. Reusing it for pre-monsoon Aus or irrigated Boro would
+        # imply a crop calendar rule that the sources and agronomy review do
+        # not support. Keep the published variety references visible, but do
+        # not fetch or display an irrelevant climate comparison.
+        return PublicPlantingWindowEvidence(
+            status="insufficient_data",
+            message_bn=(
+                "বর্তমান বৃষ্টির শুরু নির্ণয়ের পদ্ধতি শুধু আমন মৌসুমের পরীক্ষামূলক প্রেক্ষাপটে। "
+                "আউশ বা বোরোর জন্য আলাদা যাচাইকৃত পদ্ধতি ও পর্যাপ্ত প্রমাণ নেই; তাই তুলনা বা রোপণের তারিখের পরামর্শ দেখানো হচ্ছে না।"
+            ),
+            message_en=(
+                "The current rainfall-onset method is exploratory for Aman only. "
+                "A separate reviewed method and adequate evidence are not available for Aus or Boro, "
+                "so no comparison or planting-date advice is shown."
+            ),
+            limitations_bn=[
+                "প্রকাশিত জাতের ক্যালেন্ডার দেখা যাচ্ছে; NASA বৃষ্টির তুলনা, GDD বা রোপণের তারিখ বদলের নিয়ম এই মৌসুমের জন্য যাচাই করা হয়নি।"
+            ],
+            limitations_en=[
+                "Published variety calendars are shown; NASA rainfall comparison, GDD, and a planting-date adjustment rule have not been validated for this season."
+            ],
+            **common,
         )
     climate = load_district_climate_evidence(root, district.code)
     enough = climate.status == "provisional"

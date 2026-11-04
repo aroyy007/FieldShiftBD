@@ -18,6 +18,7 @@ export type FarmlandProfileDto = {
   equipment: string[];
   budget_amount?: number | string | null;
   budget_currency?: string | null;
+  previous_crop?: string | null;
   division_code?: string | null;
   district_code?: string | null;
   upazila_code?: string | null;
@@ -93,6 +94,7 @@ export type FarmlandCreateInput = {
   equipment?: string[];
   budget_amount?: number | null;
   budget_currency?: string;
+  previous_crop?: string | null;
 };
 
 export function normalizeBangladeshPhone(input: string): string {
@@ -220,6 +222,7 @@ export function mapFarmlandData(
     equipment: profile.equipment ?? [],
     budgetAmount: profile.budget_amount == null ? null : numberOrZero(profile.budget_amount),
     budgetCurrency: profile.budget_currency ?? 'BDT',
+    previousCrop: profile.previous_crop ?? null,
     activeSeasonId: state?.active_season?.id ?? null,
     plantingDate: state?.active_season?.planting_date ?? null,
     expectedHarvestDate: state?.active_season?.expected_harvest_date ?? null,

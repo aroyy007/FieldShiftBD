@@ -95,7 +95,7 @@ export default function PublicAdvisoryScreen() {
         {failed ? <Card><Text accessibilityRole="alert" style={styles.warning}>{bn ? 'এই জেলার জলবায়ু ক্যাশ এখন পাওয়া যায়নি। নিচে প্রকাশিত জাতের ক্যালেন্ডার দেখা যাবে।' : 'District climate cache is unavailable. Published variety calendars are available below.'}</Text></Card> : null}
         {result ? <Card>
           <Text style={styles.body}>{bn ? result.message_bn : result.message_en}</Text>
-          <Text style={styles.warning}>{bn ? 'পরীক্ষামূলক তুলনা: কৃষিবিদের পর্যালোচনা বাকি। রোপণের তারিখ বদলের সুপারিশ দেওয়া হয়নি।' : 'Exploratory comparison: agronomic review is pending. A planting-date adjustment has not been recommended.'}</Text>
+          {result.annual_comparison ? <Text style={styles.warning}>{bn ? 'পরীক্ষামূলক তুলনা: কৃষিবিদের পর্যালোচনা বাকি। রোপণের তারিখ বদলের সুপারিশ দেওয়া হয়নি।' : 'Exploratory comparison: agronomic review is pending. A planting-date adjustment has not been recommended.'}</Text> : null}
           <ClimateEvidenceCharts comparison={result.annual_comparison} gdd={result.gdd_summary} language={language} />
           {result.annual_comparison ? <Text style={styles.body}>{bn ? 'বৃষ্টির মধ্যম শুরুর পর্যবেক্ষিত পার্থক্য' : 'Observed median rainfall-onset difference'}: {result.annual_comparison.observed_shift_days ?? '—'} {bn ? 'দিন' : 'days'}</Text> : null}
           {(bn ? result.limitations_bn : result.limitations_en).map((item, index) => <Text key={index} style={styles.helper}>{item}</Text>)}

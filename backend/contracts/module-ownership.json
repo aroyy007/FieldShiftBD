@@ -652,6 +652,7 @@
       "invariants": [
         "disease result belongs to its authenticated farm",
         "low-confidence/healthy results do not create a problem",
+        "possible disease results create a problem only after explicit farmer confirmation and active consent",
         "M3 is the problem-state owner",
         "repeated issue sync reuses the existing open problem"
       ],
@@ -670,6 +671,8 @@
           "enum_values": {
             "DiseaseProblemSyncResponse.problem_sync": [
               "not_required",
+              "awaiting_confirmation",
+              "declined",
               "created",
               "reused",
               "failed"

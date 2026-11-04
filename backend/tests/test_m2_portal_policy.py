@@ -5,7 +5,7 @@ are built in memory only; nothing here is production data.
 """
 
 import copy
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
@@ -14,7 +14,9 @@ from app.services import m2_portal_policy as policy
 from app.services import source_captures
 from app.services.m2_source_policy import acceptance_method_for, is_valid_automated_acceptance
 
-EVALUATED_ON = date(2026, 10, 8)
+EVALUATED_ON = date.fromisoformat(
+    source_captures.capture_entry("portal/prod_tech_36.json")["retrieved_at"][:10]
+)
 CROP_ID = uuid4()
 
 
@@ -63,7 +65,7 @@ def test_harvest_period_months_must_appear_in_both_languages():
         policy.build_bilingual_content(claim, EVALUATED_ON)
 
 
-@pytest.mark.parametrize("evaluated_on", [date(2026, 10, 7), date(2027, 4, 7)])
+@pytest.mark.parametrize("evaluated_on", [EVALUATED_ON - timedelta(days=1), EVALUATED_ON + timedelta(days=181)])
 def test_future_dated_and_stale_captures_are_rejected(evaluated_on):
     with pytest.raises(policy.PortalPolicyError):
         policy.build_bilingual_content(_claim("potato-land-soil-v1"), evaluated_on)

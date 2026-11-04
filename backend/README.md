@@ -215,13 +215,22 @@ problem severity. The model does not produce verified symptoms or
 disease-specific treatment advice, so the API returns no observed symptoms and
 only conservative follow-up actions.
 
-Put the downloaded checkpoint at backend/model/crop_veg_plant_disease_model.pth
-or set DISEASE_MODEL_WEIGHTS_PATH. The class mapping is tracked at
-app/data/plant_disease_classes.json. Install base, test, and ML dependencies
-with pip install -r requirements.txt -r requirements-test.txt
--r requirements-ml.txt. The Docker image installs CPU PyTorch wheels. A clone
-does not contain the ignored checkpoint; mount or download it into the model
-directory before running inference.
+The checkpoint is stored at
+`backend/model/crop_veg_plant_disease_model.pth` with Git LFS. Run these
+commands after cloning and before building a deployable Docker image; without
+LFS, the checked-out file is only a small pointer:
+
+```bash
+git lfs install
+git lfs pull
+```
+
+You can set `DISEASE_MODEL_WEIGHTS_PATH` to use a separately mounted
+checkpoint. The class mapping is tracked at
+`app/data/plant_disease_classes.json`. Install base, test, and ML dependencies
+with `pip install -r requirements.txt -r requirements-test.txt -r requirements-ml.txt`.
+The Docker image installs CPU PyTorch wheels and includes the checkpoint when
+built from an LFS-complete checkout.
 
 The model repository declares CC BY-NC 4.0. Keep its attribution and
 non-commercial restriction in mind for any use outside the NASA challenge:

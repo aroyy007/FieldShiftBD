@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 import type { PlantingWindowEvidence } from '../services/m2-advisor';
 import { COLORS, TYPOGRAPHY } from '../theme/theme';
@@ -21,13 +21,14 @@ export default function ClimateEvidenceCharts({ comparison, gdd = null, language
   const periods = [comparison?.baseline_period ?? '2001–2012', comparison?.recent_period ?? '2013–2025'];
   const gddValues = gdd?.annual_values ?? [];
   const maximumGdd = Math.max(1, ...gddValues.map(item => item.total_degree_days ?? 0));
+  const decorativeSvgProps = Platform.OS === 'web' ? {} : { accessible: false };
 
   return (
     <View style={styles.root}>
       <Text style={styles.heading}>{bn ? 'বৃষ্টির শুরুর দুই সময়কালের তুলনা' : 'Rainfall onset: compare the two periods'}</Text>
       {comparison && values.length > 0 ? <>
         <Text style={styles.helper}>{bn ? 'প্রতি বিন্দু একটি বছর। একই দিনে একাধিক বছর হলে বিন্দুগুলো ওপরের দিকে সাজানো হয়েছে।' : 'Each dot is one year. Years with the same onset day are stacked vertically.'}</Text>
-        <Svg width="100%" height={250} viewBox="0 0 360 250" accessible={false}>
+        <Svg width="100%" height={250} viewBox="0 0 360 250" {...decorativeSvgProps}>
           {groups.map((group, index) => {
             const seen = new Map<number, number>();
             const y = index === 0 ? 102 : 207;
@@ -46,7 +47,7 @@ export default function ClimateEvidenceCharts({ comparison, gdd = null, language
       </> : <Text style={styles.helper}>{bn ? 'তুলনার জন্য যথেষ্ট বৃষ্টির তথ্য নেই।' : 'There are not enough rainfall observations to plot.'}</Text>}
       <Text style={styles.heading}>{bn ? 'বছরভিত্তিক তাপ সঞ্চয় (GDD)' : 'Annual thermal accumulation (GDD)'}</Text>
       {gdd && gddValues.length > 0 ? <>
-        <Svg width="100%" height={180} viewBox="0 0 360 180" accessible={false}>
+        <Svg width="100%" height={180} viewBox="0 0 360 180" {...decorativeSvgProps}>
           <Line x1={20} x2={340} y1={155} y2={155} stroke={COLORS.border} />
           {gddValues.map((item, index) => {
             const width = 320 / gddValues.length;

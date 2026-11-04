@@ -23,7 +23,7 @@ Preserve every other module's ownership and existing compatible behavior.
 User-facing reports: natural Bangla; keep technical names in English.
 
 Start by reading these saved repository files:
-1. Every applicable AGENTS.md, plus backend/guide.md and DB_SCHEMA.md.
+1. Every applicable AGENTS.md, plus backend/README.md, backend/M2_GUIDE.md, and DB_SCHEMA.md as relevant to your task.
 2. docs/plans/FINAL_IMPLEMENTATION_PLAN.md — active consolidated authority.
    Read its reconciled rules, your responsibilities and detailed source appendices.
 3. docs/plans/FOUNDATION_AND_PARALLEL_WORK.md — B00-B10 readiness,

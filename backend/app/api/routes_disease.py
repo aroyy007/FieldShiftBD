@@ -12,11 +12,13 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import BigInteger, cast, func, select
 from sqlalchemy.orm import Session
 
+from app.contracts.challenge.v1 import DiseaseProblemSyncRequest
 from app.core.auth import get_current_farmer_id
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.core import Crop
 from app.models.disease import DiseaseResult
+from app.models.foundation import ConsentRecord
 from app.schemas.disease import (
     DiseaseAnalysisResponse,
     DiseaseProblemSyncResponse,
@@ -393,41 +395,18 @@ def analyze_disease(
     db.refresh(result)
 
     problem: ProblemRead | None = None
-    problem_sync: Literal["not_required", "created", "reused", "failed"] = "not_required"
+    problem_sync: Literal[
+        "not_required", "awaiting_confirmation", "declined", "created", "reused", "failed"
+    ] = "not_required"
 
     if outcome == "possible_disease":
-        category = _category_for_label(prediction.label)
-        description = (
-            "DiseaseResult " + str(result.id) + ": possible " + issue
-            + "; model score " + format(score, ".2f") + "."
-        )
-        if growth_stage is not None:
-            description += " Growth stage: " + growth_stage.name + "."
-        try:
-            _lock_farmland_problem_sync(db, farmland_id)
-            sync_state = _get_state(gateway, farmland_id)
-            problem, problem_sync = _sync_open_problem(
-                gateway,
-                farmland_id,
-                active_season.id,
-                category,
-                description,
-                sync_state.open_problems,
-            )
-        except Module3ClientError:
-            logger.exception(
-                "Module 3 problem write failed for disease result %s",
-                result.id,
-            )
-            problem_sync = "failed"
-
+        problem_sync = "awaiting_confirmation"
         model_details = dict(result.model_details)
         model_details["problem_sync"] = problem_sync
-        if problem is not None:
-            model_details["farm_problem_id"] = str(problem.id)
         result.model_details = model_details
         db.commit()
         db.refresh(result)
+        message += " The result is saved; nothing is added to the farm log until you confirm."
 
     return DiseaseAnalysisResponse(
         disease_result=_result_read(result, current_crop),
@@ -450,12 +429,17 @@ def analyze_disease(
 def retry_disease_problem_sync(
     farmland_id: UUID,
     disease_result_id: UUID,
+    payload: DiseaseProblemSyncRequest,
     db: DbSession,
     farmer_id: CurrentFarmerId,
     gateway: M3Gateway,
 ) -> DiseaseProblemSyncResponse:
-    """Retry a saved issue's Module 3 write without uploading or analyzing its photo again."""
+    """Create a farm problem only after explicit confirmation and active consent."""
     _ = farmer_id
+    if payload.mode != "deferred_confirmation":
+        raise HTTPException(status_code=422, detail="Deferred farmer confirmation is required.")
+    if payload.farmland_id != farmland_id or payload.disease_result_id != disease_result_id:
+        raise HTTPException(status_code=409, detail="Confirmation scope does not match this scan and farm.")
     _get_state(gateway, farmland_id)  # Verify ownership before acquiring the database row lock.
     _lock_farmland_problem_sync(db, farmland_id)
     farm_state = _get_state(gateway, farmland_id)
@@ -489,6 +473,50 @@ def retry_disease_problem_sync(
             problem_sync=recorded_status,
             message="This result was already linked to Module 3; no duplicate problem was created.",
         )
+
+    if payload.assessment != "possible_issue" or payload.possible_issue != result.possible_issue:
+        raise HTTPException(status_code=409, detail="Confirmation does not match the saved scan result.")
+
+    if payload.farmer_confirmation == "pending":
+        return DiseaseProblemSyncResponse(
+            disease_result=_result_read(result, crop_name),
+            farm_problem=None,
+            problem_sync="awaiting_confirmation",
+            message="The scan is saved. No farm problem was created.",
+        )
+    if payload.farmer_confirmation == "denied":
+        details["problem_sync"] = "declined"
+        result.model_details = details
+        db.commit()
+        db.refresh(result)
+        return DiseaseProblemSyncResponse(
+            disease_result=_result_read(result, crop_name),
+            farm_problem=None,
+            problem_sync="declined",
+            message="The scan remains in history. No farm problem was created.",
+        )
+    if payload.farmer_confirmation != "confirmed":
+        raise HTTPException(status_code=422, detail="Explicit farmer confirmation is required.")
+
+    latest_consent = db.scalar(
+        select(ConsentRecord)
+        .where(
+            ConsentRecord.farmer_id == farmer_id,
+            ConsentRecord.purpose == "disease_problem_sync",
+        )
+        .order_by(ConsentRecord.version.desc())
+        .limit(1)
+    )
+    if (
+        latest_consent is None
+        or latest_consent.id != payload.consent_receipt_id
+        or latest_consent.decision != "granted"
+    ):
+        raise HTTPException(status_code=403, detail="Active consent is required to add this problem to the farm log.")
+
+    previous_idempotency_key = details.get("problem_sync_idempotency_key")
+    if previous_idempotency_key is not None and previous_idempotency_key != payload.idempotency_key:
+        raise HTTPException(status_code=409, detail="Use the same confirmation key when retrying this scan.")
 
     active_season = farm_state.active_season
     if active_season is None or active_season.id != result.season_id:
@@ -524,10 +552,18 @@ def retry_disease_problem_sync(
         logger.exception("Module 3 problem retry failed for disease result %s", result.id)
         problem = None
         problem_sync = "failed"
+        details["problem_sync"] = problem_sync
+        details["problem_sync_idempotency_key"] = payload.idempotency_key
+        details["problem_sync_consent_id"] = str(payload.consent_receipt_id)
+        result.model_details = details
+        db.commit()
+        db.refresh(result)
         message = "The result remains saved, but Module 3 is still unavailable. Try again later."
     else:
         details["problem_sync"] = problem_sync
         details["farm_problem_id"] = str(problem.id)
+        details["problem_sync_idempotency_key"] = payload.idempotency_key
+        details["problem_sync_consent_id"] = str(payload.consent_receipt_id)
         result.model_details = details
         db.commit()
         db.refresh(result)

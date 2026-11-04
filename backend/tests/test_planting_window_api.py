@@ -252,9 +252,14 @@ def test_rotation_comparison_returns_only_patterns_matching_documented_farm_scop
     farmland.land_type = "high"
     farmland.soil_type = "clay loam"
     farmland.irrigation_available = True
-    farmland.previous_crop = "Mustard"
     db.commit()
     db_dependency.close()
+
+    profile_update = client.patch(
+        f"/farmlands/{farmland_id}", json={"previous_crop": "Mustard"}
+    )
+    assert profile_update.status_code == 200, profile_update.text
+    assert profile_update.json()["previous_crop"] == "Mustard"
 
     response = client.post(
         f"/advisor/farmlands/{farmland_id}/rotation-comparisons"

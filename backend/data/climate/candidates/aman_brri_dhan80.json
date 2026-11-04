@@ -1,0 +1,58 @@
+{
+  "candidate_id": "bd-brri-dhan80-aman-calendar-v1",
+  "status": "draft_unreviewed",
+  "production_eligible": false,
+  "crop_catalog_name": "Rice",
+  "variety": "BRRI dhan80",
+  "season": "Aman",
+  "geographic_scope": {
+    "published_scope": "Generally almost all regions of Bangladesh",
+    "land_types": ["high", "medium-high"],
+    "field_or_village_suitability_established": false
+  },
+  "source_supported_calendar": {
+    "seedbed_sowing_start": "07-05",
+    "seedbed_sowing_end": "07-25",
+    "seedling_age_days_min": 25,
+    "seedling_age_days_max": 30,
+    "transplanting_start": "07-30",
+    "transplanting_end": "08-20",
+    "reported_life_duration_days": 130,
+    "harvest_start": "11-11",
+    "harvest_end": "11-30"
+  },
+  "gdd_candidate": {
+    "base_temperature_c": 10,
+    "cap_temperature_c": null,
+    "evidence_scope": "General rice base used in a BRRI Gazipur Aman 2016 study with BRRI dhan49 check; not BRRI dhan80-specific",
+    "paper_method": "(Tmax + Tmin) / 2 - Tbase",
+    "fieldshift_input_mapping_reviewed": false
+  },
+  "not_source_supported": {
+    "onset_search_window": null,
+    "onset_shift_policy": null,
+    "cultivar_specific_gdd_target": null,
+    "gdd_cap_temperature_c": null
+  },
+  "review": {
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "approval_status": "pending_agronomist_review",
+    "approval_required_for_production": true
+  },
+  "sources": [
+    {
+      "organization": "Bangladesh Rice Research Institute",
+      "title": "BRRI dhan80 Rice Profile",
+      "url": "https://riceprofile.brri.gov.bd/varieties/90",
+      "accessed": "2026-10-30"
+    },
+    {
+      "organization": "Bangladesh Rice Research Institute / Bangladesh Rice Journal",
+      "title": "Agroclimatic Indices of Rice (Oryza sativa L.) Influenced by Different Planting Times",
+      "doi": "10.3329/brj.v23i2.48251",
+      "url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-brri/2024/12/2ce90d9a86c245259ca2b160a2464781.pdf",
+      "accessed": "2026-10-30"
+    }
+  ]
+}
