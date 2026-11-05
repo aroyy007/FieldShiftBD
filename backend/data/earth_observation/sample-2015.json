@@ -1,0 +1,18 @@
+{
+  "district_code": "2015",
+  "spatial_scope": "user_supplied_search_rectangle_not_district_average",
+  "bbox": [
+    91.7,
+    22.2,
+    91.9,
+    22.5
+  ],
+  "results": [
+    {
+      "product_id": "modis",
+      "state": "acquisition_failed",
+      "error_type": "ValueError"
+    }
+  ],
+  "published_observations": 0
+}

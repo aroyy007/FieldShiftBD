@@ -1,0 +1,33 @@
+{
+  "version": "rotation-calendar-extension-2026-11-04",
+  "review_status": "source_verified_pending_agronomy_review",
+  "activation_allowed": false,
+  "profiles": [
+    {
+      "profile_id": "bd-rice-br14-boro-reference-v1",
+      "crop_code": "rice", "variety_name": "BR14", "variety_name_bn": "বিআর১৪", "season_code": "boro", "cultivation_method": "transplanted",
+      "establishment_window": {"start": "12-25", "end": "01-23"},
+      "harvest_window": {"start": "04-14", "end": "04-28"},
+      "source_url": "https://riceprofile.brri.gov.bd/varieties/25",
+      "source_id": "brri-riceprofile-variety-25", "accessed_on": "2026-11-04",
+      "scope_en": "Broad Bangladesh reference; irrigated high, medium-high and low land. Dates may vary by agro-region and ecosystem.",
+      "scope_bn": "বাংলাদেশের বিস্তৃত এলাকার তথ্য; সেচযুক্ত উঁচু, মাঝারি উঁচু ও নিচু জমি। অঞ্চল ও ইকোসিস্টেমভেদে সময় ভিন্ন হতে পারে।"
+    },
+    {
+      "profile_id": "bd-rice-brri-dhan33-transplanted-aman-reference-v1",
+      "crop_code": "rice", "variety_name": "BRRI dhan33", "variety_name_bn": "ব্রি ধান৩৩", "season_code": "aman", "cultivation_method": "transplanted",
+      "establishment_window": {"start": "07-25", "end": "08-10"},
+      "harvest_window": {"start": "11-05", "end": "11-14"},
+      "source_url": "https://riceprofile.brri.gov.bd/varieties/44",
+      "source_id": "brri-riceprofile-variety-44", "accessed_on": "2026-11-04",
+      "scope_en": "High/medium-high land, broad Bangladesh scope especially Rangpur; transplanted, rainfed Aman with conditional supplemental irrigation.",
+      "scope_bn": "উঁচু ও মাঝারি উঁচু জমি; বাংলাদেশে বিস্তৃত পরিসর, বিশেষত রংপুর; শর্তসাপেক্ষ সম্পূরক সেচসহ বৃষ্টিনির্ভর রোপা আমন।"
+    }
+  ],
+  "excluded": [
+    {"variety": "BR26", "reason": "Inspected transplanted dates conflict with seedbed chronology and do not match wet-seeded Aus."},
+    {"variety": "BRRI dhan29", "reason": "Source establishment date fields are blank; harvest-only record cannot define a crop interval."},
+    {"variety": "BARI Chola-2", "reason": "Cultivar-specific establishment/harvest window not verified."},
+    {"variety": "Sesbania rostrata", "reason": "Bangladesh green-manure establishment/incorporation dates not verified."}
+  ]
+}

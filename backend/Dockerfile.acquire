@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt requirements-geo.txt ./
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-geo.txt
+COPY . .
+CMD ["python", "-m", "scripts.prefetch_regional_evidence", "--help"]

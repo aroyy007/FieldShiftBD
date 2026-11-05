@@ -1,0 +1,24 @@
+{
+  "5081": {
+    "latitude": 24.35,
+    "longitude": 88.65,
+    "elevation_m": 11,
+    "source_file": "N24E088.SRTMGL1.hgt.zip",
+    "checksum_sha256": "01b690a00a0a1b60c8492a4156f1364742ffbaa52133a66f308c5388d2ac70aa",
+    "acquisition_method": "user_supplied_unverified",
+    "acquisition_date": "2000-02",
+    "product": "SRTMGL1 V003",
+    "native_support": "1 arc-second grid node"
+  },
+  "2015": {
+    "latitude": 22.35,
+    "longitude": 91.75,
+    "elevation_m": 0,
+    "source_file": "N22E091.SRTMGL1.hgt.zip",
+    "checksum_sha256": "138ef29a12452b274324c11e1f6dde6caaf766f272d819abd7a4250e123503b9",
+    "acquisition_method": "user_supplied_unverified",
+    "acquisition_date": "2000-02",
+    "product": "SRTMGL1 V003",
+    "native_support": "1 arc-second grid node"
+  }
+}
