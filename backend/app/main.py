@@ -12,6 +12,7 @@ from app.api import (
     routes_m1_catalog,
     routes_m1_profile,
     routes_m2_advisor,
+    routes_m2_rotation_v2,
     routes_m4_weather,
     routes_m5_actions,
     routes_m5_chat,
@@ -98,6 +99,7 @@ app.include_router(routes_m1_profile.router)   # Module 1 — Profile & Onboardi
 app.include_router(routes_m1_catalog.router)   # Module 1 — Crop catalog & reference data
 app.include_router(routes_m2_advisor.router)   # Module 2 — Crop Advisor
 app.include_router(routes_m2_advisor.public_router)
+app.include_router(routes_m2_rotation_v2.router)
 app.include_router(routes_m4_weather.router)   # Module 4 — Weather Intelligence
 app.include_router(routes_farm_state.router)   # Module 3 — Farm Brain
 app.include_router(routes_disease.router)      # Module 6 — Disease Detection

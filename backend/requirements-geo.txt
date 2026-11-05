@@ -1,0 +1,5 @@
+# Isolated geo worker only; successfully installed with Python 3.12/aarch64.
+numpy==2.1.3
+h5py==3.12.1
+pyproj==3.7.0
+shapely==2.0.6

@@ -1,3 +1,6 @@
 backend/model/*.pth filter=lfs diff=lfs merge=lfs -text
 # Pinned source captures are verified by SHA-256 of their exact bytes.
 backend/app/data/source_captures/** -text whitespace=cr-at-eol
+backend/data/earth_observation/raw/*.nc4 filter=lfs diff=lfs merge=lfs -text
+backend/data/earth_observation/raw/*.hdf filter=lfs diff=lfs merge=lfs -text
+backend/data/earth_observation/raw/*.zip filter=lfs diff=lfs merge=lfs -text

@@ -10,7 +10,8 @@ import {
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card } from '../../../components/ui';
 import CropAdvisorPresentation from '../../../components/CropAdvisorPresentation';
-import RotationComparisonCard from '../../../components/RotationComparisonCard';
+import ComparisonPanel from '../../../components/rotation/ComparisonPanel';
+import { comparisonRefreshKey } from '../../../services/rotation-display';
 import CropCalendarReferences, { PublishedCalendarDetails } from '../../../components/CropCalendarReferences';
 import ClimateEvidenceCharts from '../../../components/ClimateEvidenceCharts';
 import OptionPickerModal from '../../../components/OptionPickerModal';
@@ -25,7 +26,6 @@ import {
   Season,
   SeasonPlan,
   PlantingWindowEvidence,
-  RotationComparison,
   m2Request,
 } from '../../../services/m2-advisor';
 import {
@@ -65,7 +65,6 @@ export default function CropAdvisorScreen() {
   const { farmlands, authLoading, dataLoading, refreshFarmland, profile } = useAppContext();
   const router = useRouter();
   const farm = farmlands.find(item => item.id === farmlandId);
-  const loadedFarmId = farm?.id ?? null;
 
   const [catalog, setCatalog] = useState<CropCatalogItem[]>([]);
   const [vocabulary, setVocabulary] = useState<ProfileVocabulary | null>(null);
@@ -83,9 +82,6 @@ export default function CropAdvisorScreen() {
   const [plantingEvidenceLoading, setPlantingEvidenceLoading] = useState(false);
   const [plantingEvidenceError, setPlantingEvidenceError] = useState('');
   const [plantingEvidenceReload, setPlantingEvidenceReload] = useState(0);
-  const [rotationComparison, setRotationComparison] = useState<RotationComparison | null>(null);
-  const [rotationComparisonLoading, setRotationComparisonLoading] = useState(false);
-  const [rotationComparisonError, setRotationComparisonError] = useState('');
   const [rotationComparisonReload, setRotationComparisonReload] = useState(0);
   const [chosenCropId, setChosenCropId] = useState<string | null>(null);
   const [chosenRecommendationId, setChosenRecommendationId] = useState<string | null>(null);
@@ -166,27 +162,6 @@ export default function CropAdvisorScreen() {
     return () => { current = false; };
   }, [farmlandId, selectedSeason, plantingEvidenceReload]);
 
-  useEffect(() => {
-    if (!loadedFarmId || !farmlandId) return;
-    let current = true;
-    void Promise.resolve().then(() => {
-      if (current) {
-        setRotationComparisonLoading(true);
-        setRotationComparisonError('');
-      }
-      return m2Request<RotationComparison>(
-        `/advisor/farmlands/${farmlandId}/rotation-comparisons`,
-        { method: 'POST' },
-      );
-    }).then(value => {
-      if (current) setRotationComparison(value);
-    }).catch(requestError => {
-      if (current) setRotationComparisonError(errorText(requestError, 'Could not load crop sequence comparison.'));
-    }).finally(() => {
-      if (current) setRotationComparisonLoading(false);
-    });
-    return () => { current = false; };
-  }, [farmlandId, loadedFarmId, selectedSeason?.season_id, rotationComparisonReload]);
 
   function loadAdvisorData() {
     setLoadState('loading');
@@ -606,13 +581,7 @@ export default function CropAdvisorScreen() {
               </Card>
             )}
 
-            <RotationComparisonCard
-              comparison={rotationComparison}
-              loading={rotationComparisonLoading}
-              error={rotationComparisonError}
-              language={profile?.preferred_language === 'bn' ? 'bn' : 'en'}
-              onRetry={() => setRotationComparisonReload(value => value + 1)}
-            />
+            <ComparisonPanel key={farmlandId} refreshKey={comparisonRefreshKey(selectedSeason, rotationComparisonReload)} farmlandId={farmlandId} language={profile?.preferred_language === 'bn' ? 'bn' : 'en'} />
 
             <CropCalendarReferences language={profile?.preferred_language === 'bn' ? 'bn' : 'en'} />
             <Button accessibilityRole="button" title={profile?.preferred_language === 'bn' ? 'জেলার NASA বৃষ্টির ইতিহাস দেখুন' : 'Explore district NASA rainfall history'} variant="outline" onPress={() => router.push(`/advisory?district=${encodeURIComponent(farm?.district ?? '')}&language=${profile?.preferred_language === 'bn' ? 'bn' : 'en'}` as Href)} />

@@ -1,0 +1,127 @@
+[
+  {
+    "product_id": "power",
+    "short_name": "POWER daily",
+    "version": "API parameter metadata",
+    "url": "https://power.larc.nasa.gov/docs/services/api/temporal/daily/",
+    "role": "decision",
+    "kind": "reanalysis",
+    "native_support": "meteorology 0.5 x 0.625 degrees; solar 1 degree",
+    "shared_input_groups": [],
+    "limitations": "Point queries are not field observations or district averages."
+  },
+  {
+    "product_id": "imerg",
+    "short_name": "GPM_3IMERGDF",
+    "version": "07",
+    "url": "https://gpm.nasa.gov/data/imerg",
+    "role": "context_only",
+    "kind": "retrieval",
+    "native_support": "0.1 degree daily",
+    "shared_input_groups": [
+      "imerg_precipitation"
+    ],
+    "limitations": "Final run is delayed; retain gauge/satellite bias and actual variable units."
+  },
+  {
+    "product_id": "smap_surface",
+    "short_name": "SPL3SMP_E",
+    "version": "6",
+    "url": "https://nsidc.org/data/spl3smp_e/versions/6",
+    "role": "corroboration",
+    "kind": "retrieval",
+    "native_support": "9 km posting; broader radiometer support",
+    "shared_input_groups": [],
+    "limitations": "Surface approximately 0-5 cm; no field irrigation prescription."
+  },
+  {
+    "product_id": "smap_rootzone",
+    "short_name": "SPL4SMGP",
+    "version": "8",
+    "url": "https://nsidc.org/data/spl4smgp/versions/8",
+    "role": "corroboration",
+    "kind": "assimilation",
+    "native_support": "9 km, 3 hourly",
+    "shared_input_groups": [
+      "imerg_precipitation"
+    ],
+    "limitations": "Modeled root-zone; shares rainfall ancestry with IMERG; inspect 2026 reprocessing notices."
+  },
+  {
+    "product_id": "modis",
+    "short_name": "MOD13Q1",
+    "version": "061",
+    "url": "https://doi.org/10.5067/MODIS/MOD13Q1.061",
+    "role": "corroboration",
+    "kind": "retrieval",
+    "native_support": "250 m nominal, 16 day",
+    "shared_input_groups": [],
+    "limitations": "Mixed-pixel greenness, not crop identity or exact planting dates."
+  },
+  {
+    "product_id": "landsat",
+    "short_name": "Landsat 8/9 C2 L2 T1 SR",
+    "version": "Collection 2",
+    "url": "https://www.usgs.gov/landsat-missions/landsat-collection-2-level-2-science-products",
+    "role": "corroboration",
+    "kind": "retrieval",
+    "native_support": "30 m optical, cloud-limited",
+    "shared_input_groups": [],
+    "limitations": "Scale and offset before NDVI; no field crop diagnosis."
+  },
+  {
+    "product_id": "ecostress_lst",
+    "short_name": "ECO_L2T_LSTE",
+    "version": "003",
+    "url": "https://doi.org/10.5067/ECOSTRESS/ECO_L2T_LSTE.003",
+    "role": "corroboration",
+    "kind": "retrieval",
+    "native_support": "70 m, irregular acquisition",
+    "shared_input_groups": [],
+    "limitations": "Surface temperature is not 2 m air temperature or GDD."
+  },
+  {
+    "product_id": "ecostress_et",
+    "short_name": "ECO_L3T_JET",
+    "version": "002",
+    "url": "https://ecostress.jpl.nasa.gov/data/atbds-summary-table",
+    "role": "corroboration",
+    "kind": "model_output",
+    "native_support": "70 m, acquisition time",
+    "shared_input_groups": [],
+    "limitations": "Instantaneous flux is not daily irrigation demand."
+  },
+  {
+    "product_id": "grace",
+    "short_name": "JPL mascons",
+    "version": "RL06.3_v04",
+    "url": "https://grace.jpl.nasa.gov/data/get-data/jpl_global_mascons/",
+    "role": "context_only",
+    "kind": "retrieval",
+    "native_support": "approximately 3 degree support; 0.5 degree samples",
+    "shared_input_groups": [],
+    "limitations": "Monthly total water-storage anomaly, not district groundwater."
+  },
+  {
+    "product_id": "srtm",
+    "short_name": "SRTMGL1",
+    "version": "003",
+    "url": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
+    "role": "context_only",
+    "kind": "static_surface",
+    "native_support": "1 arc second, February 2000",
+    "shared_input_groups": [],
+    "limitations": "Terrain context; derive slope before aggregation; no flood-depth or erosion measurement."
+  },
+  {
+    "product_id": "gedi",
+    "short_name": "GEDI L4A",
+    "version": "3",
+    "url": "https://daacweb-prod.ornl.gov/GEDI/guides/GEDI_L4A_AGB_Density_V3.html",
+    "role": "conditional_context",
+    "kind": "model_output",
+    "native_support": "sampled approximately 25 m footprints",
+    "shared_input_groups": [],
+    "limitations": "Woody aboveground biomass only; no annual-crop biomass or soil-carbon benefit."
+  }
+]

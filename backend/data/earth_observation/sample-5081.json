@@ -1,0 +1,48 @@
+{
+  "district_code": "5081",
+  "spatial_scope": "user_supplied_search_rectangle_not_district_average",
+  "bbox": [
+    88.5,
+    24.0,
+    88.7,
+    24.2
+  ],
+  "results": [
+    {
+      "product_id": "imerg",
+      "state": "source_approval_required",
+      "observations_downloaded": 0,
+      "query": {
+        "short_name": "GPM_3IMERGDF",
+        "version": "07",
+        "bounding_box": "88.5,24.0,88.7,24.2",
+        "temporal": "2024-01-01T00:00:00Z,2024-01-02T23:59:59Z",
+        "page_size": 20,
+        "sort_key": "start_date"
+      },
+      "truncated": false,
+      "assets": [
+        {
+          "granule_id": "G3087510500-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-01T00:00:00.000Z",
+          "end": "2024-01-01T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240101-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087510289-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-02T00:00:00.000Z",
+          "end": "2024-01-02T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240102-S000000-E235959.V07B.nc4"
+          ]
+        }
+      ],
+      "approval_url": "https://urs.earthdata.nasa.gov/approve_app?client_id=e2WVk8Pw6weeLUKZYOxvTQ"
+    }
+  ],
+  "published_observations": 0
+}

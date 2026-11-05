@@ -1,0 +1,205 @@
+{
+  "district_code": "5081",
+  "spatial_scope": "user_supplied_search_rectangle_not_district_average",
+  "bbox": [
+    88.5,
+    24.0,
+    88.7,
+    24.2
+  ],
+  "results": [
+    {
+      "product_id": "imerg",
+      "state": "metadata_only",
+      "observations_downloaded": 0,
+      "query": {
+        "short_name": "GPM_3IMERGDF",
+        "version": "07",
+        "bounding_box": "88.5,24.0,88.7,24.2",
+        "temporal": "2024-01-01T00:00:00Z,2024-01-07T23:59:59Z",
+        "page_size": 20,
+        "sort_key": "start_date"
+      },
+      "truncated": false,
+      "assets": [
+        {
+          "granule_id": "G3087510500-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-01T00:00:00.000Z",
+          "end": "2024-01-01T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240101-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087510289-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-02T00:00:00.000Z",
+          "end": "2024-01-02T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240102-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087522811-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-03T00:00:00.000Z",
+          "end": "2024-01-03T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240103-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087524463-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-04T00:00:00.000Z",
+          "end": "2024-01-04T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240104-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087547284-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-05T00:00:00.000Z",
+          "end": "2024-01-05T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240105-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087546266-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-06T00:00:00.000Z",
+          "end": "2024-01-06T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240106-S000000-E235959.V07B.nc4"
+          ]
+        },
+        {
+          "granule_id": "G3087547285-GES_DISC",
+          "collection_id": "C2723754864-GES_DISC",
+          "start": "2024-01-07T00:00:00.000Z",
+          "end": "2024-01-07T23:59:59.999Z",
+          "download_urls": [
+            "https://data.gesdisc.earthdata.nasa.gov/data/GPM_L3/GPM_3IMERGDF.07/2024/01/3B-DAY.MS.MRG.3IMERG.20240107-S000000-E235959.V07B.nc4"
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "smap_surface",
+      "state": "metadata_only",
+      "observations_downloaded": 0,
+      "query": {
+        "short_name": "SPL3SMP_E",
+        "version": "006",
+        "bounding_box": "88.5,24.0,88.7,24.2",
+        "temporal": "2024-01-01T00:00:00Z,2024-01-07T23:59:59Z",
+        "page_size": 20,
+        "sort_key": "start_date"
+      },
+      "truncated": false,
+      "assets": [
+        {
+          "granule_id": "G2940380616-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-01T00:00:00.000Z",
+          "end": "2024-01-01T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/01/SMAP_L3_SM_P_E_20240101_R19240_001.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940379935-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-02T00:00:00.000Z",
+          "end": "2024-01-02T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/02/SMAP_L3_SM_P_E_20240102_R19240_001.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940379969-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-03T00:00:00.000Z",
+          "end": "2024-01-03T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/03/SMAP_L3_SM_P_E_20240103_R19240_001.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940379991-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-04T00:00:00.000Z",
+          "end": "2024-01-04T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/04/SMAP_L3_SM_P_E_20240104_R19240_001.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940379943-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-05T00:00:00.000Z",
+          "end": "2024-01-05T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/05/SMAP_L3_SM_P_E_20240105_R19240_002.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940380009-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-06T00:00:00.000Z",
+          "end": "2024-01-06T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/06/SMAP_L3_SM_P_E_20240106_R19240_001.h5"
+          ]
+        },
+        {
+          "granule_id": "G2940379928-NSIDC_CPRD",
+          "collection_id": "C2938664763-NSIDC_CPRD",
+          "start": "2024-01-07T00:00:00.000Z",
+          "end": "2024-01-07T23:59:59.999Z",
+          "download_urls": [
+            "https://data.nsidc.earthdatacloud.nasa.gov/nsidc-cumulus-prod-protected/SMAP/SPL3SMP_E/006/2024/01/07/SMAP_L3_SM_P_E_20240107_R19240_001.h5"
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "modis",
+      "state": "metadata_only",
+      "observations_downloaded": 0,
+      "query": {
+        "short_name": "MOD13Q1",
+        "version": "061",
+        "bounding_box": "88.5,24.0,88.7,24.2",
+        "temporal": "2024-01-01T00:00:00Z,2024-01-07T23:59:59Z",
+        "page_size": 20,
+        "sort_key": "start_date"
+      },
+      "truncated": false,
+      "assets": [
+        {
+          "granule_id": "G2830770661-LPCLOUD",
+          "collection_id": "C1748066515-LPCLOUD",
+          "start": "2023-12-19T00:00:00.000Z",
+          "end": "2024-01-03T23:59:59.000Z",
+          "download_urls": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2023353.h26v06.061.2024005171256/MOD13Q1.A2023353.h26v06.061.2024005171256.hdf"
+          ]
+        },
+        {
+          "granule_id": "G2844603610-LPCLOUD",
+          "collection_id": "C1748066515-LPCLOUD",
+          "start": "2024-01-01T00:00:00.000Z",
+          "end": "2024-01-16T23:59:59.000Z",
+          "download_urls": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD13Q1.061/MOD13Q1.A2024001.h26v06.061.2024022131619/MOD13Q1.A2024001.h26v06.061.2024022131619.hdf"
+          ]
+        }
+      ]
+    }
+  ],
+  "published_observations": 0
+}
