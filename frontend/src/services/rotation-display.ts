@@ -1,5 +1,16 @@
 import type { RotationStepV2 } from '../modules/shared/contracts-v2.generated';
 
+export function evidenceAvailabilityText(status: string, language: 'bn' | 'en'): string {
+  const labels: Record<string, [string, string]> = {
+    hit: ['Available in cache', 'ক্যাশে পাওয়া গেছে'],
+    missing: ['Cache entry missing', 'ক্যাশে তথ্য নেই'],
+    corrupt: ['Cache entry failed validation', 'ক্যাশের তথ্য যাচাই হয়নি'],
+    not_acquired: ['Not acquired', 'সংগ্রহ করা হয়নি'],
+    bundled_reference: ['Bundled source reference', 'রিপোজিটরিতে থাকা উৎসের রেফারেন্স'],
+  };
+  return labels[status]?.[language === 'bn' ? 1 : 0] ?? status;
+}
+
 export function describeRotationStep(step: RotationStepV2, language: 'bn' | 'en'): string {
   const bn = language === 'bn';
   const labels: Record<string, [string, string]> = {

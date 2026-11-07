@@ -75,7 +75,7 @@ class EvidenceReference(StrictModel):
     coverage_end: date | None = None
     retrieved_at: str | None = None
     checksum_sha256: str | None = None
-    cache_status: Literal['hit', 'missing', 'corrupt', 'not_acquired']
+    cache_status: Literal['hit', 'missing', 'corrupt', 'not_acquired', 'bundled_reference']
     scope: Literal['reference_point', 'regional_grid', 'regional_context', 'published_agronomy']
 
 

@@ -171,7 +171,7 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
     source = catalog['source']
     evidence = [EvidenceReference(evidence_id=source['source_id'], source='BRRI published crop patterns',
         product_id='regional_agronomy', version=catalog['catalog_version'], url=source['url'], role='published_examples_pending_review',
-        spatial_support=source['source_scope_en'], cache_status='hit', scope='published_agronomy')]
+        spatial_support=source['source_scope_en'], cache_status='bundled_reference', scope='published_agronomy')]
     if bundle:
         m = bundle.manifest
         p = next(p for p in m.provenance if p.method == 'nasa_power')
@@ -210,7 +210,7 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
                     evidence.append(EvidenceReference(evidence_id=ref.source_id,source=f'BRRI Rice Profile — {ref.variety_name}',
                         product_id='regional_agronomy',version=ref.profile_id,url=ref.source_url,
                         role='published_reference_pending_agronomy_review',spatial_support=ref.scope_en,
-                        retrieved_at=ref.accessed_on.isoformat(),cache_status='hit',scope='published_agronomy'))
+                        retrieved_at=ref.accessed_on.isoformat(),cache_status='bundled_reference',scope='published_agronomy'))
                     known_evidence.add(ref.source_id)
     ordering = compare_options([{'option_id': o.option_id, 'eligibility': o.eligibility, 'metrics': {m.metric_id: m.value for m in o.metrics}} for o in options], request.priorities)
     return RotationComparisonV2(**common, **ordering, status='partial', baseline_completeness='incomplete' if steps else 'not_recorded', pilot_observation=pilot,

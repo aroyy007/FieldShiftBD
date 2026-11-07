@@ -19,6 +19,18 @@ def test_missing_metric_cannot_carry_a_numeric_claim():
         MetricEvidence(metric_id='rain', status='missing', value=12, method_id='sum', evidence_ids=[])
 
 
+def test_evidence_cache_status_distinguishes_bundled_references():
+    from app.contracts.challenge.v2 import EvidenceReference
+
+    source = EvidenceReference(
+        evidence_id='brri-catalog', source='BRRI', product_id='agronomy', version='v1',
+        url='https://example.org', role='published_examples_pending_review',
+        spatial_support='published source', cache_status='bundled_reference',
+        scope='published_agronomy',
+    )
+    assert source.cache_status == 'bundled_reference'
+
+
 def test_registry_keeps_all_products_and_context_roles():
     from app.services.earth_observation.registry import product_registry, region_registry
     products = product_registry()
@@ -128,6 +140,11 @@ def test_regional_api_owns_farm_and_does_not_mutate_seasons(client_and_farm):
     assert body['selection_allowed'] is False
     assert body['ordering_status'] == 'insufficient_evidence'
     assert body['options'][1]['eligibility'] == 'unknown'
+    agronomy_evidence = [item for item in body['evidence'] if item['scope'] == 'published_agronomy']
+    assert agronomy_evidence
+    assert all(item['cache_status'] == 'bundled_reference' for item in agronomy_evidence)
+    power_evidence = [item for item in body['evidence'] if item['product_id'] == 'power']
+    assert all(item['cache_status'] == 'hit' for item in power_evidence)
     assert body['snapshot_hash'] == client.post(f'/advisor/v2/farmlands/{farm_id}/rotation-comparisons', json={'planning_year': 2027}).json()['snapshot_hash']
     assert client.post(f'/advisor/v2/farmlands/{client.app.state.other_farmland_id}/rotation-comparisons', json={'planning_year': 2027}).status_code == 404
     after = client.get(f'/farmlands/{farm_id}/state').json()

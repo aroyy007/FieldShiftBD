@@ -3,7 +3,7 @@ import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native
 import { Button, Card } from '../ui';
 import CalendarStepDetails from './CalendarStepDetails';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../theme/theme';
-import { describeRotationStep, pilotObservationText } from '../../services/rotation-display';
+import { describeRotationStep, pilotObservationText, evidenceAvailabilityText } from '../../services/rotation-display';
 import { loadRegionalComparison } from '../../services/rotation-comparison';
 import type { RotationCompareRequest, RotationComparisonV2 } from '../../modules/shared/contracts-v2.generated';
 
@@ -44,7 +44,7 @@ export default function ComparisonPanel({ farmlandId, language, refreshKey }: Pr
   return <Card>
     <View style={styles.stack}>
       <Text accessibilityRole="header" style={styles.title}>{bn ? 'পরের বছরে কী চাষ করব?' : 'What could I grow next year?'}</Text>
-      <Text style={styles.body}>{bn ? 'আপনার বর্তমান ফসলের ধারা, প্রকাশিত বিকল্প ও NASA তথ্য একসঙ্গে দেখুন।' : 'Compare your recorded crops, published alternatives and NASA evidence.'}</Text>
+      <Text style={styles.body}>{bn ? 'আপনার নথিভুক্ত ফসল ও প্রকাশিত বিকল্পের সঙ্গে NASA-র ঐতিহাসিক আবহাওয়ার প্রেক্ষাপট দেখুন। NASA তথ্য বিকল্পগুলোর স্কোর নির্ধারণ করে না।' : 'Compare your recorded crops and published alternatives alongside historical NASA weather context. NASA data does not score the options.'}</Text>
       <Text style={styles.label}>{bn ? 'আপনার প্রধান অগ্রাধিকার' : 'Your main priority'}</Text>
       {goals.map(goal => <Button key={goal.key} title={`${priority === goal.key ? '✓ ' : ''}${bn ? goal.bn : goal.en}`} variant={priority === goal.key ? 'primary' : 'outline'} accessibilityRole="radio" accessibilityState={{ checked: priority === goal.key }} onPress={() => setPriority(goal.key)} />)}
       <Text style={styles.label}>{bn ? 'পরিকল্পনার বছর' : 'Planning year'}: {year}</Text>
@@ -87,7 +87,7 @@ export default function ComparisonPanel({ farmlandId, language, refreshKey }: Pr
               <Text style={styles.label}>{e.source}</Text>
               <Text style={styles.note}>{e.coverage_start} {e.coverage_end ? `— ${e.coverage_end}` : ''}</Text>
               <Text style={styles.note}>{e.spatial_support}</Text>
-              <Text style={styles.note}>{bn ? 'ক্যাশ' : 'Cache'}: {e.cache_status} · {e.scope}</Text>
+              <Text style={styles.note}>{bn ? 'তথ্যের অবস্থা' : 'Evidence availability'}: {evidenceAvailabilityText(e.cache_status, language)} · {e.scope}</Text>
               <Button accessibilityRole="button" title={bn ? 'মূল উৎস খুলুন' : 'Open source'} variant="outline" onPress={() => { void Linking.openURL(e.url).catch(() => setError(bn ? 'উৎস খোলা যায়নি।' : 'Could not open source.')); }} />
             </View>)}
             {data.products?.map(p => <Text key={p.product_id} style={styles.note}>{p.product_id}: {p.state === 'not_acquired' ? (bn ? 'এখনও তুলনায় যুক্ত নয়' : 'Not yet incorporated') : p.state === 'pilot_unreviewed' ? (bn ? 'পর্যালোচনাধীন এক দিনের নমুনা' : 'One-day sample pending review') : p.state} · {p.role}</Text>)}

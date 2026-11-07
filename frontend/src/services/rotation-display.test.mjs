@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { describeRotationStep, comparisonRefreshKey } from './rotation-display.ts';
+import { describeRotationStep, comparisonRefreshKey, evidenceAvailabilityText } from './rotation-display.ts';
+
+test('evidence status distinguishes bundled citations from cached data in both languages', () => {
+  assert.equal(evidenceAvailabilityText('bundled_reference', 'en'), 'Bundled source reference');
+  assert.equal(evidenceAvailabilityText('hit', 'en'), 'Available in cache');
+  assert.equal(evidenceAvailabilityText('bundled_reference', 'bn'), 'রিপোজিটরিতে থাকা উৎসের রেফারেন্স');
+  assert.equal(evidenceAvailabilityText('hit', 'bn'), 'ক্যাশে পাওয়া গেছে');
+});
 
 test('dated baseline identifies crop interval and expected versus recorded harvest', () => {
   const completed = describeRotationStep({crop_code:'wheat',start_date:'2026-01-01',end_date:'2026-04-10',event_basis:'farmer_reported'}, 'en');
