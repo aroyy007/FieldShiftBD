@@ -1,0 +1,10 @@
+{
+  "catalog_version": "rotation-catalog-v2-2026-11-07",
+  "supported_regions": ["5081", "2015"],
+  "patterns_file": "brri_rotation_patterns.json",
+  "calendar_extensions_file": "rotation_calendar_extensions.json",
+  "source_review_status": "source_verified_pending_agronomy_review",
+  "regional_applicability_status": "unknown_pending_local_review",
+  "gdd_status": "not_cultivar_validated",
+  "activation_allowed": false
+}

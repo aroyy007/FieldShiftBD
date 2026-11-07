@@ -13,12 +13,35 @@ from app.services.earth_observation.provider import load_power_context
 from app.services.earth_observation.registry import product_registry, region_registry
 from app.services.rotation_comparison import CATALOG_PATH
 from app.services.rotation.calendars import build_calendar_evidence
+from app.services.rotation.catalog import load_rotation_candidates
+from src.compute.rotation_calendar import evaluate_calendar
 from src.compute.rotation_exposure import rainfall_window
 from src.compute.rotation_preferences import compare_options
 
 
 def _metric(name, detail_en, detail_bn):
     return MetricEvidence(metric_id=name, status='missing', method_id='review_required', evidence_ids=[], detail_en=detail_en, detail_bn=detail_bn)
+
+
+def _candidate_calendar_metrics(candidate, planning_year):
+    assessment = evaluate_calendar(candidate, planning_year, rules=None)
+    if assessment.status == 'overlap':
+        calendar_en = 'The sourced date windows overlap. Confirm the exact variety, establishment method, and local dates; no feasible plan is claimed.'
+        calendar_bn = 'উৎসের তারিখের সময়সীমা একে অপরের সঙ্গে মিলে যায়। জাত, চাষপদ্ধতি ও স্থানীয় তারিখ নিশ্চিত করুন; উপযোগী পরিকল্পনা দাবি করা হচ্ছে না।'
+    elif assessment.status == 'needs_turnaround_rule':
+        calendar_en = 'The published date windows do not overlap, but no reviewed turnaround rule or local calendar approval is available.'
+        calendar_bn = 'প্রকাশিত তারিখের সময়সীমা মেলে না, তবে পর্যালোচিত মধ্যবর্তী সময়ের নিয়ম বা স্থানীয় ক্যালেন্ডার অনুমোদন নেই।'
+    else:
+        calendar_en = 'Exact cultivar-specific establishment and harvest windows are missing for one or more steps; no dates were inferred from the published sequence.'
+        calendar_bn = 'এক বা একাধিক ধাপের জাতভিত্তিক চাষ শুরু ও ফসল কাটার নির্দিষ্ট সময় নেই; প্রকাশিত ধারার ভিত্তিতে তারিখ অনুমান করা হয়নি।'
+    gdd_en = 'No validated cultivar-specific GDD base, cap, target, and stage duration are recorded; thermal feasibility is not scored.'
+    gdd_bn = 'জাতভিত্তিক যাচাইকৃত GDD ভিত্তি, সর্বোচ্চ সীমা, লক্ষ্য ও বৃদ্ধির ধাপের সময় নেই; তাপীয় উপযোগিতা স্কোর করা হয়নি।'
+    return [
+        MetricEvidence(metric_id='calendar', status='missing', method_id='source_scoped_calendar_review_pending',
+            evidence_ids=list(candidate.source_ids), detail_en=calendar_en, detail_bn=calendar_bn),
+        MetricEvidence(metric_id='gdd', status='missing', method_id='cultivar_gdd_review_required',
+            evidence_ids=list(candidate.source_ids), detail_en=gdd_en, detail_bn=gdd_bn),
+    ]
 
 
 def regional_product_state(product_id: str, power_cache_status: str, pilot: dict | None) -> str:
@@ -30,16 +53,6 @@ def regional_product_state(product_id: str, power_cache_status: str, pilot: dict
     if product_id == 'srtm' and pilot is not None and pilot.get('terrain') is not None:
         return 'pilot_unreviewed'
     return 'not_acquired'
-
-
-def _baseline(snapshot):
-    steps = [RotationStepV2(crop_code=s.crop_code, start_date=s.planting_date, end_date=s.harvest_date, event_basis=s.source)
-             for s in reversed(snapshot.rotation_history)]
-    if snapshot.active_season:
-        s = snapshot.active_season
-        steps.append(RotationStepV2(crop_code=s.crop_code or 'unknown', start_date=s.planting_date,
-                                    end_date=s.expected_harvest_date, event_basis='active_season_expected_harvest'))
-    return steps[-12:]
 
 
 def recorded_calendar_metric(steps: list[RotationStepV2]) -> MetricEvidence:
@@ -169,6 +182,8 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
                                    snapshot.profile.longitude) if pilot_root else None
     catalog = json.loads(CATALOG_PATH.read_text())
     source = catalog['source']
+    candidates = load_rotation_candidates(district, snapshot)
+    candidate_by_id = {candidate.candidate_id: candidate for candidate in candidates}
     evidence = [EvidenceReference(evidence_id=source['source_id'], source='BRRI published crop patterns',
         product_id='regional_agronomy', version=catalog['catalog_version'], url=source['url'], role='published_examples_pending_review',
         spatial_support=source['source_scope_en'], cache_status='bundled_reference', scope='published_agronomy')]
@@ -179,26 +194,23 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
             version=p.dataset_version or 'unknown', url=p.source_url, role='historical_exposure',
             spatial_support=product_registry()['power'].native_support, coverage_start=m.coverage_start,
             coverage_end=m.coverage_end, retrieved_at=p.retrieved_at.isoformat(), cache_status='hit', scope='reference_point'))
-    steps = _baseline(snapshot)
+    baseline = candidate_by_id['baseline']
+    steps = [RotationStepV2(crop_code=s.crop_code, start_date=s.start_date, end_date=s.end_date,
+                            event_basis=s.event_basis) for s in baseline.steps]
     options = [RotationOptionV2(option_id='baseline', role='baseline', name_en='Your recorded sequence', name_bn='আপনার নথিভুক্ত ফসলের ধারা',
         steps=steps, eligibility='unknown', metrics=[recorded_calendar_metric(steps), *_rainfall_metrics(steps, bundle)],
         reasons_en=['History may be incomplete; expected harvest is not a completed harvest. Full annual feasibility has not been established.'],
         reasons_bn=['ইতিহাস অসম্পূর্ণ হতে পারে; সম্ভাব্য কাটার তারিখ সম্পন্ন ফসল কাটার রেকর্ড নয়। পুরো বছরের উপযোগিতা যাচাই হয়নি।'],
         evidence_ids=['power-history'] if bundle else [])]
-    scope = catalog['profile_match']
-    profile = snapshot.profile
-    norm = lambda s: (s or '').casefold().replace('_', ' ').strip()
-    mismatch = (profile.irrigation_available is False or
-                (profile.land_type is not None and norm(profile.land_type) not in {norm(x) for x in scope['land_types']}) or
-                (profile.soil_type is not None and norm(profile.soil_type) not in {norm(x) for x in scope['soil_types']}))
     for pattern in catalog['patterns']:
+        candidate = candidate_by_id[pattern['pattern_id']]
         options.append(RotationOptionV2(option_id=pattern['pattern_id'], role='alternative', name_en=pattern['name_en'], name_bn=pattern['name_bn'],
             steps=[RotationStepV2(crop_code=s['crop_code'], season_code=s['season_code'], event_basis='published_sequence_without_reviewed_dates',
                 calendar_evidence=build_calendar_evidence(s,request.planning_year,bundle)) for s in pattern['steps']],
-            eligibility='ineligible' if mismatch else 'unknown',
-            reasons_en=[('Farm conditions conflict with published land/soil/irrigation scope.' if mismatch else 'Regional applicability, cultivar dates and agronomist review are required before this example becomes an eligible plan.')],
-            reasons_bn=[('জমি, মাটি বা সেচের তথ্য প্রকাশিত শর্তের সঙ্গে মেলে না।' if mismatch else 'এই উদাহরণকে পরিকল্পনা হিসেবে নিতে স্থানীয় উপযোগিতা, জাতভিত্তিক তারিখ ও কৃষিবিদের পর্যালোচনা প্রয়োজন।')],
-            metrics=[_metric('calendar', 'Reviewed dated crop calendar and turnaround rule required.', 'পর্যালোচিত তারিখসহ ফসলের ক্যালেন্ডার ও মধ্যবর্তী সময়ের নিয়ম প্রয়োজন।'),
+            eligibility=candidate.applicability,
+            reasons_en=[('Farm conditions conflict with published land/soil/irrigation scope.' if candidate.applicability == 'ineligible' else 'Regional applicability, cultivar dates and agronomist review are required before this example becomes an eligible plan.')],
+            reasons_bn=[('জমি, মাটি বা সেচের তথ্য প্রকাশিত শর্তের সঙ্গে মেলে না।' if candidate.applicability == 'ineligible' else 'এই উদাহরণকে পরিকল্পনা হিসেবে নিতে স্থানীয় উপযোগিতা, জাতভিত্তিক তারিখ ও কৃষিবিদের পর্যালোচনা প্রয়োজন।')],
+            metrics=[*_candidate_calendar_metrics(candidate, request.planning_year),
                      _metric('water', 'No reviewed comparable irrigation-demand estimates.', 'তুলনাযোগ্য পর্যালোচিত সেচের চাহিদার তথ্য নেই।')],
             risks_en=['No measured yield, profit, nitrogen, soil-carbon or irrigation savings are established.'],
             risks_bn=['ফলন, লাভ, নাইট্রোজেন, মাটির কার্বন বা সেচ সাশ্রয়ের পরিমাপ প্রতিষ্ঠিত নয়।'], evidence_ids=[source['source_id']]))

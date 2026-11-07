@@ -96,14 +96,21 @@ def test_rainfall_missing_day_does_not_shorten_dry_spell():
 
 
 def test_calendar_cross_year_overlap_and_missing_rules():
+    from app.services.rotation.catalog import ReviewedRuleSet, RotationCandidate, RotationCandidateStep
     from src.compute.rotation_calendar import evaluate_calendar
-    steps = [{'crop_code': 'rice', 'start_date': date(2026, 8, 1), 'end_date': date(2026, 11, 30)}, {'crop_code': 'wheat', 'start_date': date(2026, 11, 25), 'end_date': date(2027, 3, 1)}]
-    assert evaluate_calendar(steps)['status'] == 'overlap'
-    steps[1]['start_date'] = date(2026, 12, 10)
-    assert evaluate_calendar(steps)['status'] == 'needs_turnaround_rule'
-    assert evaluate_calendar(steps, minimum_turnaround_days=7)['status'] == 'feasible'
-    steps[1]['end_date'] = None
-    assert evaluate_calendar(steps, minimum_turnaround_days=7)['status'] == 'insufficient_dates'
+    steps = (
+        RotationCandidateStep('rice', 'aman', 'reported', ('history',), start_date=date(2026, 8, 1), end_date=date(2026, 11, 30)),
+        RotationCandidateStep('wheat', 'rabi', 'reported', ('history',), start_date=date(2026, 11, 25), end_date=date(2027, 3, 1)),
+    )
+    candidate = RotationCandidate('synthetic', 'baseline', '5081', steps, ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(candidate, 2026, None).status == 'overlap'
+    steps = (steps[0], RotationCandidateStep('wheat', 'rabi', 'reported', ('history',), start_date=date(2026, 12, 10), end_date=date(2027, 3, 1)))
+    candidate = RotationCandidate('synthetic', 'baseline', '5081', steps, ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(candidate, 2026, None).status == 'needs_turnaround_rule'
+    rule = ReviewedRuleSet(7, ('reviewed-turnaround-rule',), 'reviewed')
+    assert evaluate_calendar(candidate, 2026, rule).status == 'feasible'
+    incomplete = RotationCandidate('synthetic', 'baseline', '5081', (steps[0], RotationCandidateStep('wheat', 'rabi', 'reported', ('history',))), ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(incomplete, 2026, rule).status == 'insufficient_dates'
 
 
 def test_preference_order_respects_unknown_income_and_water_priority():
@@ -140,6 +147,12 @@ def test_regional_api_owns_farm_and_does_not_mutate_seasons(client_and_farm):
     assert body['selection_allowed'] is False
     assert body['ordering_status'] == 'insufficient_evidence'
     assert body['options'][1]['eligibility'] == 'unknown'
+    calendar_metric = next(m for m in body['options'][1]['metrics'] if m['metric_id'] == 'calendar')
+    gdd_metric = next(m for m in body['options'][1]['metrics'] if m['metric_id'] == 'gdd')
+    assert calendar_metric['status'] == 'missing' and calendar_metric['value'] is None
+    assert 'windows are missing' in calendar_metric['detail_en'] or 'overlap' in calendar_metric['detail_en']
+    assert gdd_metric['status'] == 'missing' and gdd_metric['value'] is None
+    assert 'GDD base, cap, target' in gdd_metric['detail_en']
     agronomy_evidence = [item for item in body['evidence'] if item['scope'] == 'published_agronomy']
     assert agronomy_evidence
     assert all(item['cache_status'] == 'bundled_reference' for item in agronomy_evidence)
