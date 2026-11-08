@@ -1,0 +1,6 @@
+   {
+     "rewrites": [
+       { "source": "/farmlands/:id/:screen", "destination": "/farmlands/[id]/:screen" },
+       { "source": "/farmlands/:id", "destination": "/farmlands/[id]" }
+     ]
+   }
