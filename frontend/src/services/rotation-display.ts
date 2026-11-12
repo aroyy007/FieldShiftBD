@@ -17,10 +17,12 @@ export function describeRotationStep(step: RotationStepV2, language: 'bn' | 'en'
     rice: ['Rice', 'ধান'], wheat: ['Wheat', 'গম'], chickpea: ['Chickpea', 'ছোলা'],
     mustard: ['Mustard', 'সরিষা'], mungbean: ['Mungbean', 'মুগ'],
     sesbania_rostrata: ['Green manure', 'সবুজ সার'],
+    potato: ['Potato', 'আলু'], maize: ['Maize', 'ভুট্টা'], lentil: ['Lentil', 'মসুর'], jute: ['Jute', 'পাট'],
   };
   const crop = labels[step.crop_code]?.[bn ? 1 : 0] ?? step.crop_code;
   const seasons: Record<string, [string, string]> = {aman:['Aman','আমন'],aus:['Aus','আউশ'],boro:['Boro','বোরো'],rabi:['Rabi','রবি']};
   const season = step.season_code ? ` · ${seasons[step.season_code]?.[bn ? 1 : 0] ?? step.season_code}` : '';
+  if (step.event_basis === 'farmer_reported_previous_crop') return `${crop} · ${bn ? 'আপনার জানানো আগের ফসল, তারিখ নেই' : 'previous crop you reported, no dates'}`;
   const missing = bn ? 'তারিখ নেই' : 'date not recorded';
   const interval = `${step.start_date ?? missing} → ${step.end_date ?? missing}`;
   const basis = step.event_basis === 'active_season_expected_harvest'

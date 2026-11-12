@@ -147,6 +147,30 @@ class RotationOptionV2(StrictModel):
     benefits_bn: list[str] = Field(default_factory=list)
     risks_en: list[str] = Field(default_factory=list)
     risks_bn: list[str] = Field(default_factory=list)
+    why_en: list[str] = Field(default_factory=list)
+    why_bn: list[str] = Field(default_factory=list)
+    gaps_en: list[str] = Field(default_factory=list)
+    gaps_bn: list[str] = Field(default_factory=list)
+
+
+class ExplorationBasisV2(StrictModel):
+    priority: Priority
+    metric_id: str
+    value: float | None = None
+
+
+class ExplorationEntryV2(StrictModel):
+    """Discussion order by the farmer's priorities; not a recommendation."""
+    option_id: str
+    position: int = Field(ge=1)
+    basis: list[ExplorationBasisV2] = Field(default_factory=list)
+
+
+class UnrankedOptionV2(StrictModel):
+    option_id: str
+    reason: str
+    detail_en: str = ''
+    detail_bn: str = ''
 
 
 class PilotTerrainV2(StrictModel):
@@ -189,6 +213,11 @@ class RotationComparisonV2(StrictModel):
     priorities: list[Priority]
     ordering_status: Literal['ordered', 'tied', 'insufficient_evidence'] = 'insufficient_evidence'
     preferred_option_ids: list[str] = Field(default_factory=list)
+    exploration_status: Literal['ordered', 'tied', 'insufficient_evidence'] = 'insufficient_evidence'
+    exploration_order: list[ExplorationEntryV2] = Field(default_factory=list)
+    unranked_options: list[UnrankedOptionV2] = Field(default_factory=list)
+    exploration_note_en: str = ''
+    exploration_note_bn: str = ''
     options: list[RotationOptionV2] = Field(default_factory=list)
     evidence: list[EvidenceReference] = Field(default_factory=list)
     products: list[dict[str, str]] = Field(default_factory=list)

@@ -106,6 +106,10 @@ def _history_steps(snapshot: FarmProfileSnapshot) -> tuple[RotationCandidateStep
         steps.append(RotationCandidateStep(crop_code=active.crop_code or "unknown", season_code=None,
             event_basis="active_season_expected_harvest", source_ids=("farmer-profile",),
             start_date=active.planting_date, end_date=active.expected_harvest_date))
+    if not steps and snapshot.profile.previous_crop:
+        # Provisional baseline from the crop the farmer reported at sign-up; undated.
+        steps.append(RotationCandidateStep(crop_code=snapshot.profile.previous_crop.strip(), season_code=None,
+            event_basis="farmer_reported_previous_crop", source_ids=("farmer-profile",)))
     return tuple(steps[-12:])
 
 

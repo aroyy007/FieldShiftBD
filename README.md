@@ -100,10 +100,10 @@ The official challenge asks teams to use NASA Earth observations, local soil inf
 
 | Challenge intent | FieldShift response today | Evidence status / next gate |
 | --- | --- | --- |
-| Explore and compare crop rotations | Crop Advisor shows the farmer's recorded sequence and three published crop-pattern examples | Partial comparison only. No “best” plan is selected until local suitability, calendars, turnaround, and comparable water metrics are reviewed. |
+| Explore and compare crop rotations | Crop Advisor compares the farmer's current crops (recorded seasons, or the previous crop entered at sign-up) with three BRRI-published patterns. Each option shows why it is shown, possible benefits, risks to check locally, missing information, and its evidence | Partial comparison. No “best” plan is selected or activated until local suitability, calendars, turnaround, and comparable water metrics are reviewed. |
 | Use NASA Earth observations | NASA POWER 2001–2025 reference-point history feeds historical rainfall summaries for matched calendar windows | Cache is available for three reference locations. IMERG and SRTM samples are context only; MODIS pilot pixels failed quality checks; the other registered NASA products are not integrated. |
 | Include local soil/farm conditions | Saved soil, land type, irrigation availability, water source, location, and crop history are available to the farm-scoped comparison | Profile facts are farmer-entered and may be incomplete; the system does not convert them into a calibrated soil or crop-suitability score. |
-| Respect farmer priorities | The farmer can choose a comparison priority and the UI retains it | It is explanatory context while evidence is incomplete, not a ranking weight that can create a preferred crop sequence. |
+| Respect farmer priorities | The farmer picks a priority (less irrigation water, fewer dry spells, crop variety, published dates, or income). The options are re-ordered by that priority using values shown on screen: dry-season irrigated crops, plant-family count, the longest typical dry spell from NASA POWER, and the share of crops with published dates | The order is lexicographic and reproducible by hand. It is for discussion, not a recommendation. Options missing the chosen value, or outside the published land/soil/irrigation scope, are listed as unranked with the reason. Income has no data yet, so it ranks nothing. |
 | Make trade-offs, uncertainty, and evidence visible | UI names sources, periods, scale, cache status, calendar matching, missing steps, and limitations in Bangla/English | Continue to add validated comparable metrics and uncertainty bounds before presenting trade-off scores. |
 | Help farms adapt without overstating benefits | The prototype avoids unsupported soil-health/yield/water-saving claims and keeps the comparison read-only | A reviewed rotation may become actionable only after the evidence gates pass and the farmer separately confirms a season plan. |
 
@@ -139,7 +139,7 @@ Where a published variety, season, and establishment method match a rotation ste
 
 ### Crop rotation: farmer-to-evidence flow
 
-The rotation feature is a **read-only comparison prototype**, not an automatic crop selector. A farmer's priority is retained and shown, but it cannot override missing evidence or turn a partial comparison into a recommendation. The authenticated endpoint is scoped to the selected farmer-owned field; opening it does not create or edit a season, task, problem, or crop-history record.
+The rotation feature is a **read-only comparison prototype**, not an automatic crop selector. A farmer's priority re-orders the options for discussion using the values shown for each option; it cannot override missing evidence or turn a partial comparison into a recommendation. The authenticated endpoint is scoped to the selected farmer-owned field; opening it does not create or edit a season, task, problem, or crop-history record.
 
 ```mermaid
 flowchart TD
@@ -181,7 +181,7 @@ The local IMERG file was supplied by the owner and has not been independently au
 
 #### Current output and evidence gates
 
-The UI compares the field's recorded crop sequence with three published examples, uses the farmer's stated priority as comparison context, shows missing/mismatched calendar steps, and reports historical POWER rainfall exposure only where the source calendar matches. Recorded history is distinguished from planned or expected seasons; a planned crop is not treated as a completed harvest. Where dates are absent, the overlap/gap calculation is withheld. A possible gap between recorded dates is not called a verified fallow period or a required agronomic turnaround.
+The UI compares the field's recorded crop sequence with three published examples, re-orders the options by the farmer's stated priority, shows missing/mismatched calendar steps, and reports historical POWER rainfall exposure only where the source calendar matches. Recorded history is distinguished from planned or expected seasons; a planned crop is not treated as a completed harvest. Where dates are absent, the overlap/gap calculation is withheld. A possible gap between recorded dates is not called a verified fallow period or a required agronomic turnaround.
 
 Today the API deliberately returns a **partial** result and `selection_allowed=false`. It withholds a preferred rotation because the project lacks reviewed local crop/variety calendars, crop-specific turnarounds, comparable irrigation demand, validated spatial boundaries, and independent agronomic review. It also does not claim soil-health, yield, cost, fertilizer, or water savings. This is a useful challenge prototype because it lets a farmer inspect alternatives and the available evidence without presenting unmeasured benefits as fact; it is not yet a farm-ready rotation prescription.
 
@@ -238,6 +238,16 @@ On Windows PowerShell:
 Copy-Item .env.example .env
 Copy-Item backend/.env.example backend/.env
 ```
+
+Then set `SECRET_KEY` in `backend/.env` to a random value of at least 32 characters. The API refuses to start without it. Generate one with:
+
+```bash
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+The backend container applies database migrations and imports the bundled crop catalog and BARC/BRRI knowledge on every start (about 5 seconds; re-running changes nothing unless a source file changed). Without this import the Crop Advisor has no evidence to match.
+
+On macOS, keep the project folder fully downloaded if it is inside iCloud Drive (Finder → right-click → **Keep Downloaded**). Cloud-only placeholder files cannot be read by Docker and the backend fails with `OSError: [Errno 5] Input/output error`.
 
 ### Start the app
 

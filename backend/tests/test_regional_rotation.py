@@ -247,3 +247,34 @@ def test_power_loader_never_publishes_synthetic_or_unavailable_evidence(tmp_path
         provenance=[SimpleNamespace(method='nasa_power',quality_status=source_quality)]))
     monkeypatch.setattr(ClimateBundleCache, 'load_bundle', lambda self, district: bundle)
     assert load_power_context(tmp_path,'5081') == (None,'corrupt')
+
+
+def test_priority_reorders_options_and_previous_crop_forms_baseline(client_and_farm):
+    from app.core.database import get_db
+    from app.models.core import Farmland
+    client, farm_id, _, _ = client_and_farm
+    dep = client.app.dependency_overrides[get_db]()
+    db = next(dep)
+    farm = db.get(Farmland, farm_id)
+    farm.district, farm.irrigation_available, farm.land_type, farm.soil_type = 'Rajshahi', True, 'high', 'clay'
+    db.commit()
+    url = f'/advisor/v2/farmlands/{farm_id}/rotation-comparisons'
+    water = client.post(url, json={'planning_year': 2027, 'priorities': ['water', 'diversity']}).json()
+    diversity = client.post(url, json={'planning_year': 2027, 'priorities': ['diversity', 'water']}).json()
+    income = client.post(url, json={'planning_year': 2027, 'priorities': ['income']}).json()
+    assert water['exploration_order'][0]['option_id'] == 'BRRI-RFS-02'
+    assert [e['option_id'] for e in water['exploration_order']] != [e['option_id'] for e in diversity['exploration_order']]
+    assert income['exploration_status'] == 'insufficient_evidence' and income['exploration_order'] == []
+    assert water['preferred_option_ids'] == [] and water['selection_allowed'] is False
+    for option in water['options'][1:]:
+        assert option['why_en'] and option['benefits_en'] and option['risks_en'] and option['gaps_en']
+    dep.close()
+
+
+def test_previous_crop_forms_provisional_baseline_when_no_history():
+    from types import SimpleNamespace
+    from app.services.rotation.catalog import _history_steps
+    snapshot = SimpleNamespace(rotation_history=[], active_season=None, profile=SimpleNamespace(previous_crop=' Potato '))
+    (step,) = _history_steps(snapshot)
+    assert step.crop_code == 'Potato' and step.event_basis == 'farmer_reported_previous_crop' and step.start_date is None
+    assert _history_steps(SimpleNamespace(rotation_history=[], active_season=None, profile=SimpleNamespace(previous_crop=None))) == ()
