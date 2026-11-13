@@ -11,6 +11,7 @@ import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card } from '../../../components/ui';
 import CropAdvisorPresentation from '../../../components/CropAdvisorPresentation';
 import ComparisonPanel from '../../../components/rotation/ComparisonPanel';
+import FieldMap from '../../../components/FieldMap';
 import { comparisonRefreshKey } from '../../../services/rotation-display';
 import CropCalendarReferences, { PublishedCalendarDetails } from '../../../components/CropCalendarReferences';
 import ClimateEvidenceCharts from '../../../components/ClimateEvidenceCharts';
@@ -470,7 +471,9 @@ export default function CropAdvisorScreen() {
         cropEyebrow={featuredRecommendation
           ? featuredRecommendation.status === 'selected' ? 'Selected crop' : 'Evidence-backed crop match'
           : activeCropName ? 'Current active crop' : 'Farm profile'}
-        cropDescription={featuredRecommendation?.reasoning.positive_factors[0]?.explanation
+        cropDescription={(featuredRecommendation
+            ? (recommendationReasons?.length ? 'Matches published conditions for your saved land. See why below.' : featuredRecommendation.reasoning.positive_factors[0]?.explanation)
+            : null)
           || result?.message
           || (activeCropName
             ? 'Current crop and growth stage come from your saved season.'
@@ -580,6 +583,11 @@ export default function CropAdvisorScreen() {
                 {result.regional_context.map(item => <RegionalContextBlock key={`${item.crop.crop_id}-${item.scope}`} context={item} />)}
               </Card>
             )}
+
+            <Card>
+              <Text style={styles.sectionTitle}>{profile?.preferred_language === 'bn' ? 'NASA-র তথ্য কোথা থেকে আসে' : 'Where your NASA data comes from'}</Text>
+              <FieldMap mode="nasa" latitude={farm.latitude} longitude={farm.longitude} district={farm.district} language={profile?.preferred_language === 'bn' ? 'bn' : 'en'} height={280} />
+            </Card>
 
             <ComparisonPanel key={farmlandId} refreshKey={comparisonRefreshKey(selectedSeason, rotationComparisonReload)} farmlandId={farmlandId} language={profile?.preferred_language === 'bn' ? 'bn' : 'en'} />
 

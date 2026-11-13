@@ -1,15 +1,28 @@
 import type { RotationStepV2 } from '../modules/shared/contracts-v2.generated';
 
+export function evidenceAvailabilityText(status: string, language: 'bn' | 'en'): string {
+  const labels: Record<string, [string, string]> = {
+    hit: ['Available in cache', 'ক্যাশে পাওয়া গেছে'],
+    missing: ['Cache entry missing', 'ক্যাশে তথ্য নেই'],
+    corrupt: ['Cache entry failed validation', 'ক্যাশের তথ্য যাচাই হয়নি'],
+    not_acquired: ['Not acquired', 'সংগ্রহ করা হয়নি'],
+    bundled_reference: ['Bundled source reference', 'রিপোজিটরিতে থাকা উৎসের রেফারেন্স'],
+  };
+  return labels[status]?.[language === 'bn' ? 1 : 0] ?? status;
+}
+
 export function describeRotationStep(step: RotationStepV2, language: 'bn' | 'en'): string {
   const bn = language === 'bn';
   const labels: Record<string, [string, string]> = {
     rice: ['Rice', 'ধান'], wheat: ['Wheat', 'গম'], chickpea: ['Chickpea', 'ছোলা'],
     mustard: ['Mustard', 'সরিষা'], mungbean: ['Mungbean', 'মুগ'],
     sesbania_rostrata: ['Green manure', 'সবুজ সার'],
+    potato: ['Potato', 'আলু'], maize: ['Maize', 'ভুট্টা'], lentil: ['Lentil', 'মসুর'], jute: ['Jute', 'পাট'],
   };
   const crop = labels[step.crop_code]?.[bn ? 1 : 0] ?? step.crop_code;
   const seasons: Record<string, [string, string]> = {aman:['Aman','আমন'],aus:['Aus','আউশ'],boro:['Boro','বোরো'],rabi:['Rabi','রবি']};
   const season = step.season_code ? ` · ${seasons[step.season_code]?.[bn ? 1 : 0] ?? step.season_code}` : '';
+  if (step.event_basis === 'farmer_reported_previous_crop') return `${crop} · ${bn ? 'আপনার জানানো আগের ফসল, তারিখ নেই' : 'previous crop you reported, no dates'}`;
   const missing = bn ? 'তারিখ নেই' : 'date not recorded';
   const interval = `${step.start_date ?? missing} → ${step.end_date ?? missing}`;
   const basis = step.event_basis === 'active_season_expected_harvest'

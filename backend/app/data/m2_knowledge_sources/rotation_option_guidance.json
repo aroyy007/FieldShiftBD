@@ -1,0 +1,39 @@
+{
+  "guidance_version": "rotation-option-guidance-2026-11-13",
+  "basis_en": "FieldShift summary of general agronomy for each BRRI-published pattern. Qualitative only; nothing here is measured for your field. Confirm with your Upazila Agriculture Officer.",
+  "basis_bn": "প্রতিটি BRRI-প্রকাশিত ধারার জন্য সাধারণ কৃষিবিজ্ঞানের সারাংশ (FieldShift)। শুধু গুণগত তথ্য; আপনার জমিতে কিছু মাপা হয়নি। উপজেলা কৃষি কর্মকর্তার সঙ্গে নিশ্চিত করুন।",
+  "baseline": {
+    "why_en": ["This is what you grow now. Every other option is compared against it."],
+    "why_bn": ["এটি আপনার বর্তমান চাষ। অন্য সব বিকল্প এর সঙ্গে তুলনা করা হয়েছে।"],
+    "benefits_en": ["Familiar crops and practices; you already know the labour, inputs and market."],
+    "benefits_bn": ["পরিচিত ফসল ও পদ্ধতি; শ্রম, উপকরণ ও বাজার আপনার জানা।"],
+    "risks_en": ["If the same crop family repeats every year, pests, diseases and soil nutrient drain also repeat."],
+    "risks_bn": ["প্রতি বছর একই ধরনের ফসল হলে পোকা, রোগ ও মাটির পুষ্টি কমে যাওয়ার সমস্যাও প্রতি বছর ফিরে আসে।"]
+  },
+  "patterns": {
+    "BRRI-RFS-01": {
+      "why_en": ["The most common irrigated two-rice pattern for high, clay-loam land. Shown so you can compare a familiar sequence."],
+      "why_bn": ["উঁচু, এঁটেল দোআঁশ জমির সবচেয়ে প্রচলিত সেচনির্ভর দুই ধানের ধারা। পরিচিত ধারার সঙ্গে তুলনার জন্য দেখানো হয়েছে।"],
+      "benefits_en": ["Two rice harvests a year from the same land.", "Well-known practices, seed and market for both crops."],
+      "benefits_bn": ["একই জমি থেকে বছরে দুইবার ধান।", "দুই ফসলেরই পদ্ধতি, বীজ ও বাজার পরিচিত।"],
+      "risks_en": ["Boro rice needs dry-season irrigation: pump fuel or electricity cost and groundwater use.", "Rice after rice keeps the same pest and disease cycle going.", "The land can stay bare between the Aman harvest and Boro planting."],
+      "risks_bn": ["বোরো ধানে শুকনো মৌসুমে সেচ লাগে: পাম্পের জ্বালানি বা বিদ্যুৎ খরচ ও ভূগর্ভস্থ পানির ব্যবহার।", "ধানের পর ধান হলে একই পোকা ও রোগের চক্র চলতে থাকে।", "আমন কাটা থেকে বোরো লাগানো পর্যন্ত জমি খালি থাকতে পারে।"]
+    },
+    "BRRI-RFS-02": {
+      "why_en": ["Replaces irrigated Boro rice with chickpea, a dry-season pulse. Worth a look when dry-season water is limited."],
+      "why_bn": ["সেচনির্ভর বোরো ধানের জায়গায় শুকনো মৌসুমের ডাল ফসল ছোলা। শুকনো মৌসুমে পানি কম থাকলে দেখার মতো।"],
+      "benefits_en": ["Chickpea is a legume: it can add nitrogen to the soil through its roots (amount not measured here).", "A non-rice crop breaks the rice pest and disease cycle.", "Usually needs much less dry-season irrigation than Boro rice.", "Pulses add protein food and another product to sell."],
+      "benefits_bn": ["ছোলা শিম জাতীয় ফসল: শিকড়ের মাধ্যমে মাটিতে নাইট্রোজেন যোগ করতে পারে (পরিমাণ এখানে মাপা হয়নি)।", "ধান ছাড়া অন্য ফসল ধানের পোকা ও রোগের চক্র ভাঙে।", "সাধারণত বোরো ধানের চেয়ে অনেক কম সেচ লাগে।", "ডাল আমিষযুক্ত খাবার ও বিক্রির আরেকটি পণ্য।"],
+      "risks_en": ["Chickpea is damaged by waterlogging and late rain at harvest.", "Wet-seeded Aus and Aman rice need good weed control.", "Three crops a year leave little time between crops; labour must be ready."],
+      "risks_bn": ["জলাবদ্ধতা ও কাটার সময় দেরিতে বৃষ্টি হলে ছোলার ক্ষতি হয়।", "ভেজা বোনা আউশ ও আমনে আগাছা দমন ভালো করতে হয়।", "বছরে তিন ফসলে মাঝের সময় কম; শ্রমিক প্রস্তুত রাখতে হয়।"]
+    },
+    "BRRI-RFS-04": {
+      "why_en": ["Keeps Boro rice but adds Sesbania (dhaincha) as green manure in the short gap before Aman."],
+      "why_bn": ["বোরো ধান রেখে আমনের আগের ছোট ফাঁকে সবুজ সার হিসেবে ধৈঞ্চা যোগ করা হয়।"],
+      "benefits_en": ["Sesbania is a legume ploughed into the soil as green manure: it can add nitrogen and organic matter (not measured here).", "Covers the soil between Boro and Aman instead of leaving it bare."],
+      "benefits_bn": ["ধৈঞ্চা শিম জাতীয় ফসল, সবুজ সার হিসেবে মাটিতে মিশিয়ে দেওয়া হয়: নাইট্রোজেন ও জৈব পদার্থ বাড়াতে পারে (এখানে মাপা হয়নি)।", "বোরো ও আমনের মাঝে জমি খালি না রেখে ঢেকে রাখে।"],
+      "risks_en": ["Still needs dry-season irrigation for Boro rice.", "Sesbania must be ploughed in on time, before Aman transplanting.", "Sesbania seed may be hard to find locally."],
+      "risks_bn": ["বোরো ধানের জন্য শুকনো মৌসুমে সেচ এখনও লাগবে।", "আমন লাগানোর আগে সময়মতো ধৈঞ্চা মাটিতে মেশাতে হবে।", "স্থানীয়ভাবে ধৈঞ্চার বীজ পাওয়া কঠিন হতে পারে।"]
+    }
+  }
+}

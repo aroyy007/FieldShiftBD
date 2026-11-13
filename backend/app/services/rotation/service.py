@@ -7,18 +7,139 @@ from pathlib import Path
 from statistics import median
 from app.contracts.challenge.v1 import FarmProfileSnapshot
 from app.contracts.challenge.v2 import (RotationCompareRequest, RotationComparisonV2, RotationOptionV2,
-    RotationStepV2, MetricEvidence, EvidenceReference)
+    RotationStepV2, MetricEvidence, EvidenceReference, ExplorationBasisV2, ExplorationEntryV2, UnrankedOptionV2)
 from app.services.district_advisory import district_for_input
 from app.services.earth_observation.provider import load_power_context
 from app.services.earth_observation.registry import product_registry, region_registry
 from app.services.rotation_comparison import CATALOG_PATH
 from app.services.rotation.calendars import build_calendar_evidence
+from app.services.rotation.catalog import load_rotation_candidates
+from src.compute.rotation_calendar import evaluate_calendar
 from src.compute.rotation_exposure import rainfall_window
 from src.compute.rotation_preferences import compare_options
+from src.compute.rotation_traits import PRIORITY_METRICS, exploration_order, normalize_crop, sequence_traits
+
+GUIDANCE_PATH = Path(__file__).resolve().parents[2] / 'data/m2_knowledge_sources/rotation_option_guidance.json'
+_BN_DIGITS = str.maketrans('0123456789', '০১২৩৪৫৬৭৮৯')
+
+
+def _bn(value) -> str:
+    return str(value).translate(_BN_DIGITS)
+
+
+def _trait_metrics(trait_steps: list[dict], dry_spells: list[float | None], dated_steps: int) -> list[MetricEvidence]:
+    """Comparable, sequence-derived metrics used for the priority-based discussion order."""
+    if not trait_steps:
+        return [
+            _metric('irrigated_dry_season_steps', 'No crop is recorded yet; add the crop you grew last season.', 'কোনো ফসল নথিভুক্ত নেই; গত মৌসুমের ফসল যোগ করুন।'),
+            _metric('crop_family_count', 'No crop is recorded yet.', 'কোনো ফসল নথিভুক্ত নেই।'),
+            _metric('dry_spell_exposure_days', 'No dated crop interval is recorded.', 'তারিখসহ কোনো ফসলের সময় নথিভুক্ত নেই।'),
+            _metric('calendar_coverage_share', 'No crop is recorded yet.', 'কোনো ফসল নথিভুক্ত নেই।'),
+            _metric('market_income_evidence', 'No market price or income data is connected yet.', 'বাজারদর বা আয়ের তথ্য এখনও যুক্ত নয়।'),
+        ]
+    t = sequence_traits(trait_steps)
+    n = t['step_count']
+    metrics = []
+    if t['unknown_water_steps'] == n:
+        metrics.append(_metric('irrigated_dry_season_steps', 'Season or crop is not known well enough to classify dry-season irrigation need.',
+                               'শুকনো মৌসুমের সেচ চাহিদা বোঝার জন্য ফসল বা মৌসুম যথেষ্ট জানা নেই।'))
+    else:
+        partial = t['unknown_water_steps'] > 0
+        en = (f"{t['irrigated_dry_season_steps']} of {n} crops are dry-season crops that usually need irrigation "
+              f"({t['high_water_steps']} Boro rice). General water-use class, not a measured water amount.")
+        bn = (f"{_bn(n)}টি ফসলের মধ্যে {_bn(t['irrigated_dry_season_steps'])}টি শুকনো মৌসুমের ফসল যাতে সাধারণত সেচ লাগে "
+              f"({_bn(t['high_water_steps'])}টি বোরো ধান)। এটি সাধারণ পানি-ব্যবহারের শ্রেণি, মাপা পানির পরিমাণ নয়।")
+        if partial:
+            en += f" {t['unknown_water_steps']} crop(s) could not be classified."
+            bn += f" {_bn(t['unknown_water_steps'])}টি ফসলের শ্রেণি নির্ধারণ করা যায়নি।"
+        metrics.append(MetricEvidence(metric_id='irrigated_dry_season_steps', status='partial' if partial else 'available',
+            value=float(t['irrigated_dry_season_steps']), unit='crops per sequence', method_id='general_water_use_class_v1',
+            evidence_ids=['fieldshift-crop-traits'], detail_en=en, detail_bn=bn))
+    if t['family_count'] == 0:
+        metrics.append(_metric('crop_family_count', 'Crop names could not be matched to a plant family.', 'ফসলের নাম কোনো উদ্ভিদ পরিবারের সঙ্গে মেলানো যায়নি।'))
+    else:
+        legume_en = f" Includes {t['legume_steps']} legume crop(s), which can fix nitrogen." if t['legume_steps'] else ' No legume crop.'
+        legume_bn = f" {_bn(t['legume_steps'])}টি শিম জাতীয় ফসল আছে, যা নাইট্রোজেন যোগ করতে পারে।" if t['legume_steps'] else ' কোনো শিম জাতীয় ফসল নেই।'
+        metrics.append(MetricEvidence(metric_id='crop_family_count', status='partial' if t['unknown_family_steps'] else 'available',
+            value=float(t['family_count']), unit='plant families', method_id='botanical_family_count_v1', evidence_ids=['fieldshift-crop-traits'],
+            detail_en=f"{t['family_count']} different plant famil{'y' if t['family_count'] == 1 else 'ies'} in the sequence. More families usually break pest and disease cycles.{legume_en}",
+            detail_bn=f"ধারায় {_bn(t['family_count'])}টি ভিন্ন উদ্ভিদ পরিবার। বেশি পরিবার সাধারণত পোকা ও রোগের চক্র ভাঙে।{legume_bn}"))
+    known = [d for d in dry_spells if d is not None]
+    if not known:
+        metrics.append(_metric('dry_spell_exposure_days', 'No dated or calendar-matched crop interval, so NASA POWER dry spells could not be replayed.',
+                               'তারিখ বা মেলানো ক্যালেন্ডার নেই, তাই NASA POWER-এর শুকনো দিনের হিসাব করা যায়নি।'))
+    else:
+        partial = len(known) < n
+        en = (f'Longest typical dry spell (days with ≤1 mm rain) during the crops, from 25 years of NASA POWER history: {max(known):.0f} days. '
+              'Historical exposure, not a forecast.')
+        bn = (f'ফসলের সময়ে সাধারণ দীর্ঘতম শুকনো সময় (দৈনিক ≤১ মিমি বৃষ্টি), NASA POWER-এর ২৫ বছরের ইতিহাস থেকে: {_bn(round(max(known)))} দিন। '
+              'ঐতিহাসিক তথ্য, পূর্বাভাস নয়।')
+        if partial:
+            en += f' Covers {len(known)} of {n} crops.'
+            bn += f' {_bn(n)}টির মধ্যে {_bn(len(known))}টি ফসলের হিসাব।'
+        metrics.append(MetricEvidence(metric_id='dry_spell_exposure_days', status='partial' if partial else 'available', value=float(max(known)),
+            unit='days', method_id='max_step_dry_spell_median_v1', evidence_ids=['power-history'], detail_en=en, detail_bn=bn))
+    share = dated_steps / n
+    metrics.append(MetricEvidence(metric_id='calendar_coverage_share', status='available', value=round(share, 3), unit='share of crops',
+        method_id='sourced_or_recorded_dates_share_v1', evidence_ids=[],
+        detail_en=f'{dated_steps} of {n} crops have published or recorded dates.',
+        detail_bn=f'{_bn(n)}টি ফসলের মধ্যে {_bn(dated_steps)}টির প্রকাশিত বা নথিভুক্ত তারিখ আছে।'))
+    metrics.append(_metric('market_income_evidence', 'No market price or income data is connected yet.', 'বাজারদর বা আয়ের তথ্য এখনও যুক্ত নয়।'))
+    return metrics
+
+
+def _calendar_dry_spells(steps: list[RotationStepV2]) -> tuple[list[float | None], int]:
+    spells, dated = [], 0
+    for step in steps:
+        ev = step.calendar_evidence
+        if ev and ev.status == 'source_reference_available':
+            dated += 1
+        values = [r.weather.long_interval_dry_spell_median_days for r in (ev.references if ev else [])
+                  if r.weather and r.weather.status == 'available' and r.weather.long_interval_dry_spell_median_days is not None]
+        spells.append(max(values) if values else None)
+    return spells, dated
+
+
+def _gaps(metrics: list[MetricEvidence], lang: str) -> list[str]:
+    return [getattr(m, f'detail_{lang}') for m in metrics if m.status == 'missing']
+
+
+_UNRANKED_TEXT = {
+    'outside_documented_conditions': ('Not ordered: your land, soil or irrigation is outside the conditions this example was published for.',
+                                      'ক্রমে রাখা হয়নি: আপনার জমি, মাটি বা সেচ এই উদাহরণের প্রকাশিত শর্তের বাইরে।'),
+}
+_PRIORITY_LABEL = {
+    'irrigated_dry_season_steps': ('dry-season irrigation need', 'শুকনো মৌসুমের সেচ চাহিদা'),
+    'dry_spell_exposure_days': ('NASA rainfall dry-spell history', 'NASA বৃষ্টির শুকনো সময়ের ইতিহাস'),
+    'crop_family_count': ('crop variety', 'ফসলের বৈচিত্র্য'),
+    'calendar_coverage_share': ('calendar evidence', 'ক্যালেন্ডারের তথ্য'),
+    'market_income_evidence': ('income data', 'আয়ের তথ্য'),
+}
 
 
 def _metric(name, detail_en, detail_bn):
     return MetricEvidence(metric_id=name, status='missing', method_id='review_required', evidence_ids=[], detail_en=detail_en, detail_bn=detail_bn)
+
+
+def _candidate_calendar_metrics(candidate, planning_year):
+    assessment = evaluate_calendar(candidate, planning_year, rules=None)
+    if assessment.status == 'overlap':
+        calendar_en = 'The sourced date windows overlap. Confirm the exact variety, establishment method, and local dates; no feasible plan is claimed.'
+        calendar_bn = 'উৎসের তারিখের সময়সীমা একে অপরের সঙ্গে মিলে যায়। জাত, চাষপদ্ধতি ও স্থানীয় তারিখ নিশ্চিত করুন; উপযোগী পরিকল্পনা দাবি করা হচ্ছে না।'
+    elif assessment.status == 'needs_turnaround_rule':
+        calendar_en = 'The published date windows do not overlap, but no reviewed turnaround rule or local calendar approval is available.'
+        calendar_bn = 'প্রকাশিত তারিখের সময়সীমা মেলে না, তবে পর্যালোচিত মধ্যবর্তী সময়ের নিয়ম বা স্থানীয় ক্যালেন্ডার অনুমোদন নেই।'
+    else:
+        calendar_en = 'Exact cultivar-specific establishment and harvest windows are missing for one or more steps; no dates were inferred from the published sequence.'
+        calendar_bn = 'এক বা একাধিক ধাপের জাতভিত্তিক চাষ শুরু ও ফসল কাটার নির্দিষ্ট সময় নেই; প্রকাশিত ধারার ভিত্তিতে তারিখ অনুমান করা হয়নি।'
+    gdd_en = 'No validated cultivar-specific GDD base, cap, target, and stage duration are recorded; thermal feasibility is not scored.'
+    gdd_bn = 'জাতভিত্তিক যাচাইকৃত GDD ভিত্তি, সর্বোচ্চ সীমা, লক্ষ্য ও বৃদ্ধির ধাপের সময় নেই; তাপীয় উপযোগিতা স্কোর করা হয়নি।'
+    return [
+        MetricEvidence(metric_id='calendar', status='missing', method_id='source_scoped_calendar_review_pending',
+            evidence_ids=list(candidate.source_ids), detail_en=calendar_en, detail_bn=calendar_bn),
+        MetricEvidence(metric_id='gdd', status='missing', method_id='cultivar_gdd_review_required',
+            evidence_ids=list(candidate.source_ids), detail_en=gdd_en, detail_bn=gdd_bn),
+    ]
 
 
 def regional_product_state(product_id: str, power_cache_status: str, pilot: dict | None) -> str:
@@ -30,16 +151,6 @@ def regional_product_state(product_id: str, power_cache_status: str, pilot: dict
     if product_id == 'srtm' and pilot is not None and pilot.get('terrain') is not None:
         return 'pilot_unreviewed'
     return 'not_acquired'
-
-
-def _baseline(snapshot):
-    steps = [RotationStepV2(crop_code=s.crop_code, start_date=s.planting_date, end_date=s.harvest_date, event_basis=s.source)
-             for s in reversed(snapshot.rotation_history)]
-    if snapshot.active_season:
-        s = snapshot.active_season
-        steps.append(RotationStepV2(crop_code=s.crop_code or 'unknown', start_date=s.planting_date,
-                                    end_date=s.expected_harvest_date, event_basis='active_season_expected_harvest'))
-    return steps[-12:]
 
 
 def recorded_calendar_metric(steps: list[RotationStepV2]) -> MetricEvidence:
@@ -169,9 +280,11 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
                                    snapshot.profile.longitude) if pilot_root else None
     catalog = json.loads(CATALOG_PATH.read_text())
     source = catalog['source']
+    candidates = load_rotation_candidates(district, snapshot)
+    candidate_by_id = {candidate.candidate_id: candidate for candidate in candidates}
     evidence = [EvidenceReference(evidence_id=source['source_id'], source='BRRI published crop patterns',
         product_id='regional_agronomy', version=catalog['catalog_version'], url=source['url'], role='published_examples_pending_review',
-        spatial_support=source['source_scope_en'], cache_status='hit', scope='published_agronomy')]
+        spatial_support=source['source_scope_en'], cache_status='bundled_reference', scope='published_agronomy')]
     if bundle:
         m = bundle.manifest
         p = next(p for p in m.provenance if p.method == 'nasa_power')
@@ -179,29 +292,52 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
             version=p.dataset_version or 'unknown', url=p.source_url, role='historical_exposure',
             spatial_support=product_registry()['power'].native_support, coverage_start=m.coverage_start,
             coverage_end=m.coverage_end, retrieved_at=p.retrieved_at.isoformat(), cache_status='hit', scope='reference_point'))
-    steps = _baseline(snapshot)
-    options = [RotationOptionV2(option_id='baseline', role='baseline', name_en='Your recorded sequence', name_bn='আপনার নথিভুক্ত ফসলের ধারা',
-        steps=steps, eligibility='unknown', metrics=[recorded_calendar_metric(steps), *_rainfall_metrics(steps, bundle)],
-        reasons_en=['History may be incomplete; expected harvest is not a completed harvest. Full annual feasibility has not been established.'],
-        reasons_bn=['ইতিহাস অসম্পূর্ণ হতে পারে; সম্ভাব্য কাটার তারিখ সম্পন্ন ফসল কাটার রেকর্ড নয়। পুরো বছরের উপযোগিতা যাচাই হয়নি।'],
-        evidence_ids=['power-history'] if bundle else [])]
-    scope = catalog['profile_match']
-    profile = snapshot.profile
-    norm = lambda s: (s or '').casefold().replace('_', ' ').strip()
-    mismatch = (profile.irrigation_available is False or
-                (profile.land_type is not None and norm(profile.land_type) not in {norm(x) for x in scope['land_types']}) or
-                (profile.soil_type is not None and norm(profile.soil_type) not in {norm(x) for x in scope['soil_types']}))
+    guidance = json.loads(GUIDANCE_PATH.read_text(encoding='utf-8'))
+    evidence.append(EvidenceReference(evidence_id='fieldshift-crop-traits', source='FieldShift crop traits (botanical family, general dry-season water-use class)',
+        product_id='regional_agronomy', version=guidance['guidance_version'], url='https://github.com/aroyy007/FieldShiftBD/blob/main/backend/app/data/m2_knowledge_sources/rotation_option_guidance.json', role='general_agronomy_pending_review',
+        spatial_support='Crop-level general classification; not field-specific', cache_status='bundled_reference', scope='published_agronomy'))
+    baseline = candidate_by_id['baseline']
+    steps = [RotationStepV2(crop_code=(normalize_crop(s.crop_code) or s.crop_code) if s.event_basis == 'farmer_reported_previous_crop' else s.crop_code,
+                            start_date=s.start_date, end_date=s.end_date, event_basis=s.event_basis) for s in baseline.steps]
+    base_metrics = [recorded_calendar_metric(steps), *_rainfall_metrics(steps, bundle)]
+    base_spells = [next((m.value for m in base_metrics if m.metric_id == f'step_{i+1}_historical_dry_spell_days'), None) for i in range(len(steps))]
+    base_metrics += _trait_metrics([{'crop_code': s.crop_code, 'season_code': s.season_code, 'start_date': s.start_date} for s in steps],
+                                   base_spells, sum(1 for s in steps if s.start_date and s.end_date))
+    previous_only = bool(steps) and all(s.event_basis == 'farmer_reported_previous_crop' for s in steps)
+    g = guidance['baseline']
+    options = [RotationOptionV2(option_id='baseline', role='baseline', name_en='Your current crops', name_bn='আপনার বর্তমান ফসল',
+        steps=steps, eligibility='unknown', metrics=base_metrics,
+        reasons_en=['Based only on the previous crop you entered; add dated seasons for a full-year picture.' if previous_only else
+                    'History may be incomplete; expected harvest is not a completed harvest. Full annual feasibility has not been established.'],
+        reasons_bn=['শুধু আপনার দেওয়া আগের ফসলের ভিত্তিতে; পুরো বছরের চিত্রের জন্য তারিখসহ মৌসুম যোগ করুন।' if previous_only else
+                    'ইতিহাস অসম্পূর্ণ হতে পারে; সম্ভাব্য কাটার তারিখ সম্পন্ন ফসল কাটার রেকর্ড নয়। পুরো বছরের উপযোগিতা যাচাই হয়নি।'],
+        why_en=g['why_en'], why_bn=g['why_bn'], benefits_en=g['benefits_en'], benefits_bn=g['benefits_bn'],
+        risks_en=g['risks_en'], risks_bn=g['risks_bn'],
+        gaps_en=(['Add the planting and harvest dates of your recent seasons to compare calendars and NASA rainfall history.',
+                  'No market price or income data is connected yet.'] if previous_only else _gaps(base_metrics, 'en')),
+        gaps_bn=(['ক্যালেন্ডার ও NASA বৃষ্টির ইতিহাস তুলনা করতে সাম্প্রতিক মৌসুমের রোপণ ও কাটার তারিখ যোগ করুন।',
+                  'বাজারদর বা আয়ের তথ্য এখনও যুক্ত নয়।'] if previous_only else _gaps(base_metrics, 'bn')),
+        evidence_ids=['power-history', 'fieldshift-crop-traits'] if bundle else ['fieldshift-crop-traits'])]
     for pattern in catalog['patterns']:
+        candidate = candidate_by_id[pattern['pattern_id']]
+        alt_steps = [RotationStepV2(crop_code=s['crop_code'], season_code=s['season_code'], event_basis='published_sequence_without_reviewed_dates',
+                calendar_evidence=build_calendar_evidence(s,request.planning_year,bundle)) for s in pattern['steps']]
+        spells, dated = _calendar_dry_spells(alt_steps)
+        alt_metrics = [*_candidate_calendar_metrics(candidate, request.planning_year),
+                       *_trait_metrics([{'crop_code': s.crop_code, 'season_code': s.season_code, 'start_date': None} for s in alt_steps], spells, dated)]
+        g = guidance['patterns'].get(pattern['pattern_id'], {})
         options.append(RotationOptionV2(option_id=pattern['pattern_id'], role='alternative', name_en=pattern['name_en'], name_bn=pattern['name_bn'],
-            steps=[RotationStepV2(crop_code=s['crop_code'], season_code=s['season_code'], event_basis='published_sequence_without_reviewed_dates',
-                calendar_evidence=build_calendar_evidence(s,request.planning_year,bundle)) for s in pattern['steps']],
-            eligibility='ineligible' if mismatch else 'unknown',
-            reasons_en=[('Farm conditions conflict with published land/soil/irrigation scope.' if mismatch else 'Regional applicability, cultivar dates and agronomist review are required before this example becomes an eligible plan.')],
-            reasons_bn=[('জমি, মাটি বা সেচের তথ্য প্রকাশিত শর্তের সঙ্গে মেলে না।' if mismatch else 'এই উদাহরণকে পরিকল্পনা হিসেবে নিতে স্থানীয় উপযোগিতা, জাতভিত্তিক তারিখ ও কৃষিবিদের পর্যালোচনা প্রয়োজন।')],
-            metrics=[_metric('calendar', 'Reviewed dated crop calendar and turnaround rule required.', 'পর্যালোচিত তারিখসহ ফসলের ক্যালেন্ডার ও মধ্যবর্তী সময়ের নিয়ম প্রয়োজন।'),
-                     _metric('water', 'No reviewed comparable irrigation-demand estimates.', 'তুলনাযোগ্য পর্যালোচিত সেচের চাহিদার তথ্য নেই।')],
-            risks_en=['No measured yield, profit, nitrogen, soil-carbon or irrigation savings are established.'],
-            risks_bn=['ফলন, লাভ, নাইট্রোজেন, মাটির কার্বন বা সেচ সাশ্রয়ের পরিমাপ প্রতিষ্ঠিত নয়।'], evidence_ids=[source['source_id']]))
+            steps=alt_steps,
+            eligibility=candidate.applicability,
+            reasons_en=[('Farm conditions conflict with published land/soil/irrigation scope.' if candidate.applicability == 'ineligible' else 'Regional applicability, cultivar dates and agronomist review are required before this example becomes an eligible plan.')],
+            reasons_bn=[('জমি, মাটি বা সেচের তথ্য প্রকাশিত শর্তের সঙ্গে মেলে না।' if candidate.applicability == 'ineligible' else 'এই উদাহরণকে পরিকল্পনা হিসেবে নিতে স্থানীয় উপযোগিতা, জাতভিত্তিক তারিখ ও কৃষিবিদের পর্যালোচনা প্রয়োজন।')],
+            metrics=alt_metrics,
+            why_en=g.get('why_en', []), why_bn=g.get('why_bn', []),
+            benefits_en=g.get('benefits_en', []), benefits_bn=g.get('benefits_bn', []),
+            risks_en=[*g.get('risks_en', []), 'No measured yield, profit, nitrogen, soil-carbon or irrigation savings are established for your field.'],
+            risks_bn=[*g.get('risks_bn', []), 'আপনার জমিতে ফলন, লাভ, নাইট্রোজেন, মাটির কার্বন বা সেচ সাশ্রয়ের পরিমাপ প্রতিষ্ঠিত নয়।'],
+            gaps_en=_gaps(alt_metrics, 'en'), gaps_bn=_gaps(alt_metrics, 'bn'),
+            evidence_ids=[source['source_id'], 'fieldshift-crop-traits']))
     known_evidence = {e.evidence_id for e in evidence}
     for option in options:
         for step in option.steps:
@@ -210,15 +346,37 @@ def compare_rotations(snapshot: FarmProfileSnapshot, request: RotationCompareReq
                     evidence.append(EvidenceReference(evidence_id=ref.source_id,source=f'BRRI Rice Profile — {ref.variety_name}',
                         product_id='regional_agronomy',version=ref.profile_id,url=ref.source_url,
                         role='published_reference_pending_agronomy_review',spatial_support=ref.scope_en,
-                        retrieved_at=ref.accessed_on.isoformat(),cache_status='hit',scope='published_agronomy'))
+                        retrieved_at=ref.accessed_on.isoformat(),cache_status='bundled_reference',scope='published_agronomy'))
                     known_evidence.add(ref.source_id)
     ordering = compare_options([{'option_id': o.option_id, 'eligibility': o.eligibility, 'metrics': {m.metric_id: m.value for m in o.metrics}} for o in options], request.priorities)
-    return RotationComparisonV2(**common, **ordering, status='partial', baseline_completeness='incomplete' if steps else 'not_recorded', pilot_observation=pilot,
+    explored = exploration_order([{'option_id': o.option_id, 'eligibility': o.eligibility,
+                                   'metrics': {m.metric_id: m.value for m in o.metrics}} for o in options], request.priorities)
+    unranked = []
+    for item in explored['unranked']:
+        reason = item['reason']
+        if reason in _UNRANKED_TEXT:
+            en, bn = _UNRANKED_TEXT[reason]
+        else:
+            label_en, label_bn = _PRIORITY_LABEL.get(reason.removeprefix('missing_'), (reason, reason))
+            en = f'Not ordered: no {label_en} value for this option yet.'
+            bn = f'ক্রমে রাখা হয়নি: এই বিকল্পের {label_bn} এখনও নেই।'
+        unranked.append(UnrankedOptionV2(option_id=item['option_id'], reason=reason, detail_en=en, detail_bn=bn))
+    first_en, first_bn = _PRIORITY_LABEL[PRIORITY_METRICS[request.priorities[0]][0]]
+    exploration = dict(
+        exploration_status=explored['status'],
+        exploration_order=[ExplorationEntryV2(option_id=e['option_id'], position=e['position'],
+            basis=[ExplorationBasisV2(**b) for b in e['basis']]) for e in explored['order']],
+        unranked_options=unranked,
+        exploration_note_en=f'Options are listed by your priority ({first_en}), using the values shown for each option. '
+                            'This is an order for discussion, not a recommendation. Your experience and your local agriculture officer decide.',
+        exploration_note_bn=f'আপনার অগ্রাধিকার ({first_bn}) অনুযায়ী, প্রতিটি বিকল্পের দেখানো মান ব্যবহার করে সাজানো হয়েছে। '
+                            'এটি আলোচনার জন্য ক্রম, সুপারিশ নয়। সিদ্ধান্ত আপনার অভিজ্ঞতা ও স্থানীয় কৃষি কর্মকর্তার।')
+    return RotationComparisonV2(**common, **ordering, **exploration, status='partial', baseline_completeness='incomplete' if steps else 'not_recorded', pilot_observation=pilot,
         options=options, evidence=evidence, release_id=bundle.manifest.bundle_id if bundle else None,
         products=[{'product_id': p.product_id, 'role': p.role,
                    'state': regional_product_state(p.product_id, cache_status, pilot)}
                   for p in product_registry().values()],
         message_en='Compare your recorded sequence with published examples. Reviewed local calendars and water evidence are still needed before choosing a preferred plan.',
         message_bn='আপনার নথিভুক্ত ফসলের সঙ্গে প্রকাশিত উদাহরণ তুলনা করুন। পছন্দের পরিকল্পনা বাছতে পর্যালোচিত স্থানীয় ক্যালেন্ডার ও পানির তথ্য প্রয়োজন।',
-        limitations_en=['POWER is area-scale reference-point evidence, not a field measurement or district mean.', 'The optional IMERG pilot sample is separate from rotation scoring; other NASA products are not yet incorporated.', 'Farmer priorities are recorded; missing comparison evidence prevents a preferred-option claim.'],
-        limitations_bn=['POWER নমুনা পয়েন্টের আঞ্চলিক তথ্য; জমির পরিমাপ বা জেলার গড় নয়।', 'IMERG-এর ঐচ্ছিক pilot sample rotation সিদ্ধান্তে ব্যবহার হয় না; অন্য NASA product এখনও যুক্ত হয়নি।', 'আপনার অগ্রাধিকার রাখা হয়েছে; তুলনার তথ্য অসম্পূর্ণ বলে সেরা বিকল্প দাবি করা হয়নি।'])
+        limitations_en=['POWER is area-scale reference-point evidence, not a field measurement or district mean.', 'The optional IMERG pilot sample is not used in the order; other NASA products are not yet incorporated.', 'Your priority changes the discussion order using sequence traits and NASA POWER rainfall history; it never selects a plan for you.'],
+        limitations_bn=['POWER নমুনা পয়েন্টের আঞ্চলিক তথ্য; জমির পরিমাপ বা জেলার গড় নয়।', 'IMERG-এর ঐচ্ছিক pilot sample rotation সিদ্ধান্তে ব্যবহার হয় না; অন্য NASA product এখনও যুক্ত হয়নি।', 'আপনার অগ্রাধিকার ফসলের ধারার বৈশিষ্ট্য ও NASA POWER বৃষ্টির ইতিহাস দিয়ে আলোচনার ক্রম বদলায়; এটি আপনার হয়ে পরিকল্পনা বেছে নেয় না।'])

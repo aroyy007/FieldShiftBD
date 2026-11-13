@@ -11,6 +11,7 @@ import OptionPickerModal, { PickerOption } from '../../components/OptionPickerMo
 import { DivisionRef, ProfileVocabulary, loadCropCatalog, loadLocations, loadProfileVocabulary } from '../../services/m1-reference';
 import type { CropCatalogItem } from '../../services/m1-reference';
 import { captureCurrentFarmLocation } from '../../services/farm-location';
+import FieldMap from '../../components/FieldMap';
 
 const PAPER = '#fffdf7';
 const GREEN = '#07543a';
@@ -320,6 +321,14 @@ export default function AddFarmland() {
             </View>
           </View>
 
+          {(coordinates || district) ? (
+            <View style={styles.mapCard}>
+              <Text style={styles.mapTitle}>{coordinates ? 'Is this your field?' : 'Your district'}</Text>
+              <FieldMap mode="locate" latitude={coordinates?.latitude} longitude={coordinates?.longitude} district={district?.name} height={260} />
+              {coordinates ? <Text style={styles.helpText}>The red dot is where your phone is now. Save the farm while standing in the field, or pick the district manually.</Text> : null}
+            </View>
+          ) : null}
+
           <View style={styles.adviceBanner}>
             <View style={styles.adviceIcon}><FarmProfileIcon name="leaf" size={27} color={GREEN} /></View>
             <Text style={styles.adviceText}>This profile is saved to your account. Choose a crop later in Crop Advisor to start a season.</Text>
@@ -413,6 +422,8 @@ const styles = StyleSheet.create({
   adviceIcon: { width: 38, height: 38, flexShrink: 0, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#dfead7' },
   adviceText: { flex: 1, color: INK, fontFamily: ENGLISH_FONT_FAMILY, fontSize: 12, lineHeight: 16, fontWeight: '700' },
   placeholderText: { color: '#82909a' },
+  mapCard: { gap: 10, padding: 14, borderRadius: 16, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e2e8e2' },
+  mapTitle: { fontSize: 17, fontWeight: '700', color: '#1f3a2c' },
   helpText: { color: MUTED, fontSize: 11, lineHeight: 15, paddingHorizontal: 5 },
   error: { color: '#bb2e19', fontSize: 12, lineHeight: 16, paddingHorizontal: 5 },
   actionBar: { flexDirection: 'row', gap: 7, paddingHorizontal: 10, paddingTop: 7, paddingBottom: 6, backgroundColor: PAPER, borderTopWidth: 1, borderTopColor: '#efede5' },

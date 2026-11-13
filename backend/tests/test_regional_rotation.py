@@ -19,6 +19,18 @@ def test_missing_metric_cannot_carry_a_numeric_claim():
         MetricEvidence(metric_id='rain', status='missing', value=12, method_id='sum', evidence_ids=[])
 
 
+def test_evidence_cache_status_distinguishes_bundled_references():
+    from app.contracts.challenge.v2 import EvidenceReference
+
+    source = EvidenceReference(
+        evidence_id='brri-catalog', source='BRRI', product_id='agronomy', version='v1',
+        url='https://example.org', role='published_examples_pending_review',
+        spatial_support='published source', cache_status='bundled_reference',
+        scope='published_agronomy',
+    )
+    assert source.cache_status == 'bundled_reference'
+
+
 def test_registry_keeps_all_products_and_context_roles():
     from app.services.earth_observation.registry import product_registry, region_registry
     products = product_registry()
@@ -84,14 +96,21 @@ def test_rainfall_missing_day_does_not_shorten_dry_spell():
 
 
 def test_calendar_cross_year_overlap_and_missing_rules():
+    from app.services.rotation.catalog import ReviewedRuleSet, RotationCandidate, RotationCandidateStep
     from src.compute.rotation_calendar import evaluate_calendar
-    steps = [{'crop_code': 'rice', 'start_date': date(2026, 8, 1), 'end_date': date(2026, 11, 30)}, {'crop_code': 'wheat', 'start_date': date(2026, 11, 25), 'end_date': date(2027, 3, 1)}]
-    assert evaluate_calendar(steps)['status'] == 'overlap'
-    steps[1]['start_date'] = date(2026, 12, 10)
-    assert evaluate_calendar(steps)['status'] == 'needs_turnaround_rule'
-    assert evaluate_calendar(steps, minimum_turnaround_days=7)['status'] == 'feasible'
-    steps[1]['end_date'] = None
-    assert evaluate_calendar(steps, minimum_turnaround_days=7)['status'] == 'insufficient_dates'
+    steps = (
+        RotationCandidateStep('rice', 'aman', 'reported', ('history',), start_date=date(2026, 8, 1), end_date=date(2026, 11, 30)),
+        RotationCandidateStep('wheat', 'rabi', 'reported', ('history',), start_date=date(2026, 11, 25), end_date=date(2027, 3, 1)),
+    )
+    candidate = RotationCandidate('synthetic', 'baseline', '5081', steps, ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(candidate, 2026, None).status == 'overlap'
+    steps = (steps[0], RotationCandidateStep('wheat', 'rabi', 'reported', ('history',), start_date=date(2026, 12, 10), end_date=date(2027, 3, 1)))
+    candidate = RotationCandidate('synthetic', 'baseline', '5081', steps, ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(candidate, 2026, None).status == 'needs_turnaround_rule'
+    rule = ReviewedRuleSet(7, ('reviewed-turnaround-rule',), 'reviewed')
+    assert evaluate_calendar(candidate, 2026, rule).status == 'feasible'
+    incomplete = RotationCandidate('synthetic', 'baseline', '5081', (steps[0], RotationCandidateStep('wheat', 'rabi', 'reported', ('history',))), ('history',), 'farmer_recorded', 'unknown')
+    assert evaluate_calendar(incomplete, 2026, rule).status == 'insufficient_dates'
 
 
 def test_preference_order_respects_unknown_income_and_water_priority():
@@ -128,6 +147,17 @@ def test_regional_api_owns_farm_and_does_not_mutate_seasons(client_and_farm):
     assert body['selection_allowed'] is False
     assert body['ordering_status'] == 'insufficient_evidence'
     assert body['options'][1]['eligibility'] == 'unknown'
+    calendar_metric = next(m for m in body['options'][1]['metrics'] if m['metric_id'] == 'calendar')
+    gdd_metric = next(m for m in body['options'][1]['metrics'] if m['metric_id'] == 'gdd')
+    assert calendar_metric['status'] == 'missing' and calendar_metric['value'] is None
+    assert 'windows are missing' in calendar_metric['detail_en'] or 'overlap' in calendar_metric['detail_en']
+    assert gdd_metric['status'] == 'missing' and gdd_metric['value'] is None
+    assert 'GDD base, cap, target' in gdd_metric['detail_en']
+    agronomy_evidence = [item for item in body['evidence'] if item['scope'] == 'published_agronomy']
+    assert agronomy_evidence
+    assert all(item['cache_status'] == 'bundled_reference' for item in agronomy_evidence)
+    power_evidence = [item for item in body['evidence'] if item['product_id'] == 'power']
+    assert all(item['cache_status'] == 'hit' for item in power_evidence)
     assert body['snapshot_hash'] == client.post(f'/advisor/v2/farmlands/{farm_id}/rotation-comparisons', json={'planning_year': 2027}).json()['snapshot_hash']
     assert client.post(f'/advisor/v2/farmlands/{client.app.state.other_farmland_id}/rotation-comparisons', json={'planning_year': 2027}).status_code == 404
     after = client.get(f'/farmlands/{farm_id}/state').json()
@@ -217,3 +247,34 @@ def test_power_loader_never_publishes_synthetic_or_unavailable_evidence(tmp_path
         provenance=[SimpleNamespace(method='nasa_power',quality_status=source_quality)]))
     monkeypatch.setattr(ClimateBundleCache, 'load_bundle', lambda self, district: bundle)
     assert load_power_context(tmp_path,'5081') == (None,'corrupt')
+
+
+def test_priority_reorders_options_and_previous_crop_forms_baseline(client_and_farm):
+    from app.core.database import get_db
+    from app.models.core import Farmland
+    client, farm_id, _, _ = client_and_farm
+    dep = client.app.dependency_overrides[get_db]()
+    db = next(dep)
+    farm = db.get(Farmland, farm_id)
+    farm.district, farm.irrigation_available, farm.land_type, farm.soil_type = 'Rajshahi', True, 'high', 'clay'
+    db.commit()
+    url = f'/advisor/v2/farmlands/{farm_id}/rotation-comparisons'
+    water = client.post(url, json={'planning_year': 2027, 'priorities': ['water', 'diversity']}).json()
+    diversity = client.post(url, json={'planning_year': 2027, 'priorities': ['diversity', 'water']}).json()
+    income = client.post(url, json={'planning_year': 2027, 'priorities': ['income']}).json()
+    assert water['exploration_order'][0]['option_id'] == 'BRRI-RFS-02'
+    assert [e['option_id'] for e in water['exploration_order']] != [e['option_id'] for e in diversity['exploration_order']]
+    assert income['exploration_status'] == 'insufficient_evidence' and income['exploration_order'] == []
+    assert water['preferred_option_ids'] == [] and water['selection_allowed'] is False
+    for option in water['options'][1:]:
+        assert option['why_en'] and option['benefits_en'] and option['risks_en'] and option['gaps_en']
+    dep.close()
+
+
+def test_previous_crop_forms_provisional_baseline_when_no_history():
+    from types import SimpleNamespace
+    from app.services.rotation.catalog import _history_steps
+    snapshot = SimpleNamespace(rotation_history=[], active_season=None, profile=SimpleNamespace(previous_crop=' Potato '))
+    (step,) = _history_steps(snapshot)
+    assert step.crop_code == 'Potato' and step.event_basis == 'farmer_reported_previous_crop' and step.start_date is None
+    assert _history_steps(SimpleNamespace(rotation_history=[], active_season=None, profile=SimpleNamespace(previous_crop=None))) == ()

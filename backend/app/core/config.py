@@ -1,4 +1,4 @@
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -10,6 +10,18 @@ class Settings(BaseSettings):
     DB_NAME: str
     DATABASE_URL: str
     SECRET_KEY: str
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def _secret_key_is_set(cls, value: str) -> str:
+        # Fail closed: an empty or short key would make every login fail or tokens guessable.
+        if len(value.strip()) < 32:
+            raise ValueError(
+                "SECRET_KEY must be at least 32 characters. Generate one with: "
+                "python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        return value
+
     MODULE3_API_BASE_URL: str = "http://127.0.0.1:8000"
     CORS_ORIGINS: str = "http://localhost:8082,http://127.0.0.1:8082"
     DISEASE_CONFIDENCE_THRESHOLD: float = Field(default=0.70, gt=0, le=1)
